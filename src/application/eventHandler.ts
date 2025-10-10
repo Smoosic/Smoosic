@@ -300,6 +300,16 @@ export class SuiEventHandler implements ModalEventHandler {
   }
 
   mouseMove(ev: any) {
+    const caret = this.view.tracker.getNoteEntryCaret();
+    if (caret && caret.containsPoint(ev)) {
+      caret.handleMouseMove(ev);
+      return;
+    } else {
+      if (caret) {
+        caret.clearPitchPreview();
+      }
+    }
+
     this.view.tracker.intersectingArtifact(SvgHelpers.smoBox({
       x: ev.clientX,
       y: ev.clientY
@@ -308,14 +318,40 @@ export class SuiEventHandler implements ModalEventHandler {
 
   mouseClick(ev: any) {
     const dataCopy = SuiTracker.serializeEvent(ev);
+
     this.view.renderer.updatePromise().then(() => {
-      this.view.tracker.selectSuggestion(dataCopy);
-      var modifier = this.view.tracker.getSelectedModifier();
-      if (modifier) {
-        this.createModifierDialog(modifier);
+      console.log('click');
+      const caret = this.view.tracker.getNoteEntryCaret();
+      if (caret && caret.containsPoint(ev)) {
+        caret.handleMouseClick(ev);
+        return;
+      } else {
+        this.view.tracker.selectSuggestion(dataCopy);
+        var modifier = this.view.tracker.getSelectedModifier();
+        if (modifier) {
+          this.createModifierDialog(modifier);
+        }
       }
+
     });
   }
+
+  mouseUp(ev: any) {
+    console.log('mouse UP!!!');
+    const caret = this.view.tracker.getNoteEntryCaret();
+    if (caret && caret.containsPoint(ev)) {
+      console.log('Mouse up inside note entry caret');
+    }
+  }
+
+  mouseDown(ev: any) {
+    console.log("mouse DOWN!!!");
+    const caret = this.view.tracker.getNoteEntryCaret();
+    if (caret && caret.containsPoint(ev)) {
+      console.log('Mouse down inside note entry caret');
+    }
+  }
+
   bindEvents() {
     const self = this;
     const tracker = this.view.tracker;

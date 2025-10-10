@@ -679,7 +679,7 @@ export class VxMeasure implements VxMeasureIf {
 
       this.rendered = true;
       if (layoutDebug.mask & layoutDebug.values['adjust']) {
-        SvgHelpers.debugBoxNoText(this.context.getContext().svg,
+        SvgHelpers.debugBox(this.context.getContext().svg,
         SvgHelpers.boxPoints(this.dbgLeftX, 
           this.smoMeasure.svg.staffY, this.dbgWidth, 40), 'render-x-dbg', 0);
       }

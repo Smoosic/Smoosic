@@ -1,0 +1,17 @@
+/* Pitch preview styling for note entry caret */
+.pitch-preview {
+  pointer-events: none; /* Don't interfere with mouse events */
+  transition: all 0.1s ease; /* Smooth transitions */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)); /* Add subtle shadow */
+}
+
+.pitch-preview:hover {
+  opacity: 0.9 !important; /* Increase opacity on hover for better visibility */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* Note entry caret styling */
+.note-entry-caret {
+  pointer-events: all; /* Allow mouse events on the caret */
+  cursor: crosshair; /* Show crosshair cursor when hovering over caret */
+}

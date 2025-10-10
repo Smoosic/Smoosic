@@ -6,13 +6,19 @@ import { SmoSelection, SmoSelector, ModifierTab } from '../../smo/xform/selectio
 import { smoSerialize } from '../../common/serializationHelpers';
 import { SuiOscillator } from '../audio/oscillator';
 import { SmoScore } from '../../smo/data/score';
-import { SvgBox, KeyEvent, defaultKeyEvent, keyHandler } from '../../smo/data/common';
+import { SvgBox, KeyEvent, defaultKeyEvent, keyHandler, Ticks, Pitch, PitchLetter } from '../../smo/data/common';
+import { SmoMusic } from '../../smo/data/music';
 import { SuiScroller } from './scroller';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SmoNote } from '../../smo/data/note';
 import { SmoMeasure } from '../../smo/data/measure';
 import { layoutDebug } from './layoutDebug';
+import { SvgPage } from './svgPageMap';
+import {SmoOperation} from "../../smo/xform/operations";
+import {NoteEntryCaret} from "./NoteEntryCaret";
 declare var $: any;
+
+
 
 export interface TrackerKeyHandler {
   moveHome : keyHandler, 
@@ -38,6 +44,7 @@ export interface TrackerKeyHandler {
 export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
   idleTimer: number = Date.now();
   musicCursorGlyph: SVGSVGElement | null = null;
+  noteEntryCaret: NoteEntryCaret | undefined;
   deferPlayAdvance: boolean = false;
   static get strokes(): Record<string, StrokeInfo> {
     return {
@@ -71,6 +78,13 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
         fill: 'none',
         strokeDasharray: 0,
         opacity: 1.0
+      }, noteEntryCaret: {
+        strokeName: 'noteEntryCaret',
+        stroke: '#f00',
+        strokeWidth: 2,
+        fill: 'none',
+        strokeDasharray: '5,3',
+        opacity: 0.8
       }
 
     };
@@ -87,6 +101,18 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
   get score(): SmoScore | null {
     return this.renderer.score;
   }
+
+  getNoteEntryCaret(): NoteEntryCaret {
+    if (!this.noteEntryCaret) {
+      throw new Error('NoteEntryCaret not initialized');
+    }
+    return this.noteEntryCaret;
+  }
+
+  setNoteEntryCaret(noteEntryCaret: NoteEntryCaret): void {
+    this.noteEntryCaret = noteEntryCaret;
+  }
+
 
   getIdleTime(): number {
     return this.idleTimer;
@@ -717,8 +743,11 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     this.modifierSuggestion = null;
 
     this.suggestion = artifact;
-    this._drawRect(artifact.box, 'suggestion');
+    // console.log(artifact.box);
+    // artifact.box.height = 60;
+    // this._drawRect(artifact.box, 'suggestion');
   }
+
   _highlightModifier() {
     let box: SvgBox | null = null;
     if (!this.modifierSelections.length) {
@@ -790,16 +819,22 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       return;
     }
     const note = this.selections[0].note as SmoNote;
-    if (this.pitchIndex >= 0 && this.selections.length === 1 &&
-      this.pitchIndex < note.pitches.length) {
-      this._highlightPitchSelection(note, this.pitchIndex);
-      this._highlightActiveVoice(this.selections[0]);
-      return;
-    }
-    this.removePitchSelection();
-    this.pitchIndex = -1;
+    // if (this.pitchIndex >= 0 && this.selections.length === 1 &&
+    //   this.pitchIndex < note.pitches.length) {
+    //   this._highlightPitchSelection(note, this.pitchIndex);
+    //   this._highlightActiveVoice(this.selections[0]);
+    //   return;
+    // }
+    // this.removePitchSelection();
+    // this.pitchIndex = -1;
     if (this.selections.length === 1 && note.logicalBox) {
-      this._drawRect(note.logicalBox, 'selection');
+      // this._drawRect(note.logicalBox, 'selection');
+
+      const caret = this.getNoteEntryCaret();
+      caret.setSmoSelection(this.selections[0]);
+      caret.show();
+
+
       this._highlightActiveVoice(this.selections[0]);
       return;
     }
@@ -901,4 +936,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       }
     });
   }
+
+
+
 }

@@ -257,6 +257,24 @@ export function isSmoNote(transposable: Transposable): transposable is SmoNote {
   return false;
 }
 
+export interface VexNoteCoordinates {
+  absoluteX: number,
+  /** The total width of the note (including modifiers). */
+  width: number;
+  glyphWidth?: number;
+  /** The width of the note head only. */
+  notePx: number;
+  /** Start `X` for left modifiers. */
+  modLeftPx: number;
+  /** Start `X` for right modifiers. */
+  modRightPx: number;
+  /** Extra space on left of note. */
+  leftDisplacedHeadPx: number;
+  glyphPx: number;
+  /** Extra space on right of note. */
+  rightDisplacedHeadPx: number;
+}
+
 /**
  * SmoNote contains the pitch and duration of a note or chord.
  * It can also contain arrays of modifiers like lyrics, articulations etc.
@@ -344,6 +362,7 @@ export class SmoNote implements Transposable {
   renderId: string | null = null;
   keySignature: string = 'c';
   logicalBox: SvgBox | null = null;
+  vexNoteCoordinates: VexNoteCoordinates | null = null;
   isCue: boolean = false;
   hasTabNote: boolean = true;
   accidentalsRendered: string[] = [];// set by renderer if accidental is to display
