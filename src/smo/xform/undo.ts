@@ -9,7 +9,6 @@ import { SmoMeasure, SmoMeasureParamsSer } from '../data/measure';
 import { smoSerialize } from '../../common/serializationHelpers';
 import { SmoTextGroup, SmoTextGroupContainer } from '../data/scoreText';
 import { SmoSelector } from './selections';
-import { SmoMeasureParams } from 'smoosic';
 /**
  * @category SmoTransform
  */

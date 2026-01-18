@@ -241,6 +241,7 @@ export class VxMeasure implements VxMeasureIf {
         vexNote.setStave(this.stave);
       }
     }
+    smoNote.vexNote = vexNote;
     const tiedOverPitches = tickIndex === 0 ? this.tiedOverPitches : [];
     const noteData: VexNoteModifierIf = {
       smoMeasure: this.smoMeasure,
@@ -693,7 +694,7 @@ export class VxMeasure implements VxMeasureIf {
 
       this.rendered = true;
       if (layoutDebug.mask & layoutDebug.values['adjust']) {
-        SvgHelpers.debugBoxNoText(this.context.getContext().svg,
+        SvgHelpers.debugBox(this.context.getContext().svg,
         SvgHelpers.boxPoints(this.dbgLeftX, 
           this.smoMeasure.svg.staffY, this.dbgWidth, 40), 'render-x-dbg', 0);
       }

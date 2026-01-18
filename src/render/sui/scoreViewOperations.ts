@@ -35,6 +35,7 @@ import { SuiPiano } from './piano';
 import { SvgHelpers } from './svgHelpers';
 import { PromiseHelpers } from '../../common/promiseHelpers';
 import { parseJsonText } from 'typescript';
+import {NoteEntryCaret} from "./NoteEntryCaret";
 declare var $: any;
 declare var SmoConfig: SmoRenderConfiguration;
 
@@ -52,6 +53,10 @@ declare var SmoConfig: SmoRenderConfiguration;
  * @category SuiRender
  */
 export class SuiScoreViewOperations extends SuiScoreView {
+  constructor(config: SmoRenderConfiguration, svgContainer: HTMLElement, score: SmoScore, scrollSelector: HTMLElement, undoBuffer: UndoBuffer) {
+    super(config, svgContainer, score, scrollSelector, undoBuffer);
+  }
+
   /**
    * Add a new text group to the score 
    * @param textGroup a new text group
@@ -1204,6 +1209,36 @@ export class SuiScoreViewOperations extends SuiScoreView {
     await promise;
   }
 
+  async setPitches(pitches: Pitch[]): Promise<void> {
+    const selections = this.tracker.selections;
+    const measureSelections = this.undoTrackerMeasureSelections('set pitches');
+    const graceNotes = this.tracker.getSelectedGraceNotes();
+    if (graceNotes.length === 1 && graceNotes[0].selection !== null && graceNotes[0].selection?.note !== null) {
+      const grace1 = graceNotes[0].modifier as SmoGraceNote;
+      const index = graceNotes[0].selection.note.graceNotes.findIndex((x) => x.attrs.id === grace1.attrs.id);
+
+      const altSel = this._getEquivalentSelection(graceNotes[0].selection);
+      if (altSel && altSel.note !== null) {
+        const grace2 = altSel.note.graceNotes[index];
+        grace2.pitches = pitches;
+      }
+      grace1.pitches = pitches;
+    } else if( selections.length === 1) {
+      const selected = selections[0];
+      SmoOperation.setPitch(selected, pitches);
+      const altSel = this._getEquivalentSelection(selected);
+      SmoOperation.setPitch(altSel!, pitches);
+      if (this.score.preferences.autoAdvance) {
+        // Don't play the next note and the added pitch at the same time.
+        this.tracker.deferNextAutoPlay();
+        this.tracker.moveSelectionRight();
+      }
+      SuiOscillator.playSelectionNow(selected, this.score, 1);
+    }
+
+    this._renderChangedMeasures(measureSelections);
+    await this.renderer.updatePromise();
+  }
   /**
    * Add a pitch to the score at the cursor.  This tries to find the best pitch
    * to match the letter key (F vs F# for instance) based on key and surrounding notes
