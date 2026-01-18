@@ -33,21 +33,19 @@ if (!filename.value.endsWith(extension.value)) {
 const mimeType = 'application/octet-stream'
 const saveLink = useTemplateRef('saveLink');
 const saveFileCb = async () => {
-  if (saveLink.value) {
-    (saveLink.value as any).click();
+  if (!filename.value.endsWith(extension.value)) {
+    filename.value = filename.value + extension.value;
   }
-  commitCb();
+  setTimeout(async () => {
+    if (saveLink.value) {
+      (saveLink.value as any).click();
+    }
+    await commitCb();
+  }, 100)
 }
 const enable = ref(true);
 watch(contents, () => {
   url.value = URL.createObjectURL(new Blob([contents.value], { type: mimeType }));
-});
-watch(filename, (newVal, oldVal) => {
-  if (newVal !== oldVal) {
-    if (!filename.value.endsWith(extension.value)) {
-      filename.value = filename.value + extension.value;
-    }
-  }
 });
 watch(extension, (newVal, oldVal) => {
   if (newVal !== oldVal) {

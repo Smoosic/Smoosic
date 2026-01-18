@@ -122,8 +122,8 @@ export class SuiScoreRender {
         if (mmSel) {
           const mm = mmSel.measure;
           if (mm.svg.logicalBox.width > 0) {
-            const xoff = mm.svg.logicalBox.x + newGroup.musicXOffset;
-            const yoff = mm.svg.logicalBox.y + newGroup.musicYOffset;
+            const xoff = mm.svg.staffX + mm.format.padLeft + newGroup.musicXOffset;
+            const yoff = (mm.svg.staffY - container.box.y) + newGroup.musicYOffset;
             newGroup.textBlocks[0].text.x = xoff;
             newGroup.textBlocks[0].text.y = yoff;
           }
