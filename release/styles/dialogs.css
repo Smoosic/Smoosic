@@ -488,6 +488,7 @@ button.nav-link {
   box-shadow: 9px 9px 9px rgba(127, 127, 127, 0.4);
   border-radius: 4px;
 	padding: 3px;
+  font-family: 'Roboto', sans-serif;
 }
 
 .attributeModal .buttonContainer {

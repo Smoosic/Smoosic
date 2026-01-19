@@ -7,18 +7,19 @@
   display:flex;
   flex:1 1 auto;
 }
-.controls-top {
-	min-height:50px;
-	margin-bottom:3px;
-	background-color: #fff;
+.controls-top .ribbonButtonContainer {
+  margin-left: 1rem;
+	margin-bottom: 0.5rem;
 	background:transparent;
-	display:flex;
-  flex: 1 1 auto;
-	flex-flow:row wrap;
-  justify-content:left;
-  align-content:center;
 }
-
+.controls-top .row .btn {
+  background-color: var(--bs-body-bg);
+}
+.controls-top .row .btn:hover {
+  background-color: #212935;
+  color: #fff;
+  border-color: #212935;
+}
 .control-bar .titleText {
   display:flex;
   flex:60px;
@@ -35,40 +36,11 @@ body.refresh-1 .refresh-button span.icon-refresh {
 body.refresh-1 .refresh-button  {
   background: #deeedd;
 }
-.ribbonButtonContainer[data-group="debug"] {
-    display:none;
-}
-
-.ribbonButtonContainer button.expander span.left-text .text-span {
-    font-size:1.6em;
-    left:18%;
-}
-
-
-
-.ribbonButtonContainer.expanded-more button.expander span.left-text .text-span {
-    display:none;
-}
-.ribbonButtonContainer button.expander span.icon-circle-left {
-    display:none;
-}
-.collapseContainer.expanded-more button.expander span.icon-circle-left {
-    display:block;
-}
-
 .collapseContainer button.collapseParent {
   border: 3px inset blue;
 }
 
-div.ribbonButtonContainer.expanded {
-	margin-right:5px;
-}
 
-
-
-.controls-left .ribbonButtonContainer {
-  display:flex;
-}
 button.menu-button,  
 button.menu-button .left-text,
 button.menu-button .text-span {
@@ -82,28 +54,11 @@ body.alt-key button.menu-button .right-text{
   display: inline-block;
   min-width: 50px;
 }
-.controls-left div.ribbonButtonContainer button {
-  display:flex;
-  flex: 1 1 0;
-  max-width: 160px;
-  height: 25px;
-	padding-left: 3px;
-	font-family:serif;
-	font-size:1em;
-  border-radius: 5px;
-  border:1px solid #33f;
-  padding-top:2px;
-}
-
 #noteMenu span.icon {
   font-size: 0.75em;
   float: right;
 }
 
-.controls-left .ribbonButtonContainer button span.ribbon-button-hotkey {
-  flex: 0 1 auto;
-  padding: 0 10px;
-}
 .controls-left .menu-icon {
   text-align:right;
 }
@@ -118,6 +73,7 @@ body.alt-key button.menu-button .right-text{
 	flex-direction:column;
   justify-content:flex-start;
   overflow: auto;
+  box-shadow: 0.25rem 0.25rem 0.3rem var(--button-shadow-color);
 }
 button.text-icon .left-text .text-span{
   padding-right: 0.3rem;
@@ -137,15 +93,8 @@ button.text-icon .left-text .icon-smo {
 .ribbonButtonContainer button.icon.btn {
   max-width: 4rem;
 }
-.ribbonButtonContainer[data-group="quickButtons"] {
-    margin-left:10px;
-    display: flex;
-    flex-flow: row wrap;
-    background-color: transparent;
-}
-.ribbonButtonContainer[data-group="quickButtons"] button {
-  background-color:var(--bs-body-bg);
-}
+
+
 @media (width >= 1745px) {
   .controls-left {
     height: 80vh;
@@ -286,11 +235,11 @@ button#MicrotoneButtons  {
   padding-top:0.3rem;
   font-style: italic;
 }
-.controls-left  .btn.smo-text-bg-light {
-    color: #000;
+.controls-left  .btn.smo-text-bg-light,
+.ribbonButtonContainer .btn  {
     background-color: var(--bs-body-bg);
 }
-.btn:hover,
+.ribbonButtonContainer .btn:hover,
 .btn-group-vertical.controls-left .btn:hover {
     color: #fff;
     background-color: #212935;
@@ -305,7 +254,7 @@ button#MicrotoneButtons  {
     ease-in-out;  
 }
 .ribbonButtonContainer .btn {
-  box-shadow: 0 0.25rem var(--button-shadow-color);
+  box-shadow: 0.25rem 0.25rem 0.3rem var(--button-shadow-color);
 }
 .ribbonButtonContainer .btn:last-of-type {
     box-shadow: 0.25rem 0.25rem 0.3rem var(--button-shadow-color);
@@ -338,25 +287,6 @@ button.text-icon .left-text {
   position:relative;
 }
 
-.ribbonButtonContainer[data-group="quickButtons"] .button-wide button {
-  font-size: 1.2em;
-}
-.ribbonButtonContainer[data-group="quickButtons"] .button-wide button .icon {
-  font-size: 2em;
-}
-
-.controls-top .ribbonButtonContainer .button-wide .ribbon-button-text.icon-smo.icon, 
-.controls-top .ribbonButtonContainer .button-wide .ribbon-button-text.icon-bravura.icon {
-  right: 5px;
-  left:inherit;
-  bottom:inherit;
-}
-.ribbonButtonContainer .button-wide .ribbon-button-text.icon-bravura.icon {
-  top: 0;
-}
-.ribbonButtonContainer .button-wide .ribbon-button-text.icon-smo.icon {
-  top: 5px;
-}
 .ribbonButtonContainer button.drop-down .left-text {
   padding-right: 0.2rem;
 }
@@ -372,12 +302,6 @@ button.text-icon .left-text {
 }
 .ribbonButtonContainer button.icon .left-text .text-span {
   display: none;
-}
-.ribbonButtonContainer button.button-wide {
-  width:120px;
-}
-.ribbonButtonContainer .select-part-button {
-  width: 120px;
 }
 
 #addDynamicsMenu {
@@ -408,27 +332,6 @@ button.text-icon .left-text {
 #clefAddRemove .icon {
     font-size:0.7em;
     top:18%;
-}
-
-.controls-top .collapseContainer .ribbonButtonContainerMore {
-    display:none;
-}
-
-.controls-top div.collapseContainer.expanded-more .ribbonButtonContainerMore {
-    display:inline-block;
-}
-
-.ribbonButtonContainer .icon.staves.expanded {
-    width:55px;
-    font-size:1.6em;
-}
-
-.ribbonButtonContainer .icon.staves.expanded .left-text span.icon {
-    left:20%;
-}
-
-.ribbonButtonContainer .icon.staves.expanded .left-text span.icon.icon-treble  {
-    left:25%;
 }
 
 #clefMoveUp .icon,#clefMoveDown .icon{
@@ -524,10 +427,7 @@ button.text-icon .left-text {
 li.nav-item:hover {
   background: var(--bs-gray-200);
 }
-.expanded .ribbonButtonContainer button.graceIcon   {
-    width:60px;
-	font-size:1.6em;
-}
+
 button.hover-text .ribbon-button-hotkey {
   display: none;
 }

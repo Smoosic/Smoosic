@@ -21,7 +21,7 @@ onMounted(() => {
   <div class="dom-container" :class="{ masked: showBugModal }">
     <div class="mask"></div>
     <div class="workspace language-dir">
-      <div class="row navbar-expand justify-content-start ms-5 flex-md-fill controls-top" id="top-bar">
+      <div class="row navbar-expand justify-content-start ms-5 flex-md-fill" id="top-bar">
         <sub class="col-1 hide" id="link-hdr"><a href="https://github.com/Smoosic/smoosic" aria-label="Github link" 
           target="_blank" tabindex="0">Github
             site</a> |
@@ -37,7 +37,7 @@ onMounted(() => {
           </div>
           <div class="key-right-ctrl"></div>
         </div>
-        <div class="col-8" id="controls-top">
+        <div class="col-8 controls-top" id="controls-top">
         </div>
       </div>
       <div class="media" id="media">
