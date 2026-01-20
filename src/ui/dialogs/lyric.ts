@@ -140,7 +140,7 @@ export class SuiLyricDialog extends SuiDialogBase {
       this.view.scroller.scrollVisibleBox(this.view.renderer.pageMap.svgToClient(box));
     }
   }
-  changed() {
+  async changed() {
     this.lyricEditorCtrl.verse = parseInt(this.verseCtrl.getValue().toString(), 10);
 
     // TODO: make these undoable

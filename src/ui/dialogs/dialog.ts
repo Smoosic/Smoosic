@@ -373,7 +373,7 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
       (comp as any).setValue((this.modifier as any)[comp.smoName]);
     });
   }
-  changed() {
+  async changed() {
     if (this.modifier === null) {
       return;
     }

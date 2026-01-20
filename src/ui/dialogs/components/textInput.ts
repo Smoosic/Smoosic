@@ -82,9 +82,9 @@ export class SuiTextInputComposite extends SuiTextInputComponent {
     this.parentControl = parameters.parentControl;
   }
 
-  handleChanged() {
+  async handleChanged() {
     this.changeFlag = true;
-    this.parentControl.changed();
+    await this.parentControl.changed();
     this.changeFlag = false;
   }
 }

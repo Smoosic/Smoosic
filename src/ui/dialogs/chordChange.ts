@@ -136,7 +136,7 @@ export class SuiChordChangeDialog extends SuiDialogBase {
   get fontCtrl(): SuiFontComponent {
     return this.cmap.fontCtrl as SuiFontComponent;
   }
-  changed() {
+  async changed() {
     let val = '';
     if (this.chordSymbolCtrl.changeFlag && this.chordEditorCtrl.running) {
       val = '@' + this.chordSymbolCtrl.getValue() + '@';

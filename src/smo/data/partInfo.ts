@@ -282,7 +282,8 @@ export class SmoPartInfo extends StaffModifierBase {
     const ar = this.textGroups.filter((tg) => tg.attrs.id !== tgid);
     this.textGroups = ar;
     if (toAdd) {
-      this.textGroups.push(textGroup);
+      const newVersion = SmoTextGroup.deserializePreserveId(textGroup);
+      this.textGroups.push(newVersion);
     }
   }
   removeTextGroup(textGroup: SmoTextGroup) {

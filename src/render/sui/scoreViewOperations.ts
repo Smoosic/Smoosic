@@ -171,8 +171,11 @@ export class SuiScoreViewOperations extends SuiScoreView {
     // only set the partInfo for the stored score, but don't add to 
     // global text.
     if (isPartExposed) {
+      // Update the full score copy for this part
       const partInfo = this.storeScore.staves[altSelector.staff].partInfo;
       partInfo.updateTextGroup(altNew, true);
+      const displayPartInfo = this.score.staves[0].partInfo;
+      displayPartInfo.updateTextGroup(newVersion, true);
     } else {
       this.storeScore.updateTextGroup(altNew, true);
     }

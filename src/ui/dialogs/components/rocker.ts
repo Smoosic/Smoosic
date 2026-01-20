@@ -194,9 +194,9 @@ export class SuiRockerComposite extends SuiRockerComponent {
     this.parentControl = parameters.parentControl;
   }
 
-  handleChanged() {
+  async handleChanged() {
     this.changeFlag = true;
-    this.parentControl.changed();
+    await this.parentControl.changed();
     this.changeFlag = false;
   }
 }

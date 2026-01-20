@@ -60,7 +60,7 @@ export class SuiTextInPlace extends SuiComponentBase {
           b('label').attr('for', id + '-input').text(this.label)));
     return r;
   }
-  endSession() {
+  async endSession() {
     $(this._getInputElement()).find('label').text(this.label);
     const button = document.getElementById(this.parameterId);
     $(button).find('span.icon').removeClass('icon-checkmark').addClass('icon-pencil');

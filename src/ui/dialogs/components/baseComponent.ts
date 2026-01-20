@@ -76,7 +76,7 @@ export abstract class SuiDialogNotifier {
    * will then query the component (getValue()) and set the 
    * correct score value.
    */
-  abstract changed(): void;
+  abstract changed(): Promise<void>;
   /**
    * returns the DOM id of the dialog.
    */
@@ -143,9 +143,9 @@ export abstract class SuiComponentBase {
    * Called by the derived class when the value changes.  The change flag is set to true, so the dialog will 
    * know which component changed.
    */
-  handleChanged() {
+  async handleChanged() {
     this.changeFlag = true;
-    this.dialog.changed();
+    await this.dialog.changed();
     this.changeFlag = false;
   }
   /**

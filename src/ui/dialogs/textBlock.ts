@@ -285,7 +285,7 @@ export class SuiTextBlockDialog extends SuiDialogBase {
     }
   }
 
-  changed() {
+  async changed() {
     this.edited = true;
     if (this.insertCodeCtrl.changeFlag && this.textEditorCtrl.session) {
       const val = this.insertCodeCtrl.getValue().toString().split('');
@@ -347,7 +347,23 @@ export class SuiTextBlockDialog extends SuiDialogBase {
     }
     // Use layout context because render may have reset svg.
     const subtype = this.isNew ? UndoBuffer.bufferSubtypes.ADD : UndoBuffer.bufferSubtypes.UPDATE;
-    this.view.updateTextGroup(this.modifier);
+    await this.view.updateTextGroup(this.modifier);
+    // Make sure the modifier we have contains the elements of the rendered one.  If there is only a copy in the score
+    // we will have it, but if there are different copies between part and score, we need to sync up.
+    let elementFound = false;
+    if (this.view.isPartExposed()) {
+      const tg = this.view.score.staves[0].partInfo.textGroups.find((tgroup) => tgroup.attrs.id === this.modifier.attrs.id);
+      if (tg && tg.elements.length > 0) {
+        this.modifier.elements = tg.elements;
+        elementFound = true;
+      } else {
+        const tg2 = this.view.score.textGroups.find((tgroup) => tgroup.attrs.id === this.modifier.attrs.id);
+        if (tg2 && tg2.elements.length > 0) {
+          this.modifier.elements = tg2.elements;
+          elementFound = true;
+        }
+      }
+    }
   }
   highlightActiveRegion() {
     const pageContext = this.view.renderer.pageMap.getRendererFromModifier(this.activeScoreText);
