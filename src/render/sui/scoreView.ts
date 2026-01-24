@@ -23,6 +23,7 @@ import { SuiAudioPlayer } from '../audio/player';
 import { SuiAudioAnimationParams } from '../audio/musicCursor';
 import { SmoTempoText } from '../../smo/data/measureModifiers';
 import { TimeSignature } from '../../smo/data/measureModifiers';
+import { ref, Ref } from 'vue';
 
 declare var $: any;
 
@@ -54,6 +55,7 @@ export abstract class SuiScoreView {
   renderer: SuiRenderState;
   scroller: SuiScroller;
   storePaste: PasteBuffer;
+  selectedPart: Ref<string> = ref('');
   config: SmoRenderConfiguration;
   audioAnimation: SuiAudioAnimationParams;
   constructor(config: SmoRenderConfiguration, svgContainer: HTMLElement, score: SmoScore, scrollSelector: HTMLElement, undoBuffer: UndoBuffer) {
@@ -80,6 +82,9 @@ export abstract class SuiScoreView {
     SuiScoreView.Instance = this; // for debugging
     this.setMappedStaffIds();
     createTopDomContainer('.saveLink'); // for file upload
+  }
+  get PartName(): Ref<string> {
+    return this.selectedPart;
   }
   /**
    * Await on the full update of the score
@@ -563,6 +568,10 @@ export abstract class SuiScoreView {
     for (i = 0; i < this.storeScore.staves.length; ++i) {
       const tS = this.storeScore.staves[i];
       const show = tS.staffId === staff.staffId;
+      const part = tS.partInfo;
+      if (show) {
+        this.selectedPart.value = part.partName;
+      }
       if (pushNext) {
         exposeMap.push({ show: true });
         pushNext = false;
@@ -680,6 +689,7 @@ export abstract class SuiScoreView {
     this.score.synchronizeTextGroups(this.storeScore.textGroups);
     this.renderer.score = this.score;
     window.dispatchEvent(new CustomEvent(scoreChangeEvent, { detail: { view: this } }));
+    this.selectedPart.value = 'Select Part'
     this.renderer.setViewport();
   }
   /**

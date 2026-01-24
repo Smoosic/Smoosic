@@ -15,7 +15,7 @@ import { CollapseRibbonControl } from './collapsable';
 import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SuiHelp } from '../help';
 import { SmoUiConfiguration } from '../configuration';
-import { createApp } from 'vue';
+import { createApp, ref, reactive, watch } from 'vue';
 import { SuiKeySignatureDialog } from '../dialogs/keySignature';
 import { default as ribbonApp } from '../components/buttons/ribbon.vue';
 import { default as ribbonSidebarApp } from '../components/buttons/sidebar.vue';
@@ -283,8 +283,7 @@ export class RibbonButtons {
   // For each button, create the html and bind the events based on
   // the button's configured action.
   createRibbonHtml(buttonAr: string[], selector: string | HTMLElement) {
-    let buttonClass = '';
-    const dataArray: ButtonDefinition[] = [];
+    const dataArray: ButtonDefinition[] = reactive([]);
     const buttonCallback = async (button: ButtonDefinition) => {
       return await this.executeQuickButton(button);
     };
@@ -298,6 +297,16 @@ export class RibbonButtons {
         dataArray.push(buttonData);        
       }
     });
+    const partButton = dataArray.find((b) => b.id === 'selectPart');
+    if (partButton) {
+      watch(this.view.PartName, (newVal) => {
+        if (newVal.length) {   
+          partButton.rightText = newVal;
+        } else {
+          partButton.rightText = 'Select Part';
+        }
+      });
+    }
     const root = replaceVueRoot(selector);
     createApp(ribbonApp as any, { buttonProps: dataArray, domId: root }).mount('#' + root);
   }

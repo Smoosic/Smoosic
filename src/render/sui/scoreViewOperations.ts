@@ -1888,6 +1888,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
     const resetView = !SmoLayoutManager.areLayoutsEqual(info.layoutManager.getGlobalLayout(), this.score.layoutManager!.getGlobalLayout());
     const restChange = this.score.staves[0].partInfo.expandMultimeasureRests != info.expandMultimeasureRests;
     const stavesChange = this.score.staves[0].partInfo.stavesAfter !== info.stavesAfter;
+    this.PartName.value = info.partName;
     for (i = 0; i < partLength; ++i) {
       const nStaffIndex = storeStaff + i;
       const nInfo = new SmoPartInfo(info);
