@@ -80,6 +80,8 @@ export abstract class ModalEventHandler {
   abstract mouseClick(ev: any): Promise<void>;
   abstract evKey(evdata: any): Promise<void>;
   abstract keyUp(evdata: any): void;
+  abstract mouseUp(ev: any): void;
+  abstract mouseDown(ev: any): void;
 }
 export type handler = (ev: any) => void;
 
@@ -96,6 +98,8 @@ export class ModalEventHandlerProxy {
   keyupHandler: EventHandler | null = null;
   mouseMoveHandler: EventHandler | null = null;
   mouseClickHandler: EventHandler | null = null;
+  mouseUpHandler: EventHandler | null = null;
+  mouseDownHandler: EventHandler | null = null;
   constructor(evSource: BrowserEventSource) {
     this.eventSource = evSource;
     this.bindEvents();
@@ -125,13 +129,27 @@ export class ModalEventHandlerProxy {
       await this._handler.mouseClick(ev);
     }
   }
+  mouseUp(ev: any) {
+    if (this._handler) {
+      this._handler.mouseUp(ev);
+    }
+  }
+  mouseDown(ev: any) {
+    if (this._handler) {
+      this._handler.mouseDown(ev);
+    }
+  }
   bindEvents() {
     const mousemove = async (ev: any) => { this.mouseMove(ev); }
     const mouseclick = async (ev: any) => { await this.mouseClick(ev); }
+    const mouseup = async (ev: any) => { this.mouseUp(ev); }
+    const mousedown = async (ev: any) => { this.mouseDown(ev); }
     const keydown = async (ev: any) => { this.evKey(ev); }
     const keyup = async (ev: any) => { this.keyUp(ev); }
     this.mouseMoveHandler = this.eventSource.bindMouseMoveHandler(mousemove);
     this.mouseClickHandler = this.eventSource.bindMouseClickHandler(mouseclick);
+    this.mouseUpHandler = this.eventSource.bindMouseUpHandler(mouseup);
+    this.mouseDownHandler = this.eventSource.bindMouseDownHandler(mousedown);
     this.keydownHandler = this.eventSource.bindKeydownHandler(keydown);
     this.keyupHandler = this.eventSource.bindKeyupHandler(keyup);
   }
@@ -152,6 +170,8 @@ export class ModalEventHandlerProxy {
     }
     this.eventSource.unbindKeydownHandler(this.keydownHandler!);
     this.eventSource.unbindMouseMoveHandler(this.mouseMoveHandler!);
+    this.eventSource.unbindMouseUpHandler(this.mouseUpHandler!);
+    this.eventSource.unbindMouseDownHandler(this.mouseDownHandler!);
     this.eventSource.unbindMouseClickHandler(this.mouseClickHandler!);
     dialog.closeModalPromise.then(rebind);
   }

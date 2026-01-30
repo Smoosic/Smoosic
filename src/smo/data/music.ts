@@ -318,6 +318,23 @@ export class SmoMusic {
     line += SmoMusic.clefLedgerShift[clef]
     return line;
   }
+  static staffLineToPitch(clef: string, line: number): Pitch {
+    const adjustedLine = line - SmoMusic.clefLedgerShift[clef];
+    const scaledValue = adjustedLine * 2;
+    const octaveValue = scaledValue + 28;
+    const octave = Math.floor(octaveValue / 7);
+    const positionInOctave = ((octaveValue % 7) + 7) % 7;
+
+    const noteKey = (Object.keys(SmoMusic.noteValues).find((key) =>
+        SmoMusic.noteValues[key].root_index === positionInOctave && key.length === 1
+    )) as PitchLetter;
+
+    return {
+      letter: noteKey,
+      accidental: 'n',
+      octave
+    };
+  }
   /**
    * return above if the first pitch is above line 3, else below
    * @param note 
