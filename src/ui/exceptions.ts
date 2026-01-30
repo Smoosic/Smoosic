@@ -28,6 +28,7 @@ export class SuiExceptionHandler {
     let stack = '';
     let doing = '';
     let scoreString = '';
+    $('body').removeClass('showVueDialog');  // make sure the user can reach the bug report
     if (this.thrown) {
       return;
     }

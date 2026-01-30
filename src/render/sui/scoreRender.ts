@@ -551,6 +551,11 @@ export class SuiScoreRender {
   }
   replaceSelection(staffMap: Record<number | string, { system: VxSystem, staff: SmoSystemStaff }>, change: SmoSelection) {
     let system: VxSystem | null = null;
+    const svg = change?.measure?.svg;
+    if (!svg || !this.score) {
+      console.warn('replaceSelection called with invalid measure');
+      return;
+    }    
     if (this.renderedPages[change.measure.svg.pageIndex]) {
       this.renderedPages[change.measure.svg.pageIndex] = null;
     }

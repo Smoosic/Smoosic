@@ -1780,7 +1780,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
         this.storeScore.addMeasure(pos);        
       }
     }
-    const startMeasure = pos - (ix - 1);
+    const startMeasure = Math.max(pos - (ix - 1), 0);
     const startSelector = SmoSelector.default;
     const endSelector = SmoSelector.default;
     startSelector.measure = startMeasure;
