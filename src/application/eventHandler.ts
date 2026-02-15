@@ -1,7 +1,7 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 
-import { KeyEvent, keyEventMatch } from '../smo/data/common';
+import { KeyEvent } from '../smo/data/common';
 import { SuiExceptionHandler } from '../ui/exceptions';
 import { Qwerty } from '../ui/qwerty';
 import { SuiModifierDialogFactory } from '../ui/dialogs/factory';
@@ -20,6 +20,8 @@ import { SvgHelpers } from '../render/sui/svgHelpers';
 import { SuiMenuManager } from '../ui/menus/manager';
 import { SmoConfiguration } from './configuration';
 import { SuiDom } from './dom';
+import { NoteEntryCaret } from '../render/sui/NoteEntryCaret';
+import {NoteEntryMediator} from "../render/sui/NoteEntryMediator";
 import { SuiNavigation } from '../ui/navigation'
 declare var $: any;
 
@@ -70,7 +72,10 @@ export class SuiEventHandler implements ModalEventHandler {
   keyHandlerObj: any = null;
   menus: SuiMenuManager;
   piano: SuiPiano | null = null;
-  exhandler: SuiExceptionHandler;  
+  exhandler: SuiExceptionHandler;
+  noteEntryCaret: NoteEntryCaret;
+  noteEntryMediator: NoteEntryMediator;
+
   constructor(params: EventHandlerParams) {
     SuiEventHandler.instance = this;
 
@@ -92,6 +97,10 @@ export class SuiEventHandler implements ModalEventHandler {
     this.bindEvents();
     this.bindResize();
     this.createPiano();
+
+    // Initialize note entry caret
+    this.noteEntryCaret = new NoteEntryCaret(this.view, this.tracker);
+    this.noteEntryMediator = new NoteEntryMediator(this.tracker, this.noteEntryCaret, this.view);
   }
 
   private static handleScrollEventDefer(handler: SuiEventHandler) {
@@ -190,7 +199,6 @@ export class SuiEventHandler implements ModalEventHandler {
     };
     el.onscroll = scrollCallback;
   }
-
 
   // ### renderElement
   // return render element that is the DOM parent of the svg
@@ -297,6 +305,15 @@ export class SuiEventHandler implements ModalEventHandler {
   }
 
   mouseMove(ev: any) {
+    if (this.noteEntryCaret && this.noteEntryCaret.containsPoint(ev)) {
+      this.noteEntryCaret.handleMouseMove(ev);
+      return;
+    } else {
+      if (this.noteEntryCaret) {
+        this.noteEntryCaret.resetInteraction();
+      }
+    }
+
     this.view.tracker.intersectingArtifact(SvgHelpers.smoBox({
       x: ev.clientX,
       y: ev.clientY
@@ -305,13 +322,32 @@ export class SuiEventHandler implements ModalEventHandler {
 
   async mouseClick(ev: any) {
     const dataCopy = SuiTracker.serializeEvent(ev);
-    await this.view.renderer.updatePromise();    
-    this.view.tracker.selectSuggestion(dataCopy);
-    var modifier = this.view.tracker.getSelectedModifier();
-    if (modifier) {
-      this.createModifierDialog(modifier);
+    await this.view.renderer.updatePromise();
+    const caret = this.noteEntryCaret;
+    if (caret && caret.containsPoint(ev)) {
+      caret.handleMouseClick(ev);
+      return;
+    } else {
+      this.view.tracker.selectSuggestion(dataCopy);
+      var modifier = this.view.tracker.getSelectedModifier();
+      if (modifier) {
+        this.createModifierDialog(modifier);
+      }
     }
   }
+
+  mouseUp(ev: any) {
+    if (this.noteEntryCaret && this.noteEntryCaret.containsPoint(ev)) {
+      this.noteEntryCaret.handleMouseUp(ev);
+    }
+  }
+
+  async mouseDown(ev: any) {
+    if (this.noteEntryCaret && this.noteEntryCaret.containsPoint(ev)) {
+      this.noteEntryCaret.handleMouseDown(ev);
+    }
+  }
+
   bindEvents() {
     const self = this;
     const tracker = this.view.tracker;

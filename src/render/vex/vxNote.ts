@@ -243,6 +243,7 @@ export class VxNote {
         gr.addClass('grace-note'); // note: this doesn't work :(
 
         g.renderId = gr.getAttribute('id');
+        g.vexGraceNote = gr;
         group.push(gr);
       });
       const grace: any = new VF.GraceNoteGroup(group);

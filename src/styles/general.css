@@ -1,0 +1,22 @@
+.musicContainer {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.pitch-preview {
+    cursor: default;
+    pointer-events: none;
+    /*user-select: none;*/
+    /*-webkit-user-select: none;*/
+    /*-moz-user-select: none;*/
+    /*-ms-user-select: none;*/
+}
+
+/*.note-entry-caret {*/
+/*    user-select: none;*/
+/*    -webkit-user-select: none;*/
+/*    -moz-user-select: none;*/
+/*    -ms-user-select: none;*/
+/*}*/

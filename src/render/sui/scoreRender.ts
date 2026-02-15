@@ -259,14 +259,14 @@ export class SuiScoreRender {
             modifier.logicalBox = pageContext.offsetBbox(modifier.element);
           }
         });
-      }
-      // unit test codes don't have tracker.
-      if (this.measureMapper) {
-        const tmpStaff: SmoSystemStaff | undefined = this.score!.staves.find((ss) => ss.staffId === smoMeasure.measureNumber.staffId);
-        if (tmpStaff) {
-          this.measureMapper.mapMeasure(tmpStaff, smoMeasure, printing);
+        // unit test codes don't have tracker.
+        if (this.measureMapper) {
+          const tmpStaff: SmoSystemStaff | undefined = this.score!.staves.find((ss) => ss.staffId === smoMeasure.measureNumber.staffId);
+          if (tmpStaff) {
+            this.measureMapper.mapMeasure(tmpStaff, smoMeasure, printing);
+          }
         }
-      }  
+      }
     });
     modifiers.forEach((modifier) => {
       if (modifier.element) {
