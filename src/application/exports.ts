@@ -65,7 +65,7 @@ import { SuiMicrotoneDialogVue } from '../ui/dialogs/microtones';
 import { SuiArpeggioDialog } from '../ui/dialogs/arpeggio';
 import { SuiClefChangeDialog } from '../ui/dialogs/clefChange';
 import { SuiPartInfoDialogVue } from '../ui/dialogs/partInfo';
-import { SuiNavigation } from '../ui/navigation';
+import { SuiNavigationDom } from '../ui/navigation';
 import { SuiFileUploadDialog, SuiFileSaveDialog, SuiPrintDialog } from '../ui/dialogs/fileDialogs';
     // Dialog components
 
@@ -146,7 +146,9 @@ import { SmoBeamer } from '../smo/xform/beamers';
 import { SmoOrnament, SmoArticulation, SmoDynamicText, SmoGraceNote, SmoMicrotone, SmoLyric,
   SmoArpeggio, SmoClefChange, noteModifierDynamicCtorInit } from '../smo/data/noteModifiers';
 import { SmoSystemStaff } from '../smo/data/systemStaff';
-import { SmoSystemGroup, SmoAudioPlayerSettings, SmoScorePreferences, scoreModifierDynamicCtorInit } from '../smo/data/scoreModifiers';
+import { SmoSystemGroup, SmoAudioPlayerSettings, SmoScorePreferences, scoreModifierDynamicCtorInit,
+  GlobalLayoutNumberAttributesArray, displayMode
+ } from '../smo/data/scoreModifiers';
 import { SmoTextGroup, SmoTextGroupParams } from '../smo/data/scoreText';
 import { SmoOperation } from '../smo/xform/operations';
 import { ScoreRoadMapBuilder } from '../smo/xform/roadmap';
@@ -355,6 +357,7 @@ export const Smo = {
   SuiTempoDialog, SuiInstrumentDialogVue, SuiModifierDialogFactory, SuiLibraryDialog,
   SuiTextBracketDialog, SuiKeySignatureDialog, SuiKeySignatureAdapter,
   SuiScoreViewDialogVue, SuiGlobalLayoutDialogVue, SuiScoreIdentificationDialogVue, 
+  GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
   SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
   SuiTimeSignatureDialog,SuiTextBlockDialog, SuiLyricDialog, SuiChordChangeDialog,
@@ -417,6 +420,6 @@ SuiPitchComposite,
     getClass,
   // utilities
   buildDom, addFileLink, InputTrapper, draggable, closeDialogPromise, getDomContainer, createTopDomContainer,
-  renderVexTests, replaceVueRoot, SuiNavigation
+  renderVexTests, replaceVueRoot, SuiNavigationDom
 }
 export default Smo;

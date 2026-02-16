@@ -10,8 +10,21 @@ import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SmoNoteModifierBase, SmoLyric } from '../../smo/data/noteModifiers';
 import { SvgBox } from '../../smo/data/common';
 import { SmoNote } from '../../smo/data/note';
+import { SmoGlobalLayout } from '../../smo/data/scoreModifiers';
 import { SmoScore, SmoModifier } from '../../smo/data/score';
 import { SvgPageMap } from './svgPageMap';
+
+export function isHorizontalLayout(layout?: SmoGlobalLayout): boolean {
+  if (!layout || !layout.displayMode || layout.displayMode === 'vertical') {
+    return false;
+  }
+  return layout.displayMode === 'horizontal';
+}
+export interface layoutProvider {
+  getLayout(): SmoGlobalLayout | undefined;
+  isLayoutHorizontal(): boolean;
+  getFlowDimension(box: SvgBox): number;
+}
 
 /**
  * DI information about renderer, so we can notify renderer and it can contain

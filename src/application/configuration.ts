@@ -3,7 +3,7 @@
  * Superset of configuration required to initialize Smoosic, either the appliation or library.
  * @module configuration
  */
-import { SmoRenderConfiguration } from "../render/sui/configuration";
+import { SmoRenderConfiguration, SuiNavigation } from "../render/sui/configuration";
 import { SmoScore } from "../smo/data/score";
 import { ModalEventHandler } from "./common";
 import { KeyBindingConfiguration, SmoUiConfiguration } from "../ui/configuration";
@@ -14,6 +14,7 @@ import { ButtonDefinition } from "../ui/buttons/button";
 import { defaultRibbonLayout } from '../ui/ribbonLayout/default/defaultRibbon';
 import { SuiAudioAnimationParams, defaultAudioAnimationHandler, defaultClearAudioAnimationHandler, AudioAnimationHandler, ClearAudioAnimationHandler } 
   from "../render/audio/musicCursor";
+import { SuiNavigationDom } from "../ui/navigation";
 
 export type SmoMode = 'library' | 'application' | 'translate';
 export type ConfigurationStringOption = 'language' | 'libraryUrl' | 'remoteScore';
@@ -33,6 +34,7 @@ export interface SmoConfigurationParams {
   mode: SmoMode;
   smoPath?: string;
   language: string;
+  navigation: SuiNavigation;
   initialScore?: string | SmoScore;
   remoteScore?: string;
   domContainer: string | HTMLElement;
@@ -77,6 +79,7 @@ export interface SmoConfigurationParams {
   idleRedrawTime: number = 0;
   keys?: KeyBindingConfiguration;
   eventHandler?: ModalEventHandler;
+  navigation: SuiNavigation;
   ribbonLayout: RibbonLayout;
   audioAnimation: SuiAudioAnimationParams;
   buttonDefinition: ButtonDefinition[];
@@ -92,6 +95,7 @@ export interface SmoConfigurationParams {
       demonPollTime: 50, // how often we poll the score to see if it changed
       idleRedrawTime: 1000, // maximum time between score modification and render
       ribbonLayout: defaultRibbonLayout.ribbons,
+      navigation: SuiNavigationDom.instance,
       buttonDefinition: defaultRibbonLayout.ribbonButtons,
       audioAnimation: {
         audioAnimationHandler: defaultAudioAnimationHandler,
@@ -116,6 +120,7 @@ export interface SmoConfigurationParams {
       const sp: string | undefined = params[param] ?? defs[param];
       this[param] = sp ?? '';
     });
+    this.navigation = params.navigation ?? defs.navigation;
     this.leftControls = params.leftControls ?? defs.leftControls;
     this.topControls = params.topControls ?? defs.topControls;
     this.scoreDomContainer = params.scoreDomContainer ?? defs.scoreDomContainer;

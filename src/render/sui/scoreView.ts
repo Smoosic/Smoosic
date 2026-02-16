@@ -3,6 +3,7 @@
 import { SmoScore } from '../../smo/data/score';
 import { SmoMeasure } from '../../smo/data/measure';
 import { SmoTextGroup } from '../../smo/data/scoreText';
+import { SmoGlobalLayout } from '../../smo/data/scoreModifiers';
 import { SmoGraceNote } from '../../smo/data/noteModifiers';
 import { SmoMusic } from '../../smo/data/music';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
@@ -13,6 +14,7 @@ import { UndoBuffer, copyUndo } from '../../smo/xform/undo';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SuiScroller } from './scroller';
 import { SvgHelpers } from './svgHelpers';
+import  {layoutProvider } from './mapper';
 import { SuiTracker } from './tracker';
 import { createTopDomContainer } from '../../common/htmlHelpers';
 import { SmoRenderConfiguration } from './configuration';
@@ -24,6 +26,7 @@ import { SuiAudioAnimationParams } from '../audio/musicCursor';
 import { SmoTempoText } from '../../smo/data/measureModifiers';
 import { TimeSignature } from '../../smo/data/measureModifiers';
 import { ref, Ref } from 'vue';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
 
 declare var $: any;
 
@@ -45,7 +48,7 @@ export type updateStaffModifierFunc = (score: SmoScore, fromSelection: SmoSelect
  * 3. Mapping between the displayed score and the data representation
  * @category SuiRender
  */
-export abstract class SuiScoreView {
+export abstract class SuiScoreView implements layoutProvider {
   static Instance: SuiScoreView | null = null;
   score: SmoScore; // The score that is displayed
   storeScore: SmoScore;  // the full score, including invisible staves
@@ -82,6 +85,24 @@ export abstract class SuiScoreView {
     SuiScoreView.Instance = this; // for debugging
     this.setMappedStaffIds();
     createTopDomContainer('.saveLink'); // for file upload
+  }
+  getLayout(): SmoGlobalLayout | undefined {
+    if (this.score.layoutManager) {
+      return this.score.layoutManager.globalLayout;
+    }
+  }
+  isLayoutHorizontal(): boolean {
+    const layout = this.getLayout();
+    if (!layout) {
+      return false;
+    }
+    return layout.displayMode === "horizontal";
+  }
+  getFlowDimension(box: SvgBox | SvgPoint): number {
+    if (this.isLayoutHorizontal()) {
+      return box.x;
+    }
+    return box.y
   }
   get PartName(): Ref<string> {
     return this.selectedPart;
@@ -294,13 +315,15 @@ export abstract class SuiScoreView {
     if (this.score.layoutManager === undefined) {
       return 0;
     }
-    const scrollAvg = this.tracker.scroller.netScroll.y + (this.tracker.scroller.viewport.height / 2);
+    const scrollDim = this.getFlowDimension(this.tracker.scroller.netScroll);
+    const viewportDim = this.getFlowDimension(this.tracker.scroller.viewport);
+    const scrollAvg = scrollDim + (viewportDim / 2);
     const midY = scrollAvg;
     const layoutManager = this.score.layoutManager.getGlobalLayout();
     const lh = layoutManager.pageHeight / layoutManager.svgScale;
     const lw = layoutManager.pageWidth / layoutManager.svgScale;
     const pt = this.renderer.pageMap.svgToClient(SvgHelpers.smoBox({ x: lw, y: lh }));
-    return Math.round(midY / pt.y);
+    return Math.round(midY / this.getFlowDimension(pt));
   }
   /**
    * Create a rectangle undo, like a multiple columns but not necessarily the whole

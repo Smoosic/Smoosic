@@ -20,6 +20,7 @@ import { TimeSignature, SmoTempoText } from '../../smo/data//measureModifiers';
 import { SvgPageMap } from './svgPageMap';
 import { VexFlow, defaultMeasurePadding } from '../../common/vex';
 import { TextFormatter } from '../../common/textformatter';
+import { isHorizontalLayout } from './mapper';
 const VF = VexFlow;
 /**
  * @category SuiRender
@@ -80,6 +81,9 @@ export class SuiLayoutFormatter {
     });
   }
    
+  get horizontal(): boolean {
+    return isHorizontalLayout(this.score.layoutManager?.getGlobalLayout());
+  }
   /**
    * Once we know which line a measure is going on, make a map for it for easy
    * looking during rendering
@@ -125,7 +129,7 @@ export class SuiLayoutFormatter {
     const lm: SmoLayoutManager = this.score!.layoutManager!;
     // See if this measure breaks a page.
     const maxY = bottomMeasure.lowestY;
-    const forceBreak = currentLine[0].format.pageBreak && this.measuresRenderedThisPage > 0;
+    const forceBreak = (currentLine[0].format.pageBreak && this.measuresRenderedThisPage > 0) || this.horizontal;
     if (maxY > ((this.currentPage + 1) * scoreLayout.pageHeight) - scoreLayout.bottomMargin ||
       forceBreak) {
       this.currentPage += 1;
@@ -133,21 +137,33 @@ export class SuiLayoutFormatter {
       lm.addToPageLayouts(this.currentPage);
       scoreLayout = lm.getScaledPageLayout(this.currentPage);
 
-      // When adjusting the page, make it so the top staff of the system
-      // clears the bottom of the page.
-      const topMeasure = currentLine.reduce((a, b) =>
-        a.svg.logicalBox.y < b.svg.logicalBox.y ? a : b
-      );
-      const minMaxY = topMeasure.svg.logicalBox.y;
-      pageAdj = (this.currentPage * scoreLayout.pageHeight) - minMaxY;
-      pageAdj = pageAdj + scoreLayout.topMargin;
+  
+      /* if (this.horizontal) {
+        const rightMeasure = currentLine.reduce((a, b) =>
+          a.svg.logicalBox.x + a.svg.logicalBox.width < b.svg.logicalBox.x + b.svg.logicalBox.width ? a : b
+        );
+        const minMaxX = rightMeasure.svg.logicalBox.x + rightMeasure.svg.logicalBox.width;
+        pageAdj = (this.currentPage * scoreLayout.pageWidth) - minMaxX;
+        pageAdj = pageAdj + scoreLayout.leftMargin;
+        currentLine.forEach((measure) => {  
+          measure.setX(measure.staffX + pageAdj, '_checkPageBreak');
+        });
+      } */
+     if (!this.horizontal) {
+        const topMeasure = currentLine.reduce((a, b) =>
+          a.svg.logicalBox.y < b.svg.logicalBox.y ? a : b
+        );
+        const minMaxY = topMeasure.svg.logicalBox.y;
+        pageAdj = (this.currentPage * scoreLayout.pageHeight) - minMaxY;
+        pageAdj = pageAdj + scoreLayout.topMargin;
 
-      // For each measure on the current line, move it down past the page break;
-      currentLine.forEach((measure) => {
-        measure.adjustY(pageAdj);
-        measure.setY(measure.staffY + pageAdj, '_checkPageBreak');
-        measure.svg.pageIndex = this.currentPage;
-      });
+        // For each measure on the current line, move it down past the page break;
+        currentLine.forEach((measure) => {
+          measure.adjustY(pageAdj);
+          measure.setY(measure.staffY + pageAdj, '_checkPageBreak');
+          measure.svg.pageIndex = this.currentPage;
+        });
+      }
     }
     return scoreLayout;
   }
@@ -364,9 +380,13 @@ export class SuiLayoutFormatter {
         (measureEstimate.measures[0].format.systemBreak || measureEstimate.x > (scoreLayout.pageWidth - scoreLayout.leftMargin))) {
         this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, false);
         // find the measure with the lowest y extend (greatest y value), not necessarily one with lowest
-        // start of staff.
+        // start of staff. bottomMeasure is ignored if layout is horizontal since we always break at the 
+        // end of a system.
         const bottomMeasure: SmoMeasure = currentLine.reduce((a, b) =>
           a.lowestY > b.lowestY ? a : b
+        );
+        const rightmostMeasure: SmoMeasure = currentLine.reduce((a, b) =>
+          a.rightmostX > b.rightmostX ? a : b
         );
         this.checkPageBreak(scoreLayout, currentLine, bottomMeasure);
         const renderedPage: RenderedPage | null = this.renderedPages[pageCheck];
@@ -400,11 +420,16 @@ export class SuiLayoutFormatter {
         }
 
         // Now start rendering on the next system.
-        y = bottomMeasure.lowestY + scoreLayout.interGap;
+        if (!this.horizontal) {
+          y = bottomMeasure.lowestY + scoreLayout.interGap;
+          x = scoreLayout.leftMargin;
+        } else {
+          x = rightmostMeasure.rightmostX + scoreLayout.leftMargin;
+          y = scoreLayout.topMargin;
+        }
   
         currentLine = [];
         systemIndex = 0;
-        x = scoreLayout.leftMargin;
         lineIndex += 1;
         this.lines.push(lineIndex);
         measureEstimate = this.estimateColumn(scoreLayout, measureIx, systemIndex, lineIndex, x, y);

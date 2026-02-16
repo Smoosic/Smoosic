@@ -34,6 +34,9 @@ import { KeyBinding, ModalEventHandlerProxy, isTrackerKeyAction, isEditorKeyActi
 import { SmoMeasure } from '../smo/data/measure';
 import { getDomContainer } from '../common/htmlHelpers';
 import { SuiHelp } from '../ui/help';
+import { SuiNavigationDom } from '../ui/navigation';
+import { SuiNavigation } from '../render/sui/configuration';
+import { createModalSplash } from '../ui/modalDialogs';
 import { VexFlow } from '../common/vex';
 import { TextFormatter } from '../common/textformatter';
 declare var $: any;
@@ -108,15 +111,37 @@ export class SuiApplication {
   score: SmoScore | null = null;
   view: SuiScoreViewOperations | null = null;
   domElement: HTMLElement;
+  static createUiDom(uiDomContainer: string | HTMLElement | undefined): SuiNavigation {
+    if (!uiDomContainer) {
+        throw new Error(`SuiDom.createUiDom: invalid container ${uiDomContainer}`);
+    }
+    if (typeof(uiDomContainer) === 'string') {
+      uiDomContainer = document.getElementById(uiDomContainer) ?? undefined;
+    }
+    if (!uiDomContainer) {
+      throw new Error(`SuiDom.createUiDom: invalid container ${uiDomContainer}`);
+    }
+    const navigation = new SuiNavigationDom(uiDomContainer);
+    navigation.initialize();
+    navigation.showBugModal();
+    createModalSplash(1000);
+    return navigation;
+  }
   static async configure(params: Partial<SmoConfigurationParams>): Promise<SuiApplication> {
     const config: SmoConfiguration = new SmoConfiguration(params);
     (window as any).SmoConfig = config;
     // If there is a DOM container but the DOM not created yet, create the default version.
     if (params.domContainer && typeof(params.domContainer) === 'string') {
+      if (params.navigation?.isInitialized()) { 
+        console.warn('SuiApplication.configure: navigation already initialized, skipping DOM creation');
+        config.navigation = params.navigation;
+      } else {
+        config.navigation = SuiApplication.createUiDom(params.domContainer);
+      }
       config.leftControls ='controls-left';
       config.topControls= 'controls-top';
       config.scoreDomContainer = 'smo-scroll-region';
-      config.domContainer = SuiDom.createUiDom(params.domContainer as string);
+      config.domContainer = config.navigation.container;
     }
     const application = new SuiApplication(config);
     SuiApplication.registerFonts();
@@ -307,7 +332,8 @@ export class SuiApplication {
     });
     const eventHandler = new SuiEventHandler({
       view, eventSource, tracker, keyCommands, menus, completeNotifier,
-      keyBindings: SuiApplication.keyBindingDefaults, config: this.config
+      keyBindings: SuiApplication.keyBindingDefaults, config: this.config,
+      navigation: this.config.navigation
     });
     this.instance = {
       view, eventSource, eventHandler, undoBuffer,

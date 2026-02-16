@@ -20,7 +20,7 @@ import { SvgHelpers } from '../render/sui/svgHelpers';
 import { SuiMenuManager } from '../ui/menus/manager';
 import { SmoConfiguration } from './configuration';
 import { SuiDom } from './dom';
-import { SuiNavigation } from '../ui/navigation'
+import { SuiNavigation } from '../render/sui/configuration';
 declare var $: any;
 
 /**
@@ -31,6 +31,7 @@ export interface EventHandlerParams {
   view: SuiScoreViewOperations,
   eventSource: BrowserEventSource,
   tracker: SuiTracker,
+  navigation: SuiNavigation,
   keyCommands: SuiKeyCommands,
   menus: SuiMenuManager,
   completeNotifier: CompleteNotifier,
@@ -70,10 +71,11 @@ export class SuiEventHandler implements ModalEventHandler {
   keyHandlerObj: any = null;
   menus: SuiMenuManager;
   piano: SuiPiano | null = null;
-  exhandler: SuiExceptionHandler;  
+  exhandler: SuiExceptionHandler;
+  navigation: SuiNavigation
   constructor(params: EventHandlerParams) {
     SuiEventHandler.instance = this;
-
+    this.navigation = params.navigation;
     this.view = params.view;
     this.config = params.config;
     this.menus = params.menus;
@@ -176,7 +178,7 @@ export class SuiEventHandler implements ModalEventHandler {
   // in the tracker.
   bindResize() {
     const self = this;
-    const el: HTMLElement = $(SuiNavigation.scrollable)[0];
+    const el: HTMLElement = $(this.navigation.scrollable)[0];
     // unit test programs don't have resize html
     if (!el) {
       return;

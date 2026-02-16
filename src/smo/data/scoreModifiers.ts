@@ -144,6 +144,7 @@ export interface SmoScorePreferencesParams {
   hideEmptyLines: boolean;
   transposingScore: boolean;
   showPartNames: boolean;
+  horizontalDisplay?: boolean;
 }
 /**
  * Some default SMO behavior
@@ -166,6 +167,7 @@ export class SmoScorePreferences {
   autoScrollPlayback: boolean = true;
   transposingScore: boolean = false;
   showPartNames: boolean = false;
+  horizontalDisplay: boolean;
   static get defaults(): SmoScorePreferencesParams {
     return {
       autoPlay: true,
@@ -195,6 +197,7 @@ export class SmoScorePreferences {
         this.showPartNames = false;
       }
     }
+      this.horizontalDisplay = params.horizontalDisplay ?? false;
   }
   serialize(): SmoScorePreferencesParams {
     return {
@@ -416,10 +419,16 @@ export class SmoPageLayout extends SmoScoreModifierBase {
     return params;
   }
 }
-
+export type displayMode = 'vertical' | 'horizontal';
 export type ScaledGlobalAttributes = 'pageWidth' | 'pageHeight';
-export type GlobalLayoutAttributes = 'pageWidth' | 'pageHeight' | 'noteSpacing' | 'svgScale' | 'zoomScale' | 'proportionality' | 'maxMeasureSystem';
-export const GlobalLayoutAttributesArray: GlobalLayoutAttributes[]  = ['pageWidth', 'pageHeight', 'noteSpacing', 'svgScale', 'zoomScale', 'proportionality', 'maxMeasureSystem'];
+export type GlobalLayoutAttributes = 'pageWidth' | 'pageHeight' | 'noteSpacing' | 'svgScale' | 
+'zoomScale' | 'proportionality' | 'maxMeasureSystem' | 'displayMode';
+export type GlobalLayoutNumberAttributes = 'pageWidth' | 'pageHeight' | 'noteSpacing' | 'svgScale' | 
+'zoomScale' | 'proportionality' | 'maxMeasureSystem';
+export const GlobalLayoutAttributesArray: GlobalLayoutAttributes[]  = ['pageWidth', 'pageHeight', 
+  'noteSpacing', 'svgScale', 'zoomScale', 'proportionality', 'maxMeasureSystem', 'displayMode'];
+export const GlobalLayoutNumberAttributesArray: GlobalLayoutNumberAttributes[]  = ['pageWidth', 'pageHeight', 
+  'noteSpacing', 'svgScale', 'zoomScale', 'proportionality', 'maxMeasureSystem'];
 /**
  * Global layout are parameters that determine the layout of the whole score, because they affect the containing svg element
  * @category SmoObject
@@ -431,7 +440,27 @@ export interface SmoGlobalLayout {
   pageWidth: number;
   pageHeight: number;
   proportionality: number,
-  maxMeasureSystem: number
+  maxMeasureSystem: number,
+  displayMode: displayMode
+}
+
+export function isSmoGlobalLayout(params: Partial<SmoGlobalLayout>): params is SmoGlobalLayout {
+  const requiredAttributes: GlobalLayoutAttributes[] = ['svgScale', 'zoomScale', 'noteSpacing', 'pageWidth', 'pageHeight', 'proportionality', 'maxMeasureSystem', 'displayMode'];
+  let rv = true;
+  for (const attr  in requiredAttributes) {  
+    if (typeof(params[attr]) === 'undefined') {
+      rv = false;
+      break;
+    } else {
+      if (attr === 'displayMode') {
+        if (params.displayMode !== 'vertical' && params.displayMode !== 'horizontal') {
+          rv = false;
+          break;
+        }
+      }
+    }
+  }
+  return rv;
 }
 
 /**
@@ -506,7 +535,8 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
       pageWidth: 8 * 96 + 48,
       pageHeight: 11 * 96,
       proportionality: 5,
-      maxMeasureSystem: 0
+      maxMeasureSystem: 0,
+      displayMode: 'horizontal'
     };
   }
   static get defaults(): SmoLayoutManagerParams {
@@ -590,6 +620,8 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
     } else {
       this.pageLayouts.push(new SmoPageLayout(SmoPageLayout.defaults));
     }
+    // @@@test code:
+    this.globalLayout.displayMode = 'horizontal';
   }
   trimPages(pageCount: number) {
     if (pageCount < this.pageLayouts.length - 1) {

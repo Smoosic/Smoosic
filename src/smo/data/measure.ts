@@ -1117,6 +1117,13 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       return this.svg.logicalBox.y + this.svg.logicalBox.height;
     }
   }
+  get rightmostX(): number {
+    if (this.svg.tabStaveBox) {
+      return this.svg.tabStaveBox.x + this.svg.tabStaveBox.width;
+    } else {
+      return this.svg.logicalBox.x + this.svg.logicalBox.width;
+    }
+  }
   /**
    * adjust the y for the render boxes to account for the page and margins
    */

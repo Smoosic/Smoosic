@@ -1,6 +1,6 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SuiNavigation } from '../ui/navigation';
+import { SuiNavigationDom } from '../ui/navigation';
 import { createModalSplash } from '../ui/modalDialogs';
 declare var $: any;
 
@@ -22,8 +22,8 @@ export class SuiDom {
     if (!uiDomContainer) {
       throw new Error(`SuiDom.createUiDom: invalid container ${uiDomContainer}`);
     }
-    new SuiNavigation(uiDomContainer);
-    SuiNavigation.instance.showBugModal();
+    new SuiNavigationDom(uiDomContainer);
+    SuiNavigationDom.instance.showBugModal();
     createModalSplash(1000);    
     return uiDomContainer;
   }

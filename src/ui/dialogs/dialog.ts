@@ -18,7 +18,7 @@ import { EventHandler } from '../eventSource';
 import { SmoUiConfiguration } from '../configuration';
 import { PromiseHelpers } from '../../common/promiseHelpers';
 import { createApp, ref, Ref, watch } from 'vue';
-import { SuiNavigation } from '../navigation';
+import { SuiNavigationDom } from '../navigation';
 
 
 declare var $: any;
@@ -81,20 +81,20 @@ export const InstallDialog = async (params: DialogInstallParams) => {
     complete.value = true;
     await params.commitCb();
     trapper.close();
-    SuiNavigation.instance.hideDialogModal();
+    SuiNavigationDom.instance.hideDialogModal();
   }
   const cancelCb = async () => {
     complete.value = true;
     await params.cancelCb();
     trapper.close();
-    SuiNavigation.instance.hideDialogModal();
+    SuiNavigationDom.instance.hideDialogModal();
   }
   const removeCb = async () => {
     if (params.removeCb) {
       await params.removeCb();
     }
     trapper.close();
-    SuiNavigation.instance.hideDialogModal();
+    SuiNavigationDom.instance.hideDialogModal();
     complete.value = true;
   }
   $('#' + params.root).addClass('modal show fade');
@@ -116,7 +116,7 @@ export const InstallDialog = async (params: DialogInstallParams) => {
   // while typing into the dialog.  the 'completeNotifier' takes it back when we are done
   params.dialogParams.completeNotifier.unbindKeyboardForModal(new closeModalPromiser(complete));
   params.dialogParams.eventSource.bindKeydownHandler(evKey);
-  SuiNavigation.instance.showDialogModal();
+  SuiNavigationDom.instance.showDialogModal();
   /* const cb = () => { };
   draggable({
     parent: $('#' + params.root).find('.attributeModal'),

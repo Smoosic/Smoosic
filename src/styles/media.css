@@ -319,6 +319,12 @@ body.printing .printFrame {
     flex-flow:column nowrap;
     flex: 1 1 auto;
   }
+  .horizontal.musicRelief {
+    overflow:hidden;
+    display:flex;
+    flex-flow:row nowrap;
+    flex: 1 1 auto;
+  }
   .workspace {
     padding-top: 2px;
     position:relative;

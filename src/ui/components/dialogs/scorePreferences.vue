@@ -15,7 +15,8 @@ const props: Props = defineProps<Props>();
 const { domId, commitCb, cancelCb, getPreferences } = { ...props };
 const preferences = getPreferences();
 
-type booleanTypes = 'autoPlay' | 'autoAdvance' | 'showPiano' | 'hideEmptyLines' | 'autoScrollPlayback' | 'transposingScore' | 'showPartNames';
+type booleanTypes = 'autoPlay' | 'autoAdvance' | 'showPiano' | 'hideEmptyLines' | 'autoScrollPlayback' | 'transposingScore' 
+  | 'showPartNames' | 'horizontalDisplay';
 type numberTypes = 'defaultDupleDuration' | 'defaultTripleDuration';
 
 const defaultDoubleDurations: SelectOption[] = [
@@ -95,6 +96,15 @@ const updateNumber = (type: numberTypes) => {
       </div>
       <div class="col col-5">
         <label class="form-check-label" :for="getId('partNames')">Show part names in Score</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col col-1">
+        <input class="form-check-input" type="checkbox" v-model="preferences.horizontalDisplay"
+          :id="getId('horizontalDisplay')" @change="updateBool('horizontalDisplay')"></input>
+      </div>
+      <div class="col col-5">
+        <label class="form-check-label" :for="getId('hideEmptyLines')">Horizontal Display</label>
       </div>
     </div>
     <div class="row align-items-baseline mt-3" :id="getId('arp-row')">

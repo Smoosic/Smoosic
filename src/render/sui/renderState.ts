@@ -18,9 +18,8 @@ import { SuiScoreRender, ScoreRenderParams } from './scoreRender';
 import { SuiExceptionHandler } from '../../ui/exceptions';
 import { VexFlow, setFontStack } from '../../common/vex';
 import { layoutDebug } from './layoutDebug';
-import { SuiNavigation } from '../../ui/navigation';
+import { SuiNavigation } from './configuration';
 declare var $: any;
-
 
 export var scoreChangeEvent = 'smoScoreChangeEvent';
 /**
@@ -50,12 +49,14 @@ export class SuiRenderState {
   // rendering because we are recording or playing actions.
   suspendRendering: boolean = false;
   undoBuffer: UndoBuffer;
+  navigation: SuiNavigation;
   undoStatus: number = 0;
 
   constructor(config: ScoreRenderParams) {
     this.dirty = true;
     this.replaceQ = [];
     this.stateRepCount = 0;
+    this.navigation = config.config.navigation;
     this.setPassState(SuiRenderState.passStates.initial, 'ctor');
     this.viewportChanged = false;
     this._resetViewport = false;
@@ -304,7 +305,10 @@ export class SuiRenderState {
     if (!this.score || !this.renderer) {
       return;
     }
+    
     this.renderer.setViewport();
+    const displayMode = this.score.layoutManager!.getGlobalLayout().displayMode;
+    this.navigation.displayMode = displayMode;
     this.score!.staves.forEach((staff) => {
       staff.measures.forEach((measure) => {
         if (measure.svg.logicalBox) {
@@ -335,7 +339,7 @@ export class SuiRenderState {
             $('body').removeClass('print-render');
             $('.vf-selection').remove();
             $('body').addClass('printing');
-            $(SuiNavigation.scrollable).css('height', '');
+            $(this.navigation.scrollable).css('height', '');
             resolve();
           } else {
             poll();

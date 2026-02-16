@@ -2,11 +2,13 @@
 import { onMounted, useTemplateRef, toRef, Ref } from 'vue';
 interface Props {
   bugModalView: Ref<boolean>,
+  displayMode: Ref<string>,
   mainDomInit: (pianoKeys: HTMLElement | null) => void
 }
 const props = defineProps<Props>();
 const pianoKeys = useTemplateRef('pianoKeys');
 const showBugModal = props.bugModalView;
+const displayMode = props.displayMode;
 const mainDomInit = props.mainDomInit;
 onMounted(() => {
   mainDomInit(pianoKeys.value);
@@ -43,7 +45,7 @@ onMounted(() => {
       <div class="media" id="media">
         <div class="d-flex flex-column flex-shrink-0 p-3 sticky-top" id="controls-left">
         </div>
-        <div class="flex-lg-column musicRelief" id="smo-scroll-region">
+        <div class="flex-lg-column musicRelief" :class="{ horizontal: displayMode === 'horizontal' }" id="smo-scroll-region">
         </div>
       </div>
     </div>

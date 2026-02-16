@@ -5,7 +5,7 @@ import { SuiEventHandler } from '../application/eventHandler';
 import { SuiScoreView } from '../render/sui/scoreView';
 import crashApp from './components/crash.vue';
 import { replaceVueRoot } from './common';
-import { SuiNavigation } from './navigation';
+import { SuiNavigationDom } from './navigation';
 import { createApp } from 'vue';
 declare var $: any;
 
@@ -69,10 +69,10 @@ export class SuiExceptionHandler {
   const element = `#bug-modal`;
   const root = replaceVueRoot(element);
   const closeDb = () => {
-    SuiNavigation.instance.hideBugModal();
+    SuiNavigationDom.instance.hideBugModal();
   }
   const app = createApp(crashApp as any, { closeFunction: closeDb, url, bodyText: bodyObject, domId: root }).mount('#' + root);
-  SuiNavigation.instance.showBugModal();
+  SuiNavigationDom.instance.showBugModal();
 /*
     createTopDomContainer('.bugDialog');
     const b = buildDom;
