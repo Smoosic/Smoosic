@@ -73,12 +73,14 @@ export class VxMeasure implements VxMeasureIf {
   dbgWidth: number = 0;
   hideAccidentals: boolean = false;
   tiedOverPitches: Pitch[] = [];
+  debug: layoutDebug;
 
   constructor(context: SvgPage, selection: SmoSelection, 
     printing: boolean, softmax: number, tiedOverPitches: Pitch[]) {
     this.context = context;
     this.rendered = false;
     this.selection = selection;
+    this.debug = context.debug;
     this.smoMeasure = this.selection.measure;
     this.printing = printing;
     const instrument = selection.staff.getStaffInstrument(selection.selector.measure);
@@ -215,7 +217,7 @@ export class VxMeasure implements VxMeasureIf {
       if (smoTabNote && tabNote) {
         tabNote.setStemDirection(noteParams.stem_direction);
       }
-      layoutDebug.setTimestamp(layoutDebug.codeRegions.PREFORMATA, new Date().valueOf() - timestamp);
+      this.debug.setTimestamp(layoutDebug.codeRegions.PREFORMATA, new Date().valueOf() - timestamp);
       timestamp = new Date().valueOf();
       vexNote = new VF.StaveNote(noteParams);
       if (voiceIx > 0 && this.isCollision(voiceIx, tickIndex)) {
@@ -226,7 +228,7 @@ export class VxMeasure implements VxMeasureIf {
         vexNote = new VF.StaveNote(noteParams);
         vexNote.setCenterAlignment(true);
       }
-      layoutDebug.setTimestamp(layoutDebug.codeRegions.PREFORMATB, new Date().valueOf() - timestamp);
+      this.debug.setTimestamp(layoutDebug.codeRegions.PREFORMATB, new Date().valueOf() - timestamp);
       timestamp = new Date().valueOf();
       if (smoNote.fillStyle && !this.printing) {
         vexNote.setStyle({ fillStyle: smoNote.fillStyle });
@@ -258,7 +260,7 @@ export class VxMeasure implements VxMeasureIf {
     }
     const modObj = new VxNote(noteData);
     modObj.addModifiers();
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.PREFORMATC, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.PREFORMATC, new Date().valueOf() - timestamp);
 
     return modObj;
   }
@@ -641,7 +643,7 @@ export class VxMeasure implements VxMeasureIf {
     if (this.tabVoice && this.tabNotes.length) {
       this.formatter.format([this.tabVoice], staffWidth);
     }
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.FORMAT, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.FORMAT, new Date().valueOf() - timestamp);
   }
   /**
    * render is called after format.  Actually draw the things.
@@ -692,7 +694,7 @@ export class VxMeasure implements VxMeasureIf {
       // layoutDebug.setTimestamp(layoutDebug.codeRegions.RENDER, new Date().valueOf() - timestamp);
 
       this.rendered = true;
-      if (layoutDebug.mask & layoutDebug.values['adjust']) {
+      if (this.debug.mask & layoutDebug.values['adjust']) {
         SvgHelpers.debugBoxNoText(this.context.getContext().svg,
         SvgHelpers.boxPoints(this.dbgLeftX, 
           this.smoMeasure.svg.staffY, this.dbgWidth, 40), 'render-x-dbg', 0);

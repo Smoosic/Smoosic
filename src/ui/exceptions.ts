@@ -3,9 +3,11 @@
 import { buildDom, createTopDomContainer } from '../common/htmlHelpers';
 import { SuiEventHandler } from '../application/eventHandler';
 import { SuiScoreView } from '../render/sui/scoreView';
+import { ExceptionParameters } from './common';
 import crashApp from './components/crash.vue';
 import { replaceVueRoot } from './common';
-import { SuiNavigationDom } from './navigation';
+import { SuiNavigation} from '../render/sui/configuration';
+
 import { createApp } from 'vue';
 declare var $: any;
 
@@ -14,10 +16,12 @@ declare var $: any;
  */
 export class SuiExceptionHandler {
   view: SuiScoreView;
+  navigation: SuiNavigation;
   thrown: boolean;
   static _instance: SuiExceptionHandler;
-  constructor(params: any) {
+  constructor(params: ExceptionParameters) {
     this.view = params.view;
+    this.navigation = params.navigation;
     this.thrown = false;
     SuiExceptionHandler._instance = this;
   }
@@ -59,20 +63,13 @@ export class SuiExceptionHandler {
       stack = 'Error with stack: ' + e2.message;
     }
     doing = 'Last operation not available.';
-    const url = 'https://github.com/Smoosic/Smoosic/issues';
     const bodyObject = JSON.stringify({
       message,
       stack,
       lastOperation: doing,
       scoreString
     }, null, ' ');
-  const element = `#bug-modal`;
-  const root = replaceVueRoot(element);
-  const closeDb = () => {
-    SuiNavigationDom.instance.hideBugModal();
-  }
-  const app = createApp(crashApp as any, { closeFunction: closeDb, url, bodyText: bodyObject, domId: root }).mount('#' + root);
-  SuiNavigationDom.instance.showBugModal();
+  this.navigation.displayExceptionDialog(bodyObject);
 /*
     createTopDomContainer('.bugDialog');
     const b = buildDom;

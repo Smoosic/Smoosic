@@ -1,6 +1,7 @@
 import { SuiInlineText, SuiTextBlock } from './textRender';
 import { SuiRenderState } from './renderState';
 import { SuiScroller } from './scroller';
+import { layoutDebug } from './layoutDebug';
 import { OutlineInfo, StrokeInfo } from './svgHelpers';
 import { SmoScoreText, SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoLyric } from '../../smo/data/noteModifiers';
@@ -85,6 +86,7 @@ export declare class SuiTextEditor {
     static textTypeFromChar(char: string): number;
     svgText: SuiInlineText | null;
     context: SvgPage;
+    debug: layoutDebug;
     outlineInfo: OutlineInfo | null;
     pageMap: SvgPageMap;
     x: number;
@@ -187,6 +189,7 @@ export interface SuiDragSessionParams {
     context: SvgPageMap;
     scroller: SuiScroller;
     textGroup: SmoTextGroup;
+    debug: layoutDebug;
 }
 /**
  * @category SuiRender
@@ -200,6 +203,7 @@ export declare class SuiDragSession {
     dragging: boolean;
     outlineRect: OutlineInfo | null;
     textGroup: SmoTextGroup;
+    debug: layoutDebug;
     constructor(params: SuiDragSessionParams);
     _outlineBox(): void;
     unrender(): void;
@@ -238,6 +242,7 @@ export declare class SuiTextSession {
     editor: SuiTextBlockEditor | null;
     renderer: SuiRenderState;
     cursorPromise: Promise<any> | null;
+    debug: layoutDebug;
     constructor(params: SuiTextSessionParams);
     get _isRefreshed(): boolean;
     get isStopped(): boolean;
@@ -276,6 +281,7 @@ export declare class SuiLyricSession {
     editor: SuiLyricEditor | null;
     state: number;
     cursorPromise: Promise<any> | null;
+    debug: layoutDebug;
     constructor(params: SuiLyricSessionParams);
     _setLyricForNote(): void;
     get _endLyricCondition(): boolean;

@@ -116,6 +116,7 @@ export class SuiTextEditor {
   }
   svgText: SuiInlineText | null = null;
   context: SvgPage;
+  debug: layoutDebug;
   outlineInfo: OutlineInfo | null = null;
   pageMap: SvgPageMap;
   x: number = 0;
@@ -142,6 +143,7 @@ export class SuiTextEditor {
     this.y = params.y;
     this.text = params.text;
     this.pageMap = params.pageMap;
+    this.debug = params.scroller.debug;
   }
 
   static get strokes(): Record<SuiTextStrokeName, StrokeInfo> {
@@ -881,6 +883,7 @@ export interface SuiDragSessionParams {
   context: SvgPageMap;
   scroller: SuiScroller;
   textGroup: SmoTextGroup;
+  debug: layoutDebug;
 }
 /**
  * @category SuiRender
@@ -894,10 +897,12 @@ export class SuiDragSession {
   dragging: boolean = false;
   outlineRect: OutlineInfo | null = null;
   textGroup: SmoTextGroup;
+  debug: layoutDebug;
   constructor(params: SuiDragSessionParams) {
     this.textGroup = params.textGroup;
     this.pageMap = params.context;
     this.scroller = params.scroller;
+    this.debug = params.debug;
     this.page = this.pageMap.getRendererFromModifier(this.textGroup);
     // create a temporary text object for dragging
     this.textObject = SuiTextBlock.fromTextGroup(this.textGroup, this.page, this.pageMap, this.scroller); // SuiTextBlock
@@ -948,8 +953,8 @@ export class SuiDragSession {
     const evBox = this.scrolledClientBox(e.clientX, e.clientY);
     const svgMouseBox = this.pageMap.clientToSvg(evBox);
     svgMouseBox.y -= this.outlineBox.height;
-    if (layoutDebug.mask & layoutDebug.values['dragDebug']) {
-      layoutDebug.updateDragDebug(svgMouseBox, this.outlineBox, 'start');
+    if (this.debug.mask & layoutDebug.values['dragDebug']) {
+      this.debug.updateDragDebug(svgMouseBox, this.outlineBox, 'start');
     }
     if (!SvgHelpers.doesBox1ContainBox2(this.outlineBox, svgMouseBox)) {
       return;
@@ -980,8 +985,8 @@ export class SuiDragSession {
     this.textObject.offsetStartX(this.outlineBox.x - currentBox.x);
     this.textObject.offsetStartY(this.outlineBox.y - currentBox.y);
     this.textObject.render();
-    if (layoutDebug.mask & layoutDebug.values['dragDebug']) {
-      layoutDebug.updateDragDebug(svgMouseBox, this.outlineBox, 'drag');
+    if (this.debug.mask & layoutDebug.values['dragDebug']) {
+      this.debug.updateDragDebug(svgMouseBox, this.outlineBox, 'drag');
     }
     if (this.outlineRect) {
       SvgHelpers.eraseOutline(this.outlineRect);
@@ -994,8 +999,8 @@ export class SuiDragSession {
     // this.textObject.render();
     const newBox = this.textObject.getLogicalBox();
     const curBox = this.textGroup.logicalBox ?? SvgBox.default;
-    if (layoutDebug.mask & layoutDebug.values['dragDebug']) {
-      layoutDebug.updateDragDebug(curBox, newBox, 'end');
+    if (this.debug.mask & layoutDebug.values['dragDebug']) {
+      this.debug.updateDragDebug(curBox, newBox, 'end');
     }
     this.textGroup.offsetX(newBox.x - curBox.x);
     this.textGroup.offsetY(newBox.y - curBox.y + this.outlineBox.height);
@@ -1028,6 +1033,7 @@ export class SuiTextSession {
   editor: SuiTextBlockEditor | null = null;
   renderer: SuiRenderState;
   cursorPromise: Promise<any> | null = null;
+  debug: layoutDebug;
   constructor(params: SuiTextSessionParams) {
     this.scroller = params.scroller;
     this.renderer = params.renderer;
@@ -1035,6 +1041,7 @@ export class SuiTextSession {
     this.text = this.scoreText.text;
     this.x = params.x;
     this.y = params.y;
+    this.debug = params.renderer.debug;
     this.textGroup = params.textGroup;
     this.renderer = params.renderer;
 
@@ -1158,11 +1165,13 @@ export class SuiLyricSession {
   editor: SuiLyricEditor | null = null;
   state: number = SuiTextEditor.States.PENDING_EDITOR;
   cursorPromise: Promise<any> | null = null;
+  debug: layoutDebug;
   constructor(params: SuiLyricSessionParams) {
     this.score = params.score;
     this.renderer = params.renderer;
     this.scroller = params.scroller;
     this.view = params.view;
+    this.debug = params.view.debug;
     this.parser = SmoLyric.parsers.lyric;
     this.verse = params.verse;
     this.selector = params.selector;

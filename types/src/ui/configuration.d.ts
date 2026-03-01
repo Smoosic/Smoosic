@@ -27,5 +27,4 @@ export interface SmoUiConfiguration {
     idleRedrawTime: number;
     leftControls?: HTMLElement | string;
     topControls?: HTMLElement | string;
-    scoreDomContainer: string | HTMLElement;
 }

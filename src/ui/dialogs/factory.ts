@@ -72,7 +72,10 @@ export function isModifierWithDialog(modifier: SmoModifier) {
       return createAndDisplayDialog(SuiTextBracketDialog, parameters);
     } else {
       if (modifier.ctor !== 'SmoLyric') {
-        throw new SuiExceptionHandler('Unknown modifier dialog type ' + ctor);
+         new SuiExceptionHandler({
+          view: parameters.view,
+          navigation: parameters.view.renderer.navigation
+        }).exceptionHandler(`SuiModifierDialogFactory: unhandled modifier type ${modifier.ctor}`);
       }
       
       const lModifier = (modifier as SmoLyric);

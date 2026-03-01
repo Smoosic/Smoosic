@@ -967,9 +967,6 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * set the rendered width of the measure, or estimate of same
    */
   setWidth(width: number, description: string) {
-    if (layoutDebug.flagSet(layoutDebug.values.measureHistory)) {
-      this.svg.history.push('setWidth ' + this.staffWidth + '=> ' + width + ' ' + description);
-    }
     if (isNaN(width)) {
       throw ('NAN in setWidth');
     }
@@ -990,7 +987,6 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     if (isNaN(x)) {
       throw ('NAN in setX');
     }
-    layoutDebug.measureHistory(this, 'staffX', x, description);
     this.svg.staffX = Math.round(x);
   }
   /**
@@ -1095,7 +1091,6 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     if (isNaN(y)) {
       throw ('NAN in setY');
     }
-    layoutDebug.measureHistory(this, 'staffY', y, description);
     this.svg.staffY = Math.round(y);
   }
 
@@ -1164,7 +1159,6 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * Return actual or estimated highest point in score
    */
   setYTop(y: number, description: string) {
-    layoutDebug.measureHistory(this, 'yTop', y, description);
     this.svg.yTop = y;
   }
 
@@ -1172,7 +1166,6 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * Return actual or estimated bounding box
    */
   setBox(box: SvgBox, description: string) {
-    layoutDebug.measureHistory(this, 'logicalBox', box, description);
     this.svg.logicalBox = SvgHelpers.smoBox(box);
   }
   /**

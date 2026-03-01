@@ -30,7 +30,7 @@ export declare class SuiLyricDialog extends SuiDialogBase {
     display(): void;
     setLyric(selector: SmoSelector, lyric: SmoLyric): void;
     _focusSelection(): void;
-    changed(): void;
+    changed(): Promise<void>;
     bindElements(): void;
     evKey(evdata: any): Promise<void>;
     _complete(): void;

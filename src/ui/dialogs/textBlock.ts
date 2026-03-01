@@ -249,7 +249,7 @@ export class SuiTextBlockDialog extends SuiDialogBase {
     // edit the text and just right into that.
     if (!this.modifier.edited) {
       this.modifier.edited = true;
-      layoutDebug.addDialogDebug('text transform db: startEditSession');
+      this.debug.addDialogDebug('text transform db: startEditSession');
       this.unrenderOriginal();
       this.textEditorCtrl.startEditSession();
     }

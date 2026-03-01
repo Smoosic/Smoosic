@@ -22,6 +22,12 @@ import { VexFlow, defaultMeasurePadding } from '../../common/vex';
 import { TextFormatter } from '../../common/textformatter';
 import { isHorizontalLayout } from './mapper';
 const VF = VexFlow;
+export interface SuiFormatterParameters {
+  score: SmoScore,
+  svg: SvgPageMap,
+  renderedPages: Record<number, RenderedPage | null>,
+  debug: layoutDebug  
+}
 /**
  * @category SuiRender
  */
@@ -65,12 +71,14 @@ export class SuiLayoutFormatter {
   svg: SvgPageMap;
   renderedPages: Record<number,RenderedPage | null>;
   lines: number[] = [];
+  debug: layoutDebug;
   measuresRenderedThisPage: number = 0;
-  constructor(score: SmoScore, svg: SvgPageMap, renderedPages: Record<number, RenderedPage | null>) {
-    this.score = score;
-    this.svg = svg;
+  constructor(params: SuiFormatterParameters) {
+    this.score = params.score;
+    this.svg = params.svg;
     this.columnMeasureMap = {};
-    this.renderedPages = renderedPages;
+    this.renderedPages = params.renderedPages;
+    this.debug = params.debug;
     this.score.staves.forEach((staff) => {
       staff.measures.forEach((measure) => {
         if (!this.columnMeasureMap[measure.measureNumber.measureIndex]) {
@@ -198,6 +206,7 @@ export class SuiLayoutFormatter {
     let dsum = 0;
     let maxCfgWidth = 0;
     let isPickup = false;
+    console.log(`estimateColumn mm=${measureIx}/${systemIndex} y: ${y} x: ${x}`);
     // Keep running tab of accidental widths for justification
     const contextMap: Record<number, SuiTickContext> = {};
     let measureToSkip = false;
@@ -360,8 +369,8 @@ export class SuiLayoutFormatter {
     let currentLine: SmoMeasure[] = []; // the system we are esimating
     let measureEstimate: MeasureEstimate | null = null;
 
-    layoutDebug.clearDebugBoxes(layoutDebug.values.pre);
-    layoutDebug.clearDebugBoxes(layoutDebug.values.system);
+    this.debug.clearDebugBoxes(layoutDebug.values.pre);
+    this.debug.clearDebugBoxes(layoutDebug.values.system);
     const timestamp = new Date().valueOf();
 
     y = scoreLayout.topMargin;
@@ -406,9 +415,9 @@ export class SuiLayoutFormatter {
         }
         pageCheck = this.currentPage;
 
-        const ld = layoutDebug;
+        const ld = this.debug;
         const sh = SvgHelpers;
-        if (layoutDebug.mask & layoutDebug.values.system) {
+        if (this.debug.mask & layoutDebug.values.system) {
           currentLine.forEach((measure) => {
             if (measure.svg.logicalBox) {
               const context = this.svg.getRenderer(measure.svg.logicalBox);
@@ -438,7 +447,7 @@ export class SuiLayoutFormatter {
       measureEstimate?.measures.forEach((measure) => {
         const context = this.svg.getRenderer(measure.svg.logicalBox);
         if (context) {
-          layoutDebug.debugBox(context.svg, measure.svg.logicalBox, layoutDebug.values.pre);
+          this.debug.debugBox(context.svg, measure.svg.logicalBox, layoutDebug.values.pre);
         }
       });
       this.updateSystemMap(measureEstimate.measures, lineIndex, systemIndex);
@@ -463,7 +472,7 @@ export class SuiLayoutFormatter {
         this.renderedPages[this.currentPage] = null;
       }
     }
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.COMPUTE, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.COMPUTE, new Date().valueOf() - timestamp);
   }
   
   static estimateMusicWidth(smoMeasure: SmoMeasure, tickContexts: Record<number, SuiTickContext>): number {
@@ -672,7 +681,7 @@ export class SuiLayoutFormatter {
       const rightStaff = rowAdj.reduce((a, b) =>
         a.staffX + a.staffWidth > b.staffX + b.staffWidth ?  a : b);
 
-      const ld = layoutDebug;
+      const ld = this.debug;
       let justifyX = 0;
       let columnCount = rowAdj.length;
       // missing offset is for systems that have fewer measures than the default (due to section break or score ending)

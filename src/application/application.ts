@@ -1,7 +1,7 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { smoSerialize } from '../common/serializationHelpers';
-import { dynamicCtorInit } from './dynamicInit';
+import { createDialogFactories } from './dynamicInit';
 import { SmoConfiguration, SmoConfigurationParams } from './configuration';
 import { SmoScore } from '../smo/data/score';
 import { UndoBuffer } from '../smo/xform/undo';
@@ -27,7 +27,6 @@ import { SmoTranslationEditor } from '../ui/i18n/translationEditor';
 import { SmoTranslator } from '../ui/i18n/language';
 import { RibbonButtons } from '../ui/buttons/ribbon';
 import { PromiseHelpers } from '../common/promiseHelpers';
-import { SuiDom } from './dom';
 import { SuiKeyCommands } from './keyCommands';
 import { SuiEventHandler } from './eventHandler';
 import { KeyBinding, ModalEventHandlerProxy, isTrackerKeyAction, isEditorKeyAction } from './common';
@@ -36,7 +35,6 @@ import { getDomContainer } from '../common/htmlHelpers';
 import { SuiHelp } from '../ui/help';
 import { SuiNavigationDom } from '../ui/navigation';
 import { SuiNavigation } from '../render/sui/configuration';
-import { createModalSplash } from '../ui/modalDialogs';
 import { VexFlow } from '../common/vex';
 import { TextFormatter } from '../common/textformatter';
 declare var $: any;
@@ -59,6 +57,7 @@ export interface SuiRendererInstance {
  */
 export interface SuiInstance {
   view: SuiScoreViewOperations;
+  navigation: SuiNavigation;
   eventSource: BrowserEventSource;
   undoBuffer: UndoBuffer;
   tracker: SuiTracker;
@@ -109,60 +108,40 @@ export class SuiApplication {
   instance: SuiInstance | null = null;
   config: SmoConfiguration;
   score: SmoScore | null = null;
+  navigation?: SuiNavigation;
   view: SuiScoreViewOperations | null = null;
-  domElement: HTMLElement;
-  static createUiDom(uiDomContainer: string | HTMLElement | undefined): SuiNavigation {
+  createUiDom() {
+    let uiDomContainer = this.config.domContainer;
     if (!uiDomContainer) {
-        throw new Error(`SuiDom.createUiDom: invalid container ${uiDomContainer}`);
+      throw new Error(`SuiDom.createUiDom: invalid container ${uiDomContainer}`);
     }
-    if (typeof(uiDomContainer) === 'string') {
+    if (typeof (uiDomContainer) === 'string') {
       uiDomContainer = document.getElementById(uiDomContainer) ?? undefined;
     }
     if (!uiDomContainer) {
       throw new Error(`SuiDom.createUiDom: invalid container ${uiDomContainer}`);
     }
-    const navigation = new SuiNavigationDom(uiDomContainer);
-    navigation.initialize();
-    navigation.showBugModal();
-    createModalSplash(1000);
-    return navigation;
+    this.navigation = new SuiNavigationDom(uiDomContainer);
+    this.navigation.initialize();
+    this.navigation.showSplashModal(1000);
   }
   static async configure(params: Partial<SmoConfigurationParams>): Promise<SuiApplication> {
     const config: SmoConfiguration = new SmoConfiguration(params);
     (window as any).SmoConfig = config;
-    // If there is a DOM container but the DOM not created yet, create the default version.
-    if (params.domContainer && typeof(params.domContainer) === 'string') {
-      if (params.navigation?.isInitialized()) { 
-        console.warn('SuiApplication.configure: navigation already initialized, skipping DOM creation');
-        config.navigation = params.navigation;
-      } else {
-        config.navigation = SuiApplication.createUiDom(params.domContainer);
-      }
-      config.leftControls ='controls-left';
-      config.topControls= 'controls-top';
-      config.scoreDomContainer = 'smo-scroll-region';
-      config.domContainer = config.navigation.container;
-    }
+
     const application = new SuiApplication(config);
     SuiApplication.registerFonts();
     return application.initialize();
   }
   constructor(config: SmoConfiguration) {
     this.config = config;
-    this.domElement = this._getDomContainer();
   }
-  _getDomContainer(): HTMLElement {
-    const el = getDomContainer(this.config.scoreDomContainer);
-    if (typeof(el) === 'undefined') {
-      throw 'scoreDomContainer is a required config parameter';
-    }
-    return el;
-  }
+  
   static instance: SuiInstance;
   // Init for applications that create a score but don't create the application right away.
   // we need to create the dynamic constructors
   static initSync() {
-    dynamicCtorInit();
+    createDialogFactories();
   }
   /** 
   // Different applications can create their own key bindings, these are the defaults.
@@ -188,7 +167,7 @@ export class SuiApplication {
       }
     });
     if (unknownKeyAction) {
-      throw(`unknown key action in configuration`);
+      throw (`unknown key action in configuration`);
     }
     return trackerKeys.concat(editorKeys);
   }
@@ -199,21 +178,29 @@ export class SuiApplication {
    * @returns 
    */
   async initialize(): Promise<SuiApplication> {
-    const self = this;    
-    dynamicCtorInit();
-    const startApplication = async () => {
-      if (self.config.mode === 'translate') {
-        self._startApplication();
-      }
-      else if (self.config.mode === 'application') {
-        SuiSampleMedia.samplePromise(SuiOscillator.audio);
-        self._startApplication();
-      } else {  // library mode.
-        self.createView(self.score!);
-      }
-    }
+    // If there is a DOM container but the DOM not created yet, create the default version. 
+    createDialogFactories();
     await this.createScore();
-    await startApplication();
+    if (this.config.mode === 'translate') {
+      this.createUiDom();
+      setTimeout(() => {
+        SmoTranslationEditor.startEditor(this.config.language);
+      }, 1);
+    } else if (this.config.mode === 'application') {
+      this.createUiDom();
+      await SuiSampleMedia.samplePromise(SuiOscillator.audio);
+      const queryString = new QueryParser();
+      const languageSelect = queryString.pairs.find((x) => x['language']) ?? { 'language': 'en' }
+      if (languageSelect) {
+        SuiApplication._deferLanguageSelection(languageSelect.language);
+      }
+      // Create DOM container for the application
+      this.createUi();
+    } else {  // library mode.
+      // Create DOM container for the application
+      this.createUiDom();
+      this.createView(this.score!);
+    }
     await this.view?.renderer.renderPromise();
     // Hide header at the top of some applications
     $('#link-hdr button').off('click').on('click', () => {
@@ -237,11 +224,11 @@ export class SuiApplication {
     if (this.config.remoteScore) {
       const loader = new SuiXhrLoader(this.config.remoteScore);
       const file = await loader.loadAsync();
-      this.score = this._tryParse(file as string);
+      this.score = this.tryParse(file as string);
       return this.score;
     } else if (this.config.initialScore) {
-      if (typeof(this.config.initialScore) === 'string') {
-        this.score = this._tryParse(this.config.initialScore);
+      if (typeof (this.config.initialScore) === 'string') {
+        this.score = this.tryParse(this.config.initialScore);
         return (this.score);
       } else {
         this.score = this.config.initialScore;
@@ -250,7 +237,7 @@ export class SuiApplication {
     } else {
       const localScore = localStorage.getItem(smoSerialize.localScore);
       if (localScore) {
-        this.score = this._tryParse(localScore);
+        this.score = this.tryParse(localScore);
       } else {
         this.score = SmoScore.getDefaultScore(SmoScore.defaults, null);
         if (this.config.mode === 'application') {
@@ -260,7 +247,7 @@ export class SuiApplication {
     }
     return this.score;
   }
-  _tryParse(scoreJson: string) {
+  tryParse(scoreJson: string): SmoScore {
     try {
       if (scoreJson[0] === '<') {
         const parser = new DOMParser();
@@ -272,28 +259,23 @@ export class SuiApplication {
       console.warn('could not parse score');
       return SmoScore.getDefaultScore(SmoScore.defaults, SmoMeasure.defaults);
     }
-  }
-  _startApplication() {
-    const queryString = new QueryParser();
-    const languageSelect = queryString.pairs.find((x) => x['language']) ?? {'language': 'en'}
-    if (this.config.mode === 'translate') {
-      this._deferCreateTranslator();
-      return;
-    }
-    if (languageSelect) {
-      SuiApplication._deferLanguageSelection(languageSelect.language);
-    }
-    this.createUi();
-  }
+  }  
   createView(score: SmoScore): SuiRendererInstance | null {
-    let sdc: HTMLElement = this.domElement;
-    const svgContainer = document.createElement('div');
-    $(svgContainer).attr('id', 'boo').addClass('musicContainer');
-    $(sdc).append(svgContainer);
+    if (!this.config.domContainer) {
+      throw new Error('SuiApplication: dom container not set');
+    }
+    if (!this.navigation) {
+      throw new Error('SuiApplication: navigation not initialized');
+    }
     const undoBuffer = new UndoBuffer();
-    const view = new SuiScoreViewOperations(this.config, svgContainer, score, sdc as HTMLElement, undoBuffer);
+    const view = new SuiScoreViewOperations({
+      demonPollTime: this.config.demonPollTime,
+      idleRedrawTime: this.config.idleRedrawTime,
+      audioAnimation: this.config.audioAnimation,
+      navigation: this.navigation
+    }, score, undoBuffer);
     const eventSource = new BrowserEventSource();
-    eventSource.setRenderElement(svgContainer);
+    eventSource.setRenderElement(this.navigation.scoreContainer);
     this.view = view;
     view.startRenderingEngine();
     return {
@@ -327,17 +309,20 @@ export class SuiApplication {
       eventSource: eventSource,
       tracker: view.tracker
     });
-    const keyCommands = new SuiKeyCommands ({
+    const keyCommands = new SuiKeyCommands({
       view, slashMode: true, completeNotifier, tracker, eventSource
     });
+    if (!this.navigation) {
+      throw new Error('SuiApplication: DOM not initialized');
+    }
     const eventHandler = new SuiEventHandler({
       view, eventSource, tracker, keyCommands, menus, completeNotifier,
       keyBindings: SuiApplication.keyBindingDefaults, config: this.config,
-      navigation: this.config.navigation
+      navigation: this.navigation
     });
     this.instance = {
       view, eventSource, eventHandler, undoBuffer,
-      tracker, ribbon, keyCommands, menus
+      tracker, ribbon, keyCommands, menus, navigation: this.navigation
     }
     SuiApplication.instance = this.instance;
     completeNotifier.handler = eventHandler;
@@ -349,7 +334,7 @@ export class SuiApplication {
   static async loadMusicFont(face: string, url: string) {
     const new_font = new FontFace('Bravura', `url(${url})`);
     const loadedFace = await new_font.load();
-    document.fonts.add(loadedFace);    
+    document.fonts.add(loadedFace);
   }
   static async registerFonts() {
     TextFormatter.registerInfo({
@@ -452,12 +437,6 @@ export class SuiApplication {
     });
     // await SuiApplication.loadMusicFont('Bravura', '../styles/fonts/Bravura_1.392.woff');
     // await SuiApplication.loadMusicFont('Bravura', '../styles/fonts/Bravura_1.392.woff');
-  }
-  _deferCreateTranslator() {
-    SuiDom.createUiDom(this.config.scoreDomContainer);
-    setTimeout(() => {
-      SmoTranslationEditor.startEditor(this.config.language);
-    }, 1);
   }
 
   static _deferLanguageSelection(lang: string) {

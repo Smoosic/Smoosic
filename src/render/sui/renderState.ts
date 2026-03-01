@@ -12,7 +12,7 @@ import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { VxSystem } from '../vex/vxSystem';
 import { SmoScore } from '../../smo/data/score';
 import { SmoTextGroup } from '../../smo/data/scoreText';
-import { SuiMapper } from './mapper';
+import { SuiMapper, SuiRendererBase } from './mapper';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
 import { SuiScoreRender, ScoreRenderParams } from './scoreRender';
 import { SuiExceptionHandler } from '../../ui/exceptions';
@@ -29,7 +29,7 @@ export var scoreChangeEvent = 'smoScoreChangeEvent';
  * render state is (dirty, etc.)
  * @category SuiRender
  * */
-export class SuiRenderState {
+export class SuiRenderState implements SuiRendererBase {
   static debugMask: number = 0;
   dirty: boolean;
   replaceQ: SmoSelection[];
@@ -51,16 +51,19 @@ export class SuiRenderState {
   undoBuffer: UndoBuffer;
   navigation: SuiNavigation;
   undoStatus: number = 0;
+  debug: layoutDebug;
 
   constructor(config: ScoreRenderParams) {
     this.dirty = true;
     this.replaceQ = [];
     this.stateRepCount = 0;
     this.navigation = config.config.navigation;
+
     this.setPassState(SuiRenderState.passStates.initial, 'ctor');
     this.viewportChanged = false;
     this._resetViewport = false;
     this.measureMapper = null;
+    this.debug = config.debug;
     this.renderer = new SuiScoreRender(config);
     this.idleRedrawTime = config.config.idleRedrawTime;
     this.demonPollTime = config.config.demonPollTime;
@@ -87,20 +90,6 @@ export class SuiRenderState {
     }
   }
 
-  // ### createScoreRenderer
-  // ### Description;
-  // to get the score to appear, a div and a score object are required.  The layout takes care of creating the
-  // svg element in the dom and interacting with the vex library.
-  static createScoreRenderer(config: SmoRenderConfiguration, renderElement: Element, score: SmoScore, undoBuffer: UndoBuffer): SuiRenderState {
-    const ctorObj: ScoreRenderParams = {
-      config,
-      elementId: renderElement,
-      score,
-      undoBuffer
-    };
-    const renderer = new SuiRenderState(ctorObj);
-    return renderer;
-  }
   static get passStates(): Record<string, number> {
     return { initial: 0, clean: 2, replace: 3 };
   }
@@ -272,8 +261,8 @@ export class SuiRenderState {
           this.render();
         }
       }
-      if (layoutDebug.testThrow) {
-        layoutDebug.testThrow = false;
+      if (this.debug.testThrow) {
+        this.debug.testThrow = false;
         throw ('Test throw full render')
       }
       this.handlingRedraw = false;
@@ -339,7 +328,7 @@ export class SuiRenderState {
             $('body').removeClass('print-render');
             $('.vf-selection').remove();
             $('body').addClass('printing');
-            $(this.navigation.scrollable).css('height', '');
+            $(this.navigation.scrollContainer).css('height', '');
             resolve();
           } else {
             poll();

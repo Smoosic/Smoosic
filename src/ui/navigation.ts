@@ -1,8 +1,9 @@
 import { default as mainDom } from './components/mainDom.vue';
+import { DomDialogNotifiers, DomDebugFlag } from './common';
 import { SuiPiano } from '../render/sui/piano';
 import { SvgHelpers } from '../render/sui/svgHelpers';
-import { SuiNavigation, scrollHandler } from '../render/sui/configuration';
-import { createApp, ref, Ref } from 'vue';
+import { SuiNavigation, scrollHandler, debugFlag } from '../render/sui/configuration';
+import { createApp, ref, Ref,reactive } from 'vue';
 declare var $: any;
 
 export class SuiNavigationDom implements SuiNavigation {
@@ -10,13 +11,32 @@ export class SuiNavigationDom implements SuiNavigation {
   static get instance() {
     return SuiNavigationDom._instance;
   }
-  bugModalView: Ref<boolean> = ref(false);
   _displayMode: Ref<string> = ref('vertical');  
+  crashUrl = 'https://github.com/Smoosic/Smoosic/issues';
   scrollHandlers: scrollHandler[] = [];
-  _container?: HTMLElement;
+  _outerContainer?: HTMLElement; // container for entire UI, menus, controls, scrolling region
+  _scrollContainer?: HTMLElement; // container for the score that contains the dimensions and scrolls
+  _scoreContainer?: HTMLElement; // container for the score div elements and svg
+  debugFlags: DomDebugFlag[] = reactive([]);
   initialized: boolean = false;
+  showSplash: Ref<boolean> = ref(false);
+  splashTimer: Ref<number> = ref(0);
+  showAttributeDialog: Ref<boolean> = ref(false);
+  crashReport: Ref<string> = ref('');
+  showCrashReport: Ref<boolean> = ref(false);
+  displayExceptionDialog(message: string) {
+    this.crashReport.value = message;
+    this.showCrashReport.value = true;
+    this.showDialogModal();
+  }
   isInitialized() {
     return this.initialized;
+  }
+  createDebugFlags() {
+    this.debugFlags.splice(0);
+    this.debugFlags.push({ category: 'mouse', htmlString: ''});
+    this.debugFlags.push({ category: 'drag', htmlString: '' });
+    this.debugFlags.push({ category: 'scroll', htmlString: '' });
   }
   get displayMode() {
     return this._displayMode.value;
@@ -24,21 +44,47 @@ export class SuiNavigationDom implements SuiNavigation {
   set displayMode(value: string) {
     this._displayMode.value = value;
   }
-  get container() {
-    return this._container;
+  get outerContainer() {
+    return this._outerContainer;
   }
-  set container(value: HTMLElement | undefined) {
-    this._container = value;
+  set outerContainer(value: HTMLElement | undefined) {
+    this._outerContainer = value;
+  }
+  get scrollContainer() {
+    if (this._scrollContainer) {
+      return this._scrollContainer;
+    }
+    const sc: HTMLElement = $(this.outerContainer).find('.scrollContainer')[0];
+    if (!sc) {
+      throw new Error('SuiNavigationDom: score container referenced before render');
+    }
+    this._scrollContainer = sc;
+    return this._scrollContainer;
+  }
+  get scoreContainer() {
+    if (this._scoreContainer) {
+      return this._scoreContainer;
+    }
+    const sc: HTMLElement = $(this.scrollContainer).find('.score-container')[0];
+    if (!sc) {
+      throw new Error('SuiNavigationDom: score container referenced before render');
+    }
+    this._scoreContainer = sc;
+    return this._scoreContainer;
   }
   constructor(uiDomContainer?: HTMLElement) {
     if (uiDomContainer) {
-      this._container = uiDomContainer;
+      this._outerContainer = uiDomContainer;
     }
   }
   initialize()  {
-    if (!this.container) {
+    if (!this.outerContainer) {
       throw new Error('SuiNavigationDom: DOM container not set');
     }
+    if (!this.outerContainer.id) {
+      this.outerContainer.id = 'smo-ui';
+    }
+    const domId = this.outerContainer.id || 'smo-ui';
     const mainDomInit = (pianoKeys: HTMLElement) => {
       const svg = document.createElementNS(SvgHelpers.namespace, 'svg');
       svg.id = 'piano-svg';
@@ -48,14 +94,29 @@ export class SuiNavigationDom implements SuiNavigation {
       pianoKeys.appendChild(svg);
     }
     SuiNavigationDom._instance = this;
-    createApp(mainDom as any, { bugModalView: this.bugModalView, displayMode: this._displayMode, mainDomInit })
-      .mount(this.container);
+    this.createDebugFlags();
+    const getDialogNotifiers = (): DomDialogNotifiers => {
+      return { debugFlags: this.debugFlags, showSplash: this.showSplash, splashTimer: this.splashTimer, 
+        showAttributeDialog: this.showAttributeDialog,
+        crashDialog: { url: this.crashUrl, bodyText: this.crashReport, 
+          show: this.showCrashReport } };
+    }
+    createApp(mainDom as any, { 
+      domId: domId, displayMode: this._displayMode, mainDomInit, getDialogNotifiers })
+      .mount(this.outerContainer);
     $(this.scrollable)[0].onscroll = (ev: any) => {
       this.scrollHandlers.forEach((handler) => {
         handler(ev);
       });
     }
     this.initialized = true;
+  }
+  showDebugString(flag: debugFlag, htmlString: string) {
+    this.debugFlags.forEach((df) => {
+      if (df.category === flag) {
+        df.htmlString = htmlString;
+      }
+    });
   }
   get scrollable() {
     return '.musicRelief';
@@ -66,18 +127,14 @@ export class SuiNavigationDom implements SuiNavigation {
   popScrollHandler() {
     return this.scrollHandlers.pop();
   }
-  showBugModal() {
-    $('.dom-container').addClass('show-modal');
-    this.bugModalView.value = true;
-  }
-  hideBugModal() {
-    $('.dom-container').removeClass('show-modal');
-    this.bugModalView.value = false;
+  showSplashModal(timeout: number = 0) {
+    this.splashTimer.value = timeout;
+    this.showSplash.value = true;
   }
   showDialogModal() {
-    $('body').addClass('showVueDialog');
+    this.showAttributeDialog.value = true;
   }
   hideDialogModal() {
-    $('body').removeClass('showVueDialog');
+    this.showAttributeDialog.value = false;
   }
 }

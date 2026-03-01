@@ -1,5 +1,6 @@
 import { SvgBox } from '../../smo/data/common';
 import { UndoBuffer } from '../../smo/xform/undo';
+import { layoutDebug } from '../../render/sui/layoutDebug';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SuiTracker } from '../../render/sui/tracker';
 import { CompleteNotifier } from '../common';
@@ -34,6 +35,7 @@ export declare class SuiMenuManager {
     menuPosition: SvgBox;
     tracker: SuiTracker;
     menuBind: KeyBinding[];
+    debug: layoutDebug;
     constructor(params: SuiMenuManagerParams);
     static get defaults(): {
         menuBind: KeyBinding[];

@@ -1,4 +1,5 @@
 import { SmoScore } from '../../smo/data/score';
+import { SmoGlobalLayout } from '../../smo/data/scoreModifiers';
 import { SmoGraceNote } from '../../smo/data/noteModifiers';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
 import { SmoPartInfo } from '../../smo/data/partInfo';
@@ -7,10 +8,14 @@ import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SuiScroller } from './scroller';
+import { layoutProvider } from './mapper';
 import { SuiTracker } from './tracker';
 import { SmoRenderConfiguration } from './configuration';
 import { SuiRenderState } from './renderState';
 import { SuiAudioAnimationParams } from '../audio/musicCursor';
+import { Ref } from 'vue';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
+import { layoutDebug } from './layoutDebug';
 /**
  * Indicates a stave is/is not displayed in the score
  * @category SuiRender
@@ -28,7 +33,7 @@ export type updateStaffModifierFunc = (score: SmoScore, fromSelection: SmoSelect
  * 3. Mapping between the displayed score and the data representation
  * @category SuiRender
  */
-export declare abstract class SuiScoreView {
+export declare abstract class SuiScoreView implements layoutProvider {
     static Instance: SuiScoreView | null;
     score: SmoScore;
     storeScore: SmoScore;
@@ -38,9 +43,16 @@ export declare abstract class SuiScoreView {
     renderer: SuiRenderState;
     scroller: SuiScroller;
     storePaste: PasteBuffer;
+    selectedPart: Ref<string>;
     config: SmoRenderConfiguration;
     audioAnimation: SuiAudioAnimationParams;
-    constructor(config: SmoRenderConfiguration, svgContainer: HTMLElement, score: SmoScore, scrollSelector: HTMLElement, undoBuffer: UndoBuffer);
+    debug: layoutDebug;
+    constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer);
+    getLayout(): SmoGlobalLayout | undefined;
+    isLayoutHorizontal(): boolean;
+    getFlowDimensionExtent(box: SvgBox): number;
+    getFlowDimensionPosition(box: SvgBox | SvgPoint): number;
+    get PartName(): Ref<string>;
     /**
      * Await on the full update of the score
      * @returns

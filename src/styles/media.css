@@ -131,7 +131,7 @@ body {
 }
 /* override bootstrap */
 body.modal {
-  display: block; 
+  display: block;
 }
 li.nav-item button.nav-link {
   text-align: left;
@@ -167,7 +167,7 @@ h1 {
 .testTitle {
 	height: 20px;
 	font-size:1.2em;
-    margin:0;
+  margin:0;
 }
 
 #birdy {
@@ -320,10 +320,7 @@ body.printing .printFrame {
     flex: 1 1 auto;
   }
   .horizontal.musicRelief {
-    overflow:hidden;
-    display:flex;
     flex-flow:row nowrap;
-    flex: 1 1 auto;
   }
   .workspace {
     padding-top: 2px;
@@ -350,8 +347,8 @@ body.printing .printFrame {
     display:none;
 }
 
-.musicContainer {
-    position: relative;
+.score-container {
+  position: relative;
 	background:#fff;
 }
 .overlay {

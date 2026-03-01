@@ -11,7 +11,6 @@ import { SmoAttrs, getId, SmoModifierBase, SvgBox,
   SmoDynamicCtor } from './common';
 import { SmoMeasure } from './measure';
 import { SmoSelector } from '../xform/selections';
-import { dynamicCtorInit } from '../../application/dynamicInit';
 
 /**
  * Base class for all {@link SmoScore} modifiers. 
@@ -621,7 +620,8 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
       this.pageLayouts.push(new SmoPageLayout(SmoPageLayout.defaults));
     }
     // @@@test code:
-    this.globalLayout.displayMode = 'horizontal';
+    console.warn("forcing score layout value");
+    this.globalLayout.displayMode = 'vertical';
   }
   trimPages(pageCount: number) {
     if (pageCount < this.pageLayouts.length - 1) {

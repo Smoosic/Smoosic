@@ -1,6 +1,6 @@
 import { SuiMenuBase, SuiConfiguredMenuOption, SuiConfiguredMenu, SuiMenuParams } from './menu';
-import { createModalSplash } from '../modalDialogs';
 import { SuiHelp } from '../help';
+import { SuiNavigation } from '../../render/sui/configuration';
 
 /**
  * Stuff you can do to notes
@@ -29,7 +29,7 @@ const topicMenuOption: SuiConfiguredMenuOption = {
  */
 const aboutMenuOption: SuiConfiguredMenuOption = {
   handler: async (menu: SuiMenuBase) => {
-    createModalSplash(0);
+    menu.view.renderer.navigation.showDialogModal();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
     icon: '',

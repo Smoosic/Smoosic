@@ -223,6 +223,7 @@ export class SuiOscillatorSoundfont extends SuiOscillator {
   velocity: number;
   delayTime: number = 0;
   detune: number = 0;
+  static debug: boolean = false;
   constructor(params: SuiOscillatorParams) {
     super(params);
     this.delayTime = params.delayTime ?? 0;
@@ -256,7 +257,7 @@ export class SuiOscillatorSoundfont extends SuiOscillator {
       SuiOscillator.audio.resume();
     }
     if (this.velocity > 0 && this.samples) {
-      if (layoutDebug.mask & layoutDebug.values.oscillators) {
+      if (SuiOscillatorSoundfont.debug) {
         console.log(`osc: mn/dur/del/time  ${note} /${this.duration}/ ${this.delayTime} / ${SuiOscillator.audio.currentTime} `);
       }
       const currentTime = SuiOscillator.audio.currentTime;

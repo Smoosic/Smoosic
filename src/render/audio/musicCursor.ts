@@ -80,7 +80,7 @@ export const  defaultClearAudioAnimationHandler = (delay: number) => {
     ctx.rect(x, screenBox.y, width, screenBox.height, fillParams);
     ctx.closeGroup();
     ctx.restore();
-    layoutDebug.updatePlayDebug(selector, measure.svg.logicalBox);
+    view.debug.updatePlayDebug(selector, measure.svg.logicalBox);
     if (view.score.preferences.autoScrollPlayback) {
       scroller.scrollVisibleBox(zmeasureSel.measure.svg.logicalBox);
     }

@@ -4,12 +4,13 @@
  */
 import { SmoMeasure } from '../../smo/data/measure';
 import { UndoBuffer } from '../../smo/xform/undo';
-import { SmoRenderConfiguration } from './configuration';
 import { SmoSelection } from '../../smo/xform/selections';
 import { SmoScore } from '../../smo/data/score';
 import { SmoTextGroup } from '../../smo/data/scoreText';
-import { SuiMapper } from './mapper';
+import { SuiMapper, SuiRendererBase } from './mapper';
 import { SuiScoreRender, ScoreRenderParams } from './scoreRender';
+import { layoutDebug } from './layoutDebug';
+import { SuiNavigation } from './configuration';
 export declare var scoreChangeEvent: string;
 /**
  * Manage the state of the score rendering.  The score can be rendered either completely,
@@ -18,7 +19,7 @@ export declare var scoreChangeEvent: string;
  * render state is (dirty, etc.)
  * @category SuiRender
  * */
-export declare class SuiRenderState {
+export declare class SuiRenderState implements SuiRendererBase {
     static debugMask: number;
     dirty: boolean;
     replaceQ: SmoSelection[];
@@ -36,13 +37,14 @@ export declare class SuiRenderState {
     handlingRedraw: boolean;
     suspendRendering: boolean;
     undoBuffer: UndoBuffer;
+    navigation: SuiNavigation;
     undoStatus: number;
+    debug: layoutDebug;
     constructor(config: ScoreRenderParams);
     get elementId(): any;
     get pageMap(): import("./svgPageMap").SvgPageMap;
     setMeasureMapper(mapper: SuiMapper): void;
     set stepMode(value: boolean);
-    static createScoreRenderer(config: SmoRenderConfiguration, renderElement: Element, score: SmoScore, undoBuffer: UndoBuffer): SuiRenderState;
     static get passStates(): Record<string, number>;
     get renderElement(): Element;
     notifyFontChange(): void;

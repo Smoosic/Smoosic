@@ -1,9 +1,17 @@
 import { StrokeInfo } from "./svgHelpers";
 import { SvgPoint, SvgBox, Renderable, ElementLike } from '../../smo/data/common';
+import { layoutDebug } from './layoutDebug';
+import { layoutProvider } from "./mapper";
 import { SmoGlobalLayout, SmoPageLayout } from '../../smo/data/scoreModifiers';
 import { SmoSelection } from '../../smo/xform/selections';
 import { ModifierTab } from '../../smo/xform/selections';
 import { Renderer, SVGContext } from '../../common/vex';
+export interface SvgPageMapParameters {
+    layout: SmoGlobalLayout;
+    container: HTMLElement;
+    pages: SmoPageLayout[];
+    debug: layoutDebug;
+}
 /**
  * A selection map maps a sub-section of music (a measure, for instance) to a region
  * on the screen.  SelectionMap can contain other SelectionMaps with
@@ -95,6 +103,14 @@ export declare class MappedSystems extends SelectionMap<MappedMeasures, number> 
     findValueInMap(value: MappedMeasures, box: SvgBox): SmoSelection[];
     clearMeasure(selection: SmoSelection): void;
 }
+export declare function getDiv(dim: number, box: SvgBox, divSize: number, layoutSource: layoutProvider): number;
+export interface SvgPageParameters {
+    renderer: Renderer;
+    layoutSource: layoutProvider;
+    pageNumber: number;
+    box: SvgBox;
+    debug: layoutDebug;
+}
 /**
  * Each page is a different SVG element, with its own offset within the DOM. This
  * makes partial updates faster.  SvgPage keeps track of all musical elements in SelectionMaps.
@@ -104,11 +120,13 @@ export declare class MappedSystems extends SelectionMap<MappedMeasures, number> 
  */
 export declare class SvgPage {
     _renderer: Renderer;
+    layoutSource: layoutProvider;
     pageNumber: number;
     box: SvgBox;
     systemMap: MappedSystems;
     modifierYKeys: number[];
     modifierTabDivs: Record<number, ModifierTab[]>;
+    debug: layoutDebug;
     static get defaultMap(): {
         box: SvgBox;
         systemMap: Map<any, any>;
@@ -124,13 +142,13 @@ export declare class SvgPage {
      */
     getContext(): SVGContext;
     get divSize(): number;
-    constructor(renderer: Renderer, pageNumber: number, box: SvgBox);
+    constructor(params: SvgPageParameters);
     /**
      * Given SVG y, return the div for modifiers
      * @param y
      * @returns
      */
-    divIndex(y: number): number;
+    divIndex(dim: number): number;
     /**
      * Remove all elements and modifiers in this page, for a redraw.
      */
@@ -206,13 +224,18 @@ export declare class SvgPageMap {
     vfRenderers: SvgPage[];
     static get strokes(): Record<string, StrokeInfo>;
     containerOffset: SvgPoint;
+    debug: layoutDebug;
+    getLayout(): SmoGlobalLayout;
+    isLayoutHorizontal(): boolean;
+    getFlowDimensionPosition(box: SvgBox | SvgPoint): number;
+    getFlowDimensionExtent(box: SvgBox): number;
     /**
      *
      * @param layout - defines the page width/height and relative zoom common to all the pages
      * @param container - the parent DOM element that contains all the pages
      * @param pages - the layouts (margins, etc) for each pages.
      */
-    constructor(layout: SmoGlobalLayout, container: HTMLElement, pages: SmoPageLayout[]);
+    constructor(params: SvgPageMapParameters);
     get container(): HTMLElement;
     /**
      * Update the offset of the music container DOM element, in client coordinates. This is used
@@ -229,10 +252,13 @@ export declare class SvgPageMap {
     get pageHeight(): number;
     get pageWidth(): number;
     get totalHeight(): number;
+    get totalWidth(): number;
     /**
      * create/re-create all the page SVG elements
      */
     createRenderers(): void;
+    topY(ix: number): number;
+    topX(ix: number): number;
     addPage(): void;
     updateZoom(zoomScale: number): void;
     /**

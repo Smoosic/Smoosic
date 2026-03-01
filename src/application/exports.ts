@@ -10,7 +10,6 @@ import { SuiEventHandler } from './eventHandler';
 import { SuiExceptionHandler } from '../ui/exceptions';
 import { Qwerty } from '../ui/qwerty';
 import { SuiPiano } from '../render/sui/piano';
-import { SuiDom } from './dom';
 import { SuiHelp } from '../ui/help';
 import { CollapseRibbonControl, ExtendedCollapseParent } from '../ui/buttons/collapsable';
 import { DisplaySettings } from '../ui/buttons/display';
@@ -27,7 +26,7 @@ import { cardKeysHtmlEn, cardNotesLetterHtmlEn, cardNotesChromaticHtmlEn, cardNo
   cardBeamsAndStemsDirectionHtmlEn, cardBeamsAndStemsGroupingHtmlEn,
   cardMeasuresAddDeleteHtmlEn, cardVoicesCreateDeleteHtmlEn, cardPartAddDeleteHtmlEn
 } from '../ui/i18n/language_en';
-import { dynamicCtorInit } from './dynamicInit';
+import { createDialogFactories } from './dynamicInit';
 // ui dialogs and menus
 // Dialogs
 import { SuiDialogBase, createAndDisplayDialog } from '../ui/dialogs/dialog';
@@ -170,12 +169,10 @@ import { SuiPitchDialogVue } from '../ui/dialogs/pitch';
 const getClass = (jsonString: string) => {
     return eval('Smo.' + jsonString);
 };
-export * from '../ui/modalDialogs';
 export * from './application';
 export * from './common';
 export * from './configuration';
 export * from './dynamicInit';
-export * from './dom';
 export * from './eventHandler';
 export * from '../common/midi-parser';
 export * from './generateVexTests';
@@ -337,9 +334,9 @@ export const Smo = {
   // Application-level classes
   SmoConfiguration,
   SuiApplication,
-  dynamicCtorInit,
+  createDialogFactories,
   parseMidi,
-  SuiDom,  SuiEventHandler, SuiExceptionHandler,
+  SuiEventHandler, SuiExceptionHandler,
   Qwerty, SuiHelp, SmoTranslationEditor, ModalEventHandler,
   // Ribbon buttons
   simpleRibbonLayout,

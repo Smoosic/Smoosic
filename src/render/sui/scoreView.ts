@@ -27,6 +27,7 @@ import { SmoTempoText } from '../../smo/data/measureModifiers';
 import { TimeSignature } from '../../smo/data/measureModifiers';
 import { ref, Ref } from 'vue';
 import { SvgBox, SvgPoint } from '../../smo/data/common';
+import { layoutDebug } from './layoutDebug';
 
 declare var $: any;
 
@@ -61,19 +62,26 @@ export abstract class SuiScoreView implements layoutProvider {
   selectedPart: Ref<string> = ref('');
   config: SmoRenderConfiguration;
   audioAnimation: SuiAudioAnimationParams;
-  constructor(config: SmoRenderConfiguration, svgContainer: HTMLElement, score: SmoScore, scrollSelector: HTMLElement, undoBuffer: UndoBuffer) {
+  debug: layoutDebug;
+  constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer) {
     this.score = score;
+    this.debug = new layoutDebug(config.navigation);
     const renderParams: ScoreRenderParams = {
-      elementId: svgContainer,
+      elementId: config.navigation.scoreContainer,
       score,
       config,
-      undoBuffer
+      undoBuffer,
+      debug: this.debug
     };
     this.audioAnimation = config.audioAnimation;
     this.renderer = new SuiRenderState(renderParams);
     this.config = config;
     const scoreJson = score.serialize({ skipStaves: false, useDictionary: false, preserveStaffIds: true });
-    this.scroller = new SuiScroller(scrollSelector, this.renderer.renderer.vexContainers);
+    this.scroller = new SuiScroller({
+      selector: config.navigation.scrollContainer,
+      svgPages: this.renderer.renderer.vexContainers,
+      debug: this.debug
+    });
     this.storePaste = new PasteBuffer();
     this.tracker = new SuiTracker(this.renderer, this.scroller);
     this.renderer.setMeasureMapper(this.tracker);
@@ -98,11 +106,17 @@ export abstract class SuiScoreView implements layoutProvider {
     }
     return layout.displayMode === "horizontal";
   }
-  getFlowDimension(box: SvgBox | SvgPoint): number {
+  getFlowDimensionExtent(box: SvgBox): number {
+    if (this.isLayoutHorizontal()) {
+      return box.width;
+    }
+    return box.height
+  }
+  getFlowDimensionPosition(box: SvgBox | SvgPoint): number {
     if (this.isLayoutHorizontal()) {
       return box.x;
     }
-    return box.y
+    return box.y;
   }
   get PartName(): Ref<string> {
     return this.selectedPart;
@@ -315,15 +329,15 @@ export abstract class SuiScoreView implements layoutProvider {
     if (this.score.layoutManager === undefined) {
       return 0;
     }
-    const scrollDim = this.getFlowDimension(this.tracker.scroller.netScroll);
-    const viewportDim = this.getFlowDimension(this.tracker.scroller.viewport);
+    const scrollDim = this.getFlowDimensionPosition(this.tracker.scroller.netScroll);
+    const viewportDim = this.getFlowDimensionPosition(this.tracker.scroller.viewport);
     const scrollAvg = scrollDim + (viewportDim / 2);
     const midY = scrollAvg;
     const layoutManager = this.score.layoutManager.getGlobalLayout();
-    const lh = layoutManager.pageHeight / layoutManager.svgScale;
-    const lw = layoutManager.pageWidth / layoutManager.svgScale;
-    const pt = this.renderer.pageMap.svgToClient(SvgHelpers.smoBox({ x: lw, y: lh }));
-    return Math.round(midY / this.getFlowDimension(pt));
+    const lh = layoutManager.pageHeight;
+    const lw = layoutManager.pageWidth;
+    const pt = this.renderer.pageMap.svgToClient(SvgHelpers.smoBox({ x: lw, y: lh, width: lw, height: lh }));
+    return Math.round(midY / this.getFlowDimensionExtent(pt));
   }
   /**
    * Create a rectangle undo, like a multiple columns but not necessarily the whole

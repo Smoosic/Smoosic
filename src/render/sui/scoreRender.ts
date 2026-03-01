@@ -38,7 +38,8 @@ const VF = VexFlow;
   elementId: any,
   score: SmoScore,
   config: SmoRenderConfiguration,
-  undoBuffer: UndoBuffer
+  undoBuffer: UndoBuffer,
+  debug: layoutDebug
 }
 /**
  * @category SuiRender
@@ -55,9 +56,16 @@ export class SuiScoreRender {
   constructor(params: ScoreRenderParams) {    
     this.elementId = params.elementId;
     this.score = params.score;
-    this.vexContainers = new SvgPageMap(this.score.layoutManager!.globalLayout, this.elementId, this.score.layoutManager!.pageLayouts);
+    this.debug = params.debug;
+    this.vexContainers = new SvgPageMap(
+      { layout: this.score.layoutManager!.globalLayout,
+         container: this.elementId, 
+         pages: this.score.layoutManager!.pageLayouts,
+         debug: this.debug 
+      });
     this.setViewport();
   }
+  debug: layoutDebug;
   elementId: any;
   startRenderTime: number = 0;
   formatter: SuiLayoutFormatter | null = null;
@@ -344,7 +352,7 @@ export class SuiScoreRender {
       this.lyricsToOffset.set(vxSystem.lineIndex, vxSystem);
     }
     // vxSystem.updateLyricOffsets();
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.POST_RENDER, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.POST_RENDER, new Date().valueOf() - timestamp);
   }
   _renderNextSystemPromise(systemIx: number, keys: number[], printing: boolean) {
     return new Promise((resolve: any) => {
@@ -385,7 +393,7 @@ export class SuiScoreRender {
       $('body').removeClass('refresh-1');
       if (this.measureMapper !== null) {
         this.measureMapper.updateMap();
-        if (layoutDebug.mask & layoutDebug.values['artifactMap']) {
+        if (this.debug.mask & layoutDebug.values['artifactMap']) {
           this.score?.staves.forEach((staff) => {
             staff.measures.forEach((mm) => {
               mm.voices.forEach((voice: SmoVoice) => {
@@ -669,7 +677,13 @@ export class SuiScoreRender {
     }
     const score = this.score;
     $('head title').text(this.score.scoreInfo.name);
-    const formatter = new SuiLayoutFormatter(score, this.vexContainers, this.renderedPages);
+    const formatter = new SuiLayoutFormatter(
+      {
+        score: score, 
+        svg: this.vexContainers, 
+        renderedPages: this.renderedPages, 
+        debug: this.debug
+      });
     Object.keys(this.renderedPages).forEach((key) => {
       this.vexContainers.clearModifiersForPage(parseInt(key));
     });

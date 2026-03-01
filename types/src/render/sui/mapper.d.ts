@@ -1,12 +1,29 @@
 import { SmoSelector, SmoSelection, ModifierTab } from '../../smo/xform/selections';
 import { OutlineInfo } from './svgHelpers';
+import { layoutDebug } from './layoutDebug';
 import { SuiScroller } from './scroller';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
 import { SmoMeasure } from '../../smo/data/measure';
 import { SmoNoteModifierBase } from '../../smo/data/noteModifiers';
-import { SvgBox } from '../../smo/data/common';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
+import { SmoGlobalLayout } from '../../smo/data/scoreModifiers';
 import { SmoScore } from '../../smo/data/score';
 import { SvgPageMap } from './svgPageMap';
+/**
+ * Decide if this layout is horizontal or vertical
+ * @param layout
+ * @returns
+ */
+export declare function isHorizontalLayout(layout?: SmoGlobalLayout): boolean;
+/**
+ * Provide the layout and some convenience functions for horizontal vs. vertical layout
+ */
+export interface layoutProvider {
+    getLayout(): SmoGlobalLayout | undefined;
+    isLayoutHorizontal(): boolean;
+    getFlowDimensionExtent(box: SvgBox): number;
+    getFlowDimensionPosition(box: SvgBox | SvgPoint): number;
+}
 /**
  * DI information about renderer, so we can notify renderer and it can contain
  * a tracker object
@@ -27,6 +44,7 @@ export interface SuiRendererBase {
     renderPromise(): Promise<any>;
     addToReplaceQueue(mm: SmoSelection[]): void;
     renderElement: Element;
+    debug: layoutDebug;
 }
 /**
  * used to perform highlights in the backgroundd
@@ -58,6 +76,7 @@ export declare abstract class SuiMapper {
     selectionRects: Record<number, OutlineInfo[]>;
     outlines: Record<string, OutlineInfo>;
     mapping: boolean;
+    debug: layoutDebug;
     constructor(renderer: SuiRendererBase, scroller: SuiScroller);
     abstract highlightSelection(): void;
     abstract _growSelectionRight(hold?: boolean): number;

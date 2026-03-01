@@ -1,11 +1,18 @@
 import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SmoNote } from '../../smo/data/note';
 import { SmoScore } from '../../smo/data/score';
+import { layoutDebug } from './layoutDebug';
 import { ScaledPageLayout } from '../../smo/data/scoreModifiers';
 import { SmoMeasure, ISmoBeamGroup } from '../../smo/data/measure';
 import { TimeSignature, SmoTempoText } from '../../smo/data//measureModifiers';
 import { SvgPageMap } from './svgPageMap';
 import { TextFormatter } from '../../common/textformatter';
+export interface SuiFormatterParameters {
+    score: SmoScore;
+    svg: SvgPageMap;
+    renderedPages: Record<number, RenderedPage | null>;
+    debug: layoutDebug;
+}
 /**
  * @category SuiRender
  */
@@ -50,7 +57,10 @@ export declare class SuiLayoutFormatter {
     svg: SvgPageMap;
     renderedPages: Record<number, RenderedPage | null>;
     lines: number[];
-    constructor(score: SmoScore, svg: SvgPageMap, renderedPages: Record<number, RenderedPage | null>);
+    debug: layoutDebug;
+    measuresRenderedThisPage: number;
+    constructor(params: SuiFormatterParameters);
+    get horizontal(): boolean;
     /**
      * Once we know which line a measure is going on, make a map for it for easy
      * looking during rendering

@@ -19,7 +19,6 @@ import { ModifierTab } from '../smo/xform/selections';
 import { SvgHelpers } from '../render/sui/svgHelpers';
 import { SuiMenuManager } from '../ui/menus/manager';
 import { SmoConfiguration } from './configuration';
-import { SuiDom } from './dom';
 import { SuiNavigation } from '../render/sui/configuration';
 declare var $: any;
 
@@ -96,22 +95,22 @@ export class SuiEventHandler implements ModalEventHandler {
     this.createPiano();
   }
 
-  private static handleScrollEventDefer(handler: SuiEventHandler) {
-    if (handler.trackScrolling) {
+  private handleScrollEventDefer() {
+    if (this.trackScrolling) {
       return;
     }
-    const scrollRegion: HTMLElement | null = document.getElementById(SuiDom.scrollRegionId);
+    const scrollRegion: HTMLElement | null = this.navigation.scrollContainer;
     setTimeout(() => {
-      handler.trackScrolling = false;
+      this.trackScrolling = false;
       if (scrollRegion) {
         const scrollLeft = scrollRegion.scrollLeft;
         const scrollTop = scrollRegion.scrollTop;
-        handler.view.handleScrollEvent(scrollLeft, scrollTop);
+        this.view.handleScrollEvent(scrollLeft, scrollTop);
       }
     }, 500);
   }
   handleScrollEvent() {
-    SuiEventHandler.handleScrollEventDefer(this);
+    this.handleScrollEventDefer();
   }
 
   createPiano() {
@@ -178,7 +177,7 @@ export class SuiEventHandler implements ModalEventHandler {
   // in the tracker.
   bindResize() {
     const self = this;
-    const el: HTMLElement = $(this.navigation.scrollable)[0];
+    const el: HTMLElement = $(this.navigation.scrollContainer)[0];
     // unit test programs don't have resize html
     if (!el) {
       return;

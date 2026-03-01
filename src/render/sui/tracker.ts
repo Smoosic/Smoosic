@@ -11,7 +11,6 @@ import { SuiScroller } from './scroller';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SmoNote } from '../../smo/data/note';
 import { SmoMeasure } from '../../smo/data/measure';
-import { layoutDebug } from './layoutDebug';
 declare var $: any;
 
 export interface TrackerKeyHandler {

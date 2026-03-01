@@ -83,16 +83,16 @@ export interface Pitch {
     role?: string;
 }
 /**
- * A tuple indicating measure location in the score:
+ * A tuple indicating measure location in the score.  All values are 0-indexed
  * @category SmoObject
- * @param measureIndex - the actual offset from the first measure
- * @param localIndex - the index as shown to the user, considers renumbering
+ * @param measureIndex - the actual offset from the first measure.  It MUST MATCH staff.measures[i]
+ * @param displayMeasure - the index as shown to the user, considers renumbering, but is 0-indexed
  * @param sytemIndex - which bar (column) of a system this measure is
  * @param staffId - which staff (row) of a system this measure is
  */
 export interface MeasureNumber {
     measureIndex: number;
-    localIndex: number;
+    displayMeasure: number;
     systemIndex: number;
     staffId: number;
 }

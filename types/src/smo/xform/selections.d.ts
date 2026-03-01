@@ -128,6 +128,7 @@ export declare class SmoSelection {
        * @returns
        */
     static countTicks(score: SmoScore, sel1: SmoSelector, sel2: SmoSelector): number;
+    static nextNoteSelectionIncludeVoice(score: SmoScore, staffIndex: number, measureIndex: number, voiceIndex: number, tickIndex: number): SmoSelection | null;
     static nextNoteSelection(score: SmoScore, staffIndex: number, measureIndex: number, voiceIndex: number, tickIndex: number): SmoSelection | null;
     /**
      *

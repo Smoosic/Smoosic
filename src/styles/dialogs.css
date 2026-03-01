@@ -250,7 +250,7 @@ body .vueDialogContainer>div {
 body.showVueDialog .vueDialogContainer, 
 body.showVueDialog .modal{
   position:absolute;
-	display:block;
+	/* display:block;  */
 	z-index:3;
 }
 .draggable-button {
@@ -900,7 +900,7 @@ body.bugReport .bug-modal {
   display: flex;
 }
 
-.bug-modal .modal {
+.modal.show {
   display: block;
 }
 .bug-title {

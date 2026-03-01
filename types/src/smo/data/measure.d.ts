@@ -380,6 +380,7 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
      * @readonly
      */
     get lowestY(): number;
+    get rightmostX(): number;
     /**
      * adjust the y for the render boxes to account for the page and margins
      */

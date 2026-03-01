@@ -74,5 +74,5 @@ export interface SuiDropdownCompositeParams {
 export declare class SuiDropdownComposite extends SuiDropdownComponent {
     parentControl: SuiComponentParent;
     constructor(dialog: SuiDialogNotifier, parameters: SuiDropdownCompositeParams);
-    handleChanged(): void;
+    handleChanged(): Promise<void>;
 }

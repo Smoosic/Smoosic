@@ -3,6 +3,7 @@ import { SuiScoreView } from '../sui/scoreView';
 import { SmoScore } from '../../smo/data/score';
 import { SmoSelector } from '../../smo/xform/selections';
 import { SuiAudioAnimationParams } from './musicCursor';
+import { layoutDebug } from '../sui/layoutDebug';
 /**
  * Create audio player for the score from the start point
  * @category SuiAudio
@@ -108,6 +109,7 @@ export declare class SuiAudioPlayer {
     audioDefaults: import("./oscillator").SuiOscillatorParams;
     volumeMap: Record<string, number>;
     audioAnimation: SuiAudioAnimationParams;
+    debug: layoutDebug;
     constructor(parameters: SuiAudioPlayerParams);
     /**
      * Popuate the SoundData structures used to create the oscillators

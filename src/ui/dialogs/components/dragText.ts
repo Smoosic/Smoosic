@@ -60,7 +60,8 @@ export class SuiDragText extends SuiComponentBase {
     this.session = new SuiDragSession({
       textGroup: (this.dialog as any).modifier,
       context: this.view.renderer.pageMap,
-      scroller: this.view.tracker.scroller
+      scroller: this.view.tracker.scroller,
+      debug: this.view.debug
     });
     $(this._getInputElement()).find('label').text(this.altLabel);
     $(this._getInputElement()).find('span.icon').removeClass('icon-enlarge').addClass('icon-checkmark');

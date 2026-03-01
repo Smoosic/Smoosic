@@ -49,5 +49,5 @@ export interface SuiToggleCompositeParams {
 export declare class SuiToggleComposite extends SuiToggleComponent {
     parentControl: SuiComponentParent;
     constructor(dialog: SuiDialogNotifier, parameters: SuiToggleCompositeParams);
-    handleChanged(): void;
+    handleChanged(): Promise<void>;
 }

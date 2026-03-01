@@ -1,4 +1,5 @@
 import { SmoNote } from '../../smo/data/note';
+import { layoutDebug } from '../sui/layoutDebug';
 import { SmoDynamicText, SmoNoteModifierBase } from '../../smo/data/noteModifiers';
 import { SmoSelection } from '../../smo/xform/selections';
 import { SmoMeasure, MeasureTickmaps } from '../../smo/data/measure';
@@ -42,6 +43,7 @@ export declare class VxMeasure implements VxMeasureIf {
     dbgWidth: number;
     hideAccidentals: boolean;
     tiedOverPitches: Pitch[];
+    debug: layoutDebug;
     constructor(context: SvgPage, selection: SmoSelection, printing: boolean, softmax: number, tiedOverPitches: Pitch[]);
     static get fillStyle(): string;
     setFirstInColumn(val: boolean): void;

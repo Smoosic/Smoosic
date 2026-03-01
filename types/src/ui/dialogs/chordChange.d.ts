@@ -24,7 +24,7 @@ export declare class SuiChordChangeDialog extends SuiDialogBase {
     get textPositionCtrl(): SuiRockerComponent;
     get adjustWidthCtrl(): SuiToggleComponent;
     get fontCtrl(): SuiFontComponent;
-    changed(): void;
+    changed(): Promise<void>;
     setLyric(selector: SmoSelector, lyric: SmoLyric): void;
     display(): void;
     bindElements(): void;

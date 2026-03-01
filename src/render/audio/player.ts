@@ -167,9 +167,11 @@ export class SuiAudioPlayer {
   // a running record of the volumes we have used from the volume array, if a note is played multiple times.
   volumeMap: Record<string, number> = {};
   audioAnimation: SuiAudioAnimationParams;
+  debug: layoutDebug
   constructor(parameters: SuiAudioPlayerParams) {
     this.instanceId = SuiAudioPlayer.incrementInstanceId();
     this.paused = false;
+    this.debug = parameters.view.debug;
     this.view = parameters.view;
     this.score = parameters.score;
     // Assume tempo is same for all measures
@@ -263,7 +265,7 @@ export class SuiAudioPlayer {
     if (keys.length) {
       measureTicks -= keys.reduce((a, b) => a > b ? a : b);
     }
-    if (layoutDebug.mask & layoutDebug.values.oscillators) {
+    if (this.debug.mask & layoutDebug.values.oscillators) {
       console.log(`player:  ${measureIndex} ${JSON.stringify(measureNotes, null, ' ')}`);
     }
     return { endTicks: measureTicks, measureNotes };

@@ -1,24 +1,17 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, Ref, toRef } from 'vue';
 interface Props {
   closeFunction: () => void,
-  timer?: number
+  show: Ref<boolean>
 }
 const props = defineProps<Props>();
+const show = toRef(props, 'show');
 const closeFunction = props.closeFunction;
-const timer = props.timer || 0;
 const imageLoc = '../styles/images/logo.png';
-onMounted(() => {
-  if (timer && timer > 0) {
-    setTimeout(() => {
-      closeFunction();
-    }, timer);
-  }
-})
 </script>
 
 <template>
-  <div class="modal">
+  <div class="modal" :class="{ show: show }">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="row">

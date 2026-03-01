@@ -19,6 +19,7 @@ import { SmoUiConfiguration } from '../configuration';
 import { PromiseHelpers } from '../../common/promiseHelpers';
 import { createApp, ref, Ref, watch } from 'vue';
 import { SuiNavigationDom } from '../navigation';
+import { layoutDebug } from '../../../typedoc';
 
 
 declare var $: any;
@@ -272,6 +273,7 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
   }
   id: string;
   ctor: string;
+  debug: layoutDebug;
   boundKeyboard: boolean;
   components: SuiComponentBase[] = [];
   boundComponents: SuiComponentBase[] = [];
@@ -299,6 +301,7 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
     this.label = dialogElements.label;
     this.eventSource = parameters.eventSource;
     this.view = parameters.view;
+    this.debug = parameters.view.debug;
     this.completeNotifier = parameters.completeNotifier;
     this.modifier = parameters.modifier;
     this.ctor = parameters.ctor;

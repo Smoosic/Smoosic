@@ -1,5 +1,8 @@
 import { ButtonDefinition } from '../ui/buttons/button';
 import { KeyEvent } from '../smo/data/common';
+import { SuiNavigation } from '../render/sui/configuration';
+import { SuiScoreView } from '../render/sui/scoreView';
+import { Ref } from 'vue';
 /**
  * Define the base class for a modal component that resolves a promise when it is dismissed
  * @category SuiButton
@@ -35,6 +38,25 @@ export interface SelectOption {
     classes?: string;
     icon?: string;
     active?: boolean;
+}
+export interface DomDebugFlag {
+    category: string;
+    htmlString: string;
+}
+export interface CrashDialog {
+    url: string;
+    bodyText: Ref<string>;
+    show: Ref<boolean>;
+}
+export interface DomDialogNotifiers {
+    showSplash: Ref<boolean>;
+    splashTimer: Ref<number>;
+    debugFlags: DomDebugFlag[];
+    crashDialog: CrashDialog;
+}
+export interface ExceptionParameters {
+    view: SuiScoreView;
+    navigation: SuiNavigation;
 }
 export declare const modalContainerId = "#vue-modal-container";
 /**

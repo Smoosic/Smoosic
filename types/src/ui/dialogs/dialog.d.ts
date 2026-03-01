@@ -9,6 +9,7 @@ import { SuiDialogNotifier, DialogDefinitionElement, SuiComponentBase, DialogDef
 import { SuiScroller } from '../../render/sui/scroller';
 import { EventHandler } from '../eventSource';
 import { SmoUiConfiguration } from '../configuration';
+import { layoutDebug } from '../../../typedoc';
 export type DialogCallback = () => Promise<void>;
 /**
  * Parameters for installing a dialog.  VUE-based dialog logic.
@@ -134,6 +135,7 @@ export declare abstract class SuiDialogBase extends SuiDialogNotifier {
     static getStaticText(staticText: Record<string, string>[]): Record<string, string>;
     id: string;
     ctor: string;
+    debug: layoutDebug;
     boundKeyboard: boolean;
     components: SuiComponentBase[];
     boundComponents: SuiComponentBase[];
@@ -156,7 +158,7 @@ export declare abstract class SuiDialogBase extends SuiDialogNotifier {
     bindElements(): void;
     bindComponents(): void;
     initialValue(): void;
-    changed(): void;
+    changed(): Promise<void>;
     getId(): string;
     getModifier(): SmoModifier | null;
     getEventSource(): BrowserEventSource;
