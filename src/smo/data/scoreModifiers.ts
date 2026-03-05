@@ -480,6 +480,7 @@ export interface ScaledPageLayout {
   intraGap: number;
   pages: number;
   maxMeasureSystem: number;
+  displayMode: displayMode;
 }
 /**
  * Constructor parameters for {@link SmoLayoutManager}
@@ -595,6 +596,7 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
     rv.svgScale = globalLayout.svgScale;
     rv.zoomScale = globalLayout.zoomScale;
     rv.maxMeasureSystem = globalLayout.maxMeasureSystem;
+    rv.displayMode = globalLayout.displayMode;
     
     return rv as ScaledPageLayout;
   }
@@ -621,7 +623,7 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
     }
     // @@@test code:
     console.warn("forcing score layout value");
-    this.globalLayout.displayMode = 'vertical';
+    this.globalLayout.displayMode = 'horizontal';
   }
   trimPages(pageCount: number) {
     if (pageCount < this.pageLayouts.length - 1) {

@@ -375,6 +375,9 @@ export class SuiLayoutFormatter {
 
     y = scoreLayout.topMargin;
     x = scoreLayout.leftMargin;
+    // For horizontal layout, keep track of the left edge of the page, which will be different each page.
+    // For vertical layout it is always 0
+    let pageLeftMargin = 0;
 
     while (measureIx < this.score.staves[0].measures.length) {
       if (this.score.isPartExposed()) {
@@ -386,8 +389,11 @@ export class SuiLayoutFormatter {
       measureEstimate = this.estimateColumn(scoreLayout, measureIx, systemIndex, lineIndex, x, y);
       x = measureEstimate.x;
       if (systemIndex > 0 &&
-        (measureEstimate.measures[0].format.systemBreak || measureEstimate.x > (scoreLayout.pageWidth - scoreLayout.leftMargin))) {
-        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, false);
+        (measureEstimate.measures[0].format.systemBreak || 
+          measureEstimate.x > pageLeftMargin + (scoreLayout.pageWidth - scoreLayout.leftMargin))) {
+        // Always justify the measures in y direction, even in horizontal model, so lyrics, staff lines etc. match up
+        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, false, pageLeftMargin);
+        
         // find the measure with the lowest y extend (greatest y value), not necessarily one with lowest
         // start of staff. bottomMeasure is ignored if layout is horizontal since we always break at the 
         // end of a system.
@@ -433,7 +439,9 @@ export class SuiLayoutFormatter {
           y = bottomMeasure.lowestY + scoreLayout.interGap;
           x = scoreLayout.leftMargin;
         } else {
-          x = rightmostMeasure.rightmostX + scoreLayout.leftMargin;
+          // For horizontal layout, we 'page' at the end of each system.
+          // so the next system starts at the left edge of the next page
+          x = this.currentPage * scoreLayout.pageWidth + scoreLayout.leftMargin;
           y = scoreLayout.topMargin;
         }
   
@@ -443,6 +451,9 @@ export class SuiLayoutFormatter {
         this.lines.push(lineIndex);
         measureEstimate = this.estimateColumn(scoreLayout, measureIx, systemIndex, lineIndex, x, y);
         x = measureEstimate.x;
+        if (scoreLayout.displayMode === 'horizontal') {
+          pageLeftMargin += scoreLayout.pageWidth;
+        }
       }
       measureEstimate?.measures.forEach((measure) => {
         const context = this.svg.getRenderer(measure.svg.logicalBox);
@@ -458,7 +469,7 @@ export class SuiLayoutFormatter {
       // If this is the last measure but we have not filled the x extent,
       // still justify the vertical staves and check for page break.
       if (this.isLastVisibleMeasure(measureIx) && measureEstimate !== null) {
-        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, true);
+        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, true, pageLeftMargin);
         const bottomMeasure = currentLine.reduce((a, b) =>
           a.svg.logicalBox.y + a.svg.logicalBox.height > b.svg.logicalBox.y + b.svg.logicalBox.height ? a : b
         );
@@ -641,15 +652,17 @@ export class SuiLayoutFormatter {
    * @param currentLine 
    * @param columnCount 
    * @param lastSystem 
+   * @param pageLeftMargin - if horizontal layout, the start x of the page
    */
-  justifyY(scoreLayout: ScaledPageLayout, rowCount: number, currentLine: SmoMeasure[], lastSystem: boolean) {
+  justifyY(scoreLayout: ScaledPageLayout, rowCount: number, currentLine: SmoMeasure[], 
+    lastSystem: boolean, pageLeftMargin: number) {
     const sh = SvgHelpers;
     // If there are fewer measures in the system than the max, don't justify.
     // We estimate the staves at the same absolute y value.
     // Now, move them down so the top of the staves align for all measures in a  row.
     const measuresToHide: SmoMeasure[] = [];
     const rows: Array<SmoMeasure[]> = [];
-    let anyNotes = false;
+    let anyNotes = false;    
     for (let i = 0; i < rowCount; ++i) {
       // lowest staff has greatest staffY value.
       const rowAdj = currentLine.filter((mm) => mm.svg.rowInSystem === i);
@@ -693,7 +706,8 @@ export class SuiLayoutFormatter {
           columnCount = scoreLayout.maxMeasureSystem;
       }
       if (scoreLayout.maxMeasureSystem > 1 || !lastSystem) {
-        justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + rightStaff.staffX + rightStaff.staffWidth + missingOffset))
+        justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + 
+          (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
           / columnCount);
       }
       let justOffset = 0;

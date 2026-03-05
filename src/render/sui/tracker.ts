@@ -857,6 +857,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       let testBox: SvgBox = SvgHelpers.smoBox(box);
       let context = this.renderer.pageMap.getRenderer(testBox);
       testBox.y -= context.box.y;
+      testBox.x -= context.box.x;
       if (!this.selectionRects[context.pageNumber]) {
         this.selectionRects[context.pageNumber] = [];
         pages.push(context.pageNumber);
@@ -887,6 +888,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       const timeOff = strokeName === 'suggestion' ? 1000 : 0;    
       if (context) {
         testBox.y -= context.box.y;
+        testBox.x -= context.box.x;
         if (!this.outlines[strokeName]) {
           this.outlines[strokeName] = {
             context: context, box: testBox, classes: '',

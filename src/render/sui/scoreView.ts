@@ -17,7 +17,7 @@ import { SvgHelpers } from './svgHelpers';
 import  {layoutProvider } from './mapper';
 import { SuiTracker } from './tracker';
 import { createTopDomContainer } from '../../common/htmlHelpers';
-import { SmoRenderConfiguration } from './configuration';
+import { SmoRenderConfiguration, SuiNavigation } from './configuration';
 import { SuiRenderState, scoreChangeEvent } from './renderState';
 import { ScoreRenderParams } from './scoreRender';
 import { SmoOperation } from '../../smo/xform/operations';
@@ -63,8 +63,10 @@ export abstract class SuiScoreView implements layoutProvider {
   config: SmoRenderConfiguration;
   audioAnimation: SuiAudioAnimationParams;
   debug: layoutDebug;
+  navigation: SuiNavigation;
   constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer) {
     this.score = score;
+    this.navigation = config.navigation;
     this.debug = new layoutDebug(config.navigation);
     const renderParams: ScoreRenderParams = {
       elementId: config.navigation.scoreContainer,

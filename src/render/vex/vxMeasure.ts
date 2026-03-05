@@ -516,7 +516,8 @@ export class VxMeasure implements VxMeasureIf {
       return;
     }
     // Note: need to do this to get it into VEX KS format
-    const staffX = this.smoMeasure.staffX + this.smoMeasure.format.padLeft;
+    const startX = this.context.box.x;
+    const staffX = (this.smoMeasure.staffX - startX) + this.smoMeasure.format.padLeft;
     const staffY = this.smoMeasure.staffY - this.context.box.y;
     const key = SmoMusic.vexKeySignatureTranspose(this.smoMeasure.keySignature, 0);
     const canceledKey = SmoMusic.vexKeySignatureTranspose(this.smoMeasure.canceledKeySignature, 0);
@@ -525,7 +526,7 @@ export class VxMeasure implements VxMeasureIf {
       y: staffY,
       padLeft: this.smoMeasure.format.padLeft,
       id: this.smoMeasure.id,
-      staffX: this.smoMeasure.staffX,
+      staffX: this.smoMeasure.staffX - startX,
       staffY: this.smoMeasure.staffY,
       staffWidth: this.smoMeasure.staffWidth,
       forceClef: this.smoMeasure.svg.forceClef,

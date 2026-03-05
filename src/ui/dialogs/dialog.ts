@@ -19,7 +19,7 @@ import { SmoUiConfiguration } from '../configuration';
 import { PromiseHelpers } from '../../common/promiseHelpers';
 import { createApp, ref, Ref, watch } from 'vue';
 import { SuiNavigationDom } from '../navigation';
-import { layoutDebug } from '../../../typedoc';
+import { layoutDebug, SuiNavigation } from '../../../typedoc';
 
 
 declare var $: any;
@@ -82,20 +82,20 @@ export const InstallDialog = async (params: DialogInstallParams) => {
     complete.value = true;
     await params.commitCb();
     trapper.close();
-    SuiNavigationDom.instance.hideDialogModal();
+    params.dialogParams.view.navigation.hideDialogModal();
   }
   const cancelCb = async () => {
     complete.value = true;
     await params.cancelCb();
     trapper.close();
-    SuiNavigationDom.instance.hideDialogModal();
+    params.dialogParams.view.navigation.hideDialogModal();
   }
   const removeCb = async () => {
     if (params.removeCb) {
       await params.removeCb();
     }
     trapper.close();
-    SuiNavigationDom.instance.hideDialogModal();
+    params.dialogParams.view.navigation.hideDialogModal();
     complete.value = true;
   }
   $('#' + params.root).addClass('modal show fade');
@@ -117,7 +117,7 @@ export const InstallDialog = async (params: DialogInstallParams) => {
   // while typing into the dialog.  the 'completeNotifier' takes it back when we are done
   params.dialogParams.completeNotifier.unbindKeyboardForModal(new closeModalPromiser(complete));
   params.dialogParams.eventSource.bindKeydownHandler(evKey);
-  SuiNavigationDom.instance.showDialogModal();
+  params.dialogParams.view.navigation.showDialogModal();
   /* const cb = () => { };
   draggable({
     parent: $('#' + params.root).find('.attributeModal'),
@@ -320,8 +320,8 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
 
     this.dialogElements = dialogElements;
 
-    const left = $('#smo-scroll-region').offset().left + $('#smo-scroll-region').width() / 2;
-    const top = $('#smo-scroll-region').offset().top + $('#smo-scroll-region').height() / 2;
+    const left = $(this.view.navigation.scrollContainer).offset().left + $(this.view.navigation.scrollContainer).width() / 2;
+    const top = $(this.view.navigation.scrollContainer).offset().top + $(this.view.navigation.scrollContainer).height() / 2;
 
     this.dgDom = this._constructDialog(dialogElements, {
       id: 'dialog-' + this.id,
@@ -407,16 +407,18 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
   // ### position
   // For dialogs based on selections, tries to place the dialog near the selection and also
   // to scroll so the dialog is in view
-  static position(box: SvgBox, dgDom: DialogDom, scroller: SuiScroller) {
+  static position(box: SvgBox, dgDom: DialogDom, scroller: SuiScroller, navigation: SuiNavigation) {
     let y = (box.y + box.height) - scroller.netScroll.y;
     let x = 0;
 
     // TODO: adjust if db is clipped by the browser.
     const dge = $(dgDom.element).find('.attributeModal');
     const dgeHeight: number = $(dge).height();
-    const maxY: number = $('#smo-scroll-region').height();
-    const maxX: number = $('#smo-scroll-region').width();
-    const offset: any = $('.dom-container').offset();
+    const scrollRegion = $(navigation.scrollContainer);
+    const domRegion = $(navigation.outerContainer);
+    const maxY: number = scrollRegion.height();
+    const maxX: number = scrollRegion.width();
+    const offset: any = domRegion.offset();
     y = y - (offset.top as number);
 
     const offsetY = dgeHeight + y > window.innerHeight ? (dgeHeight + y) - window.innerHeight : 0;
@@ -447,7 +449,7 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
   // Position the dialog near a selection.  If the dialog is not visible due
   // to scrolling, make sure it is visible.
   position(box: SvgBox) {
-    SuiDialogBase.position(box, this.dgDom, this.view.tracker.scroller);
+    SuiDialogBase.position(box, this.dgDom, this.view.tracker.scroller, this.view.navigation);
   }
   hideRemoveButton() {
     $(this.dgDom.element).find('.remove-button').remove();
@@ -466,7 +468,7 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
   // position the dialog box in the center of the current scroll region
   positionGlobally() {
     const box = SvgHelpers.boxPoints(250, 250, 1, 1);
-    SuiDialogBase.position(box, this.dgDom, this.view.tracker.scroller);
+    SuiDialogBase.position(box, this.dgDom, this.view.tracker.scroller, this.view.navigation);
   }
   // ### postionFromSelection
   // set initial position of dialog based on first selection

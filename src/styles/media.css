@@ -322,6 +322,9 @@ body.printing .printFrame {
   .horizontal.musicRelief {
     flex-flow:row nowrap;
   }
+  .horizontal.musicRelief .score-container {
+    display: flex;
+  }
   .workspace {
     padding-top: 2px;
     position:relative;
