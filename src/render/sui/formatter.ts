@@ -71,6 +71,7 @@ export class SuiLayoutFormatter {
   svg: SvgPageMap;
   renderedPages: Record<number,RenderedPage | null>;
   lines: number[] = [];
+  horizontalGaps: Record<number, number> = {};
   debug: layoutDebug;
   measuresRenderedThisPage: number = 0;
   constructor(params: SuiFormatterParameters) {
@@ -206,7 +207,6 @@ export class SuiLayoutFormatter {
     let dsum = 0;
     let maxCfgWidth = 0;
     let isPickup = false;
-    console.log(`estimateColumn mm=${measureIx}/${systemIndex} y: ${y} x: ${x}`);
     // Keep running tab of accidental widths for justification
     const contextMap: Record<number, SuiTickContext> = {};
     let measureToSkip = false;
@@ -387,10 +387,16 @@ export class SuiLayoutFormatter {
         }
       }
       measureEstimate = this.estimateColumn(scoreLayout, measureIx, systemIndex, lineIndex, x, y);
+      // For horizontal mode, we want the pages to be as close as possible so don't consider 
+      // left or right margin.
+      const effectiveWidth = scoreLayout.displayMode === 'horizontal' ? 
+        scoreLayout.pageWidth
+        : scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin);
+      const systemBreak = scoreLayout.displayMode === 'horizontal' ? false :measureEstimate.measures[0].format.systemBreak
       x = measureEstimate.x;
       if (systemIndex > 0 &&
-        (measureEstimate.measures[0].format.systemBreak || 
-          measureEstimate.x > pageLeftMargin + (scoreLayout.pageWidth - scoreLayout.leftMargin))) {
+        (systemBreak || 
+          measureEstimate.x > pageLeftMargin + effectiveWidth)) {
         // Always justify the measures in y direction, even in horizontal model, so lyrics, staff lines etc. match up
         this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, false, pageLeftMargin);
         
@@ -441,7 +447,9 @@ export class SuiLayoutFormatter {
         } else {
           // For horizontal layout, we 'page' at the end of each system.
           // so the next system starts at the left edge of the next page
-          x = this.currentPage * scoreLayout.pageWidth + scoreLayout.leftMargin;
+          // +1 to guarantee that the first pixel starts on the next page
+          x = this.currentPage * scoreLayout.pageWidth + 1;
+          console.log(`est ${measureEstimate.x} width ${scoreLayout.pageWidth}`);
           y = scoreLayout.topMargin;
         }
   
@@ -474,6 +482,16 @@ export class SuiLayoutFormatter {
           a.svg.logicalBox.y + a.svg.logicalBox.height > b.svg.logicalBox.y + b.svg.logicalBox.height ? a : b
         );
         scoreLayout = this.checkPageBreak(scoreLayout, currentLine, bottomMeasure);
+      }
+    }
+    if (scoreLayout.displayMode === 'horizontal') {
+      const rowKeys = Object.keys(this.horizontalGaps);
+      for (let i = 0; i < this.score.staves.length; ++i) {
+        if (this.horizontalGaps[i]) {
+          this.score.staves[i].measures.forEach((measure) => {
+            measure.setY(this.horizontalGaps[i], 'horizontal gap adjustment');
+          });
+        }
       }
     }
     // If a measure was added to the last page, make sure we re-render the page
@@ -706,9 +724,18 @@ export class SuiLayoutFormatter {
           columnCount = scoreLayout.maxMeasureSystem;
       }
       if (scoreLayout.maxMeasureSystem > 1 || !lastSystem) {
-        justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + 
-          (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
-          / columnCount);
+        if (scoreLayout.displayMode === 'horizontal') {
+          /*justifyX = Math.round((scoreLayout.pageWidth - (rightStaff.staffX - pageLeftMargin)
+            + rightStaff.staffWidth + missingOffset)
+            / columnCount); */
+          justifyX = Math.round((scoreLayout.pageWidth - (
+            (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
+            / columnCount);
+        } else {
+          justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + 
+            (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
+            / columnCount);
+        }
       }
       let justOffset = 0;
       rowAdj.forEach((measure) => {
@@ -723,10 +750,10 @@ export class SuiLayoutFormatter {
         justOffset += justifyX;
       });
     }
-    // If a full line doesn't contain any music, hide it.
-    if (this.score.preferences.hideEmptyLines && anyNotes) {
-      let adjY = 0;
-      for (let i = 0; i < rowCount; ++i) {
+    let adjY = 0;
+    for (let i = 0; i < rowCount; ++i) {
+      // If a full line doesn't contain any music, hide it.
+      if (this.score.preferences.hideEmptyLines && anyNotes) {
         const rowAdj = measuresToHide.filter((mm) => mm.svg.rowInSystem === i);
         if (rowAdj.length) {
           adjY += rowAdj[0].svg.logicalBox.height;
@@ -740,6 +767,14 @@ export class SuiLayoutFormatter {
             row.setY(row.svg.staffY - adjY, 'format-hide');
             row.adjustY(-adjY);
           });
+        }
+      }
+      // When this page is aligned, record the lowest y for each row, so we can align all the pages
+      // vertically.
+      if (scoreLayout.displayMode === 'horizontal') {
+        this.horizontalGaps[i] = this.horizontalGaps[i] ?? 0;
+        if (rows[i].length > 0) {
+          this.horizontalGaps[i] = Math.max(this.horizontalGaps[i], rows[i][0].staffY);
         }
       }
     }
