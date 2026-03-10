@@ -240,8 +240,15 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this._undoScorePreferences('Update preferences');
     const oldXpose = this.score.preferences.transposingScore;
     const curXpose = pref.transposingScore;
+    const currentLayout = this.score.layoutManager?.getGlobalLayout();
+    const oldDisplayMode =  currentLayout ? currentLayout.displayMode : 'vertical';
     this.score.updateScorePreferences(new SmoScorePreferences(pref));
     this.storeScore.updateScorePreferences(new SmoScorePreferences(pref));
+    const newLayout = this.score.layoutManager?.getGlobalLayout();
+    const displayMode = newLayout ? newLayout.displayMode : 'vertical';
+    if (oldDisplayMode !== displayMode) {
+      this.renderer.setViewport();
+    }
     if (curXpose === false && oldXpose === true) {
       this.score.setNonTransposing();
       this.storeScore.setNonTransposing();

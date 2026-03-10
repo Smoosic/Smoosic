@@ -536,7 +536,7 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
       pageHeight: 11 * 96,
       proportionality: 5,
       maxMeasureSystem: 0,
-      displayMode: 'horizontal'
+      displayMode: 'vertical'
     };
   }
   static get defaults(): SmoLayoutManagerParams {
@@ -546,7 +546,7 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
     };
   }
   static get attributes(): GlobalLayoutAttributes[] {
-    return ['pageWidth', 'pageHeight', 'noteSpacing', 'svgScale', 'zoomScale', 'maxMeasureSystem'];
+    return ['pageWidth', 'pageHeight', 'noteSpacing', 'svgScale', 'zoomScale', 'maxMeasureSystem', 'displayMode'];
   }
   // Attributes that are scaled by svgScale
   /* static get scalableAttributes(): Global {
@@ -621,9 +621,6 @@ export class SmoLayoutManager extends SmoScoreModifierBase {
     } else {
       this.pageLayouts.push(new SmoPageLayout(SmoPageLayout.defaults));
     }
-    // @@@test code:
-    console.warn("forcing score layout value");
-    this.globalLayout.displayMode = 'horizontal';
   }
   trimPages(pageCount: number) {
     if (pageCount < this.pageLayouts.length - 1) {

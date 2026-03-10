@@ -12,6 +12,7 @@ import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { VxSystem } from '../vex/vxSystem';
 import { SmoScore } from '../../smo/data/score';
 import { SmoTextGroup } from '../../smo/data/scoreText';
+import { displayMode } from '../../smo/data/scoreModifiers';
 import { SuiMapper, SuiRendererBase } from './mapper';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
 import { SuiScoreRender, ScoreRenderParams } from './scoreRender';
@@ -40,6 +41,7 @@ export class SuiRenderState implements SuiRendererBase {
   passState: number = SuiRenderState.passStates.initial;
   _score: SmoScore | null = null;
   _backupZoomScale: number = 0;
+  backupDisplayMode: displayMode = 'vertical';
   renderer: SuiScoreRender;
   idleRedrawTime: number;
   idleLayoutTimer: number = 0; // how long the score has been idle
@@ -306,16 +308,20 @@ export class SuiRenderState implements SuiRendererBase {
       });
     });
   }
-  renderForPrintPromise(): Promise<any> {
+  async renderForPrintPromise(): Promise<any> {
     $('body').addClass('print-render');
     const self = this;
     if (!this.score) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     const layoutMgr = this.score!.layoutManager!;
     const layout = layoutMgr.getGlobalLayout();
+    const originalDisplayMode = layout.displayMode;
+    const originalZoomScale = layout.zoomScale;
     this._backupZoomScale = layout.zoomScale;
+    this.backupDisplayMode = layout.displayMode;
     layout.zoomScale = 1.0;
+    layout.displayMode = 'vertical';
     layoutMgr.updateGlobalLayout(layout);
     this.setViewport();
     this.setRefresh();
@@ -329,6 +335,9 @@ export class SuiRenderState implements SuiRendererBase {
             $('.vf-selection').remove();
             $('body').addClass('printing');
             $(this.navigation.scrollContainer).css('height', '');
+            layout.displayMode = originalDisplayMode;
+            layout.zoomScale = originalZoomScale;
+            layoutMgr.updateGlobalLayout(layout);
             resolve();
           } else {
             poll();
@@ -343,6 +352,7 @@ export class SuiRenderState implements SuiRendererBase {
   restoreLayoutAfterPrint() {
     const layout = this.score!.layoutManager!.getGlobalLayout();
     layout.zoomScale = this._backupZoomScale;
+    layout.displayMode = this.backupDisplayMode;
     this.score!.layoutManager!.updateGlobalLayout(layout);
     this.setViewport();
     this.setRefresh();

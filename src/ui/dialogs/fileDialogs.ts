@@ -162,15 +162,18 @@ export const SuiFileSaveDialog  = async (parameters: SuiDialogParams) => {
 export const SuiPrintDialog = async (parameters: SuiDialogParams) => {
   await parameters.view.renderer.renderForPrintPromise();
   window.print();
-  const okCb = () => {
-    $('body').removeClass('printing');
+  $('body').removeClass('printing');
+  const okCb = async () => {
     parameters.view.renderer.restoreLayoutAfterPrint();
     window.dispatchEvent(new Event('resize'));
-    SuiNavigationDom.instance.hideDialogModal();
   }
   const rootId = replaceVueRoot(modalContainerId);
-  const appParams = { domId: rootId, okCb, message: 'Print complete!', headline: 'Printing' };
-  createApp(messageDialog as any, appParams).mount('#' + rootId);
-  SuiNavigationDom.instance.showDialogModal();  
+  const appParams = { domId: rootId, okCb, message: 'Print complete!', headline: 'Printing' };  
+  InstallDialog({
+    root: rootId,
+    app: messageDialog,
+    dialogParams: parameters,
+    appParams,
+    commitCb: okCb, cancelCb: okCb});
 }
 
