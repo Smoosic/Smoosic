@@ -6,13 +6,21 @@ import { SmoSelection, SmoSelector, ModifierTab } from '../../smo/xform/selectio
 import { smoSerialize } from '../../common/serializationHelpers';
 import { SuiOscillator } from '../audio/oscillator';
 import { SmoScore } from '../../smo/data/score';
-import { SvgBox, KeyEvent, defaultKeyEvent, keyHandler } from '../../smo/data/common';
+import { SvgBox, KeyEvent, defaultKeyEvent, keyHandler, Ticks, Pitch, PitchLetter } from '../../smo/data/common';
+import { SmoMusic } from '../../smo/data/music';
 import { SuiScroller } from './scroller';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SmoNote } from '../../smo/data/note';
 import { SmoMeasure } from '../../smo/data/measure';
 import { layoutDebug } from './layoutDebug';
+import { SvgPage } from './svgPageMap';
+import {SmoOperation} from "../../smo/xform/operations";
+import {NoteEntryCaret} from "./NoteEntryCaret";
+import {SmoGraceNote} from "../../smo/data/noteModifiers";
+import {TrackerDelegate} from "./NoteEntryMediator";
 declare var $: any;
+
+
 
 export interface TrackerKeyHandler {
   moveHome : keyHandler, 
@@ -39,6 +47,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
   idleTimer: number = Date.now();
   musicCursorGlyph: SVGSVGElement | null = null;
   deferPlayAdvance: boolean = false;
+  delegate: TrackerDelegate | null = null;
   static get strokes(): Record<string, StrokeInfo> {
     return {
       suggestion: {
@@ -72,7 +81,6 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
         strokeDasharray: 0,
         opacity: 1.0
       }
-
     };
   }
   constructor(renderer: SuiRendererBase, scroller: SuiScroller) {
@@ -443,21 +451,48 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     this.idleTimer = Date.now();
     const nselector = JSON.parse(JSON.stringify(this.selections[0].selector));
     nselector.staff = this.score.incrementActiveStaff(offset);
-    
+
     this.selections = [this._getClosestTick(nselector)];
     this.deferHighlight();
     this._createLocalModifiersList();
   }
-  removePitchSelection() {
-    if (this.outlines['pitchSelection']) {
-      if (this.outlines['pitchSelection'].element) {
-        this.outlines['pitchSelection'].element.remove();
-      }
-      delete this.outlines['pitchSelection'];
+
+
+  /**
+   * Set a specific pitch index (called by caret for mouse clicks)
+   * This updates the visual pitch selection without modifying data
+   */
+  setPitchIndex(index: number): void {
+    if (!this.selections.length) {
+      return;
     }
+
+    const note = this.selections[0].note as SmoNote;
+    if (!note || index < 0 || index >= note.pitches.length) {
+      return;
+    }
+
+    // Update the selected pitch index
+    this.pitchIndex = index;
+    this.selections[0].selector.pitches = [index];
+
+    // Notify via callback
+    this.delegate?.onPitchIndexChanged(index);
   }
 
-  // ### _moveSelectionPitch
+  getPitchIndex(): number {
+    return this.pitchIndex;
+  }
+
+  clearPitchIndex(): void {
+    this.pitchIndex = -1;
+    if (this.selections.length) {
+      this.selections[0].selector.pitches = [];
+    }
+    // Notify via callback
+    this.delegate?.onPitchIndexChanged(-1);
+  }
+
   // Suggest a specific pitch in a chord, so we can transpose just the one note vs. the whole chord.
   _moveSelectionPitch(index: number) {
     this.idleTimer = Date.now();
@@ -468,13 +503,16 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     const note = sel.note as SmoNote;
     if (note.pitches.length < 2) {
       this.pitchIndex = -1;
-      this.removePitchSelection();
+      // Emit event for pitch index reset
+      this.delegate?.onPitchIndexChanged(-1);
       return;
     }
     this.pitchIndex = (this.pitchIndex + index) % note.pitches.length;
     sel.selector.pitches = [];
     sel.selector.pitches.push(this.pitchIndex);
-    this._highlightPitchSelection(note, this.pitchIndex);
+
+    // Notify via callback
+    this.delegate?.onPitchIndexChanged(this.pitchIndex);
   }
   moveSelectionPitchUp() {
     this._moveSelectionPitch(1);
@@ -617,7 +655,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     this.highlightQueue.selectionCount = this.selections.length;
     this.deferHighlight();
   }
-  selectSuggestion(ev: KeyEvent) {
+  selectSuggestion(ev: KeyEvent, deferHighlightSelection: boolean = true) {
     if (!this.suggestion || !this.suggestion.measure || this.score === null) {
       return;
     }
@@ -648,7 +686,9 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     if (ev.ctrlKey) {
       this._addSelection(this.suggestion);
       this._createLocalModifiersList();
-      this.deferHighlight();
+      if (deferHighlightSelection) {
+        this.deferHighlight();
+      }
       return;
     }
     if (this.autoPlay) {
@@ -690,7 +730,9 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       }
     }
     this.score.setActiveStaff(this.selections[0].selector.staff);
-    this.deferHighlight();
+    if (deferHighlightSelection) {
+      this.deferHighlight();
+    }
     this._createLocalModifiersList();
   }
   _setModifierAsSuggestion(artifact: ModifierTab): void {
@@ -698,6 +740,9 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       return;
     }
     this.modifierSuggestion = artifact;
+    if (artifact.modifier instanceof SmoGraceNote) {
+      return;
+    }
     this._drawRect(artifact.box, 'suggestion');
   }
 
@@ -711,14 +756,27 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
         break;
       }
     }
-    if (sameSel || !artifact.box) {
+    if (!artifact.box) {
       return;
     }
+
     this.modifierSuggestion = null;
 
     this.suggestion = artifact;
+    // console.log(artifact.box);
+    // artifact.box.height = 60;
+    if (this.suggestion.note) {
+      return;
+    }
     this._drawRect(artifact.box, 'suggestion');
+    // if (sameSel) {
+      //todo; provide argument to the caret so it knows we are operation on a selected element
+    // }
+    // const caret = this.getNoteEntryCaret();
+    // caret.setSelection(this.suggestion);
+    // caret.render();
   }
+
   _highlightModifier() {
     let box: SvgBox | null = null;
     if (!this.modifierSelections.length) {
@@ -726,6 +784,9 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     }
     this.removeModifierSelectionBox();
     this.modifierSelections.forEach((artifact) => {
+      if (artifact.modifier instanceof SmoGraceNote) {
+        return;
+      }
       if (box === null) {
         box = artifact.modifier.logicalBox ?? null;
       } else {
@@ -736,19 +797,6 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       return;
     }
     this._drawRect(box, 'staffModifier');
-  }
-
-  _highlightPitchSelection(note: SmoNote, index: number) {
-    const noteDiv = $(this.renderElement).find('#' + note.renderId);
-    const heads = noteDiv.find('.vf-notehead');
-    if (!heads.length) {
-      return;
-    }
-    const headEl = heads[index];
-    const pageContext = this.renderer.pageMap.getRendererFromModifier(note);
-    $(pageContext.svg).find('.vf-pitchSelection').remove();
-    const box = pageContext.offsetBbox(headEl);
-    this._drawRect(box, 'pitchSelection');
   }
 
   _highlightActiveVoice(selection: SmoSelection) {
@@ -775,32 +823,27 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     let prevSel: SmoSelection | null = null;
     let curBox: SvgBox = SvgBox.default;
     this.idleTimer = Date.now();
-    const grace = this.getSelectedGraceNotes();
-    // If this is not a note with grace notes, logically unselect the grace notes
-    if (grace && grace.length && grace[0].selection && this.selections.length) {
-      if (!SmoSelector.sameNote(grace[0].selection.selector, this.selections[0].selector)) {
-        this.clearModifierSelections();
-      } else {
-        this._highlightModifier();
-        return;
-      }
-    }
     // If there is a race condition with a change, avoid referencing null note
     if (!this.selections[0].note) {
       return;
     }
     const note = this.selections[0].note as SmoNote;
-    if (this.pitchIndex >= 0 && this.selections.length === 1 &&
-      this.pitchIndex < note.pitches.length) {
-      this._highlightPitchSelection(note, this.pitchIndex);
-      this._highlightActiveVoice(this.selections[0]);
-      return;
+    // Reset pitch index if not in a valid pitch selection scenario
+    if (this.pitchIndex < 0 || this.selections.length !== 1 || this.pitchIndex >= note.pitches.length) {
+      this.pitchIndex = -1;
     }
-    this.removePitchSelection();
-    this.pitchIndex = -1;
+
+    // Single selection - just update voice UI and notify
     if (this.selections.length === 1 && note.logicalBox) {
-      this._drawRect(note.logicalBox, 'selection');
       this._highlightActiveVoice(this.selections[0]);
+      // Clear any existing multi-selection rectangles
+      this.drawSelectionRects([]);
+      // Get selected grace note if any
+      let graceNote: SmoGraceNote | null = null;
+      if (this.modifierSelections.length > 0 && this.modifierSelections[0].modifier instanceof SmoGraceNote) {
+        graceNote = this.modifierSelections[0].modifier;
+      }
+      this.delegate?.onSingleNoteHighlighted(this.selections[0], graceNote);
       return;
     }
     const sorted = this.selections.sort((a, b) => SmoSelector.gt(a.selector, b.selector) ? 1 : -1);
@@ -901,4 +944,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       }
     });
   }
+
+
+
 }
