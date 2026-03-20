@@ -1,8 +1,9 @@
 import { default as mainDom } from './components/mainDom.vue';
-import { DomDialogNotifiers, DomDebugFlag } from './common';
+import { DomDialogNotifiers, DomDebugFlag, replaceVueRoot } from './common';
 import { SuiPiano } from '../render/sui/piano';
 import { SvgHelpers } from '../render/sui/svgHelpers';
 import { SuiNavigation, scrollHandler, debugFlag } from '../render/sui/configuration';
+import progressComponent from './components/progress.vue';
 import { createApp, ref, Ref,reactive } from 'vue';
 declare var $: any;
 
@@ -21,6 +22,7 @@ export class SuiNavigationDom implements SuiNavigation {
   initialized: boolean = false;
   showSplash: Ref<boolean> = ref(false);
   splashTimer: Ref<number> = ref(0);
+  progressPercentValue: Ref<number> = ref(0);
   showAttributeDialog: Ref<boolean> = ref(false);
   crashReport: Ref<string> = ref('');
   showCrashReport: Ref<boolean> = ref(false);
@@ -28,6 +30,21 @@ export class SuiNavigationDom implements SuiNavigation {
     this.crashReport.value = message;
     this.showCrashReport.value = true;
     this.showDialogModal();
+  }
+  showProgressModal(label: string) {
+    $('body').addClass('progress-modal');
+    const domId = replaceVueRoot($('#render-progress')[0]);
+    createApp(progressComponent, { domId: domId, percent: this.progressPercentValue, label }).mount('#' + domId);
+    this.progressPercentValue.value = 0;
+  }
+  hideProgressModal() {
+    this.progressPercentValue.value = 100;
+    setTimeout(() => {
+      $('body').removeClass('progress-modal');
+    }, 500);
+  }
+  setProgress(percent: number) {
+    this.progressPercentValue.value = percent;
   }
   isInitialized() {
     return this.initialized;

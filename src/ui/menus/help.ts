@@ -29,7 +29,7 @@ const topicMenuOption: SuiConfiguredMenuOption = {
  */
 const aboutMenuOption: SuiConfiguredMenuOption = {
   handler: async (menu: SuiMenuBase) => {
-    menu.view.renderer.navigation.showDialogModal();
+    menu.view.renderer.navigation.showSplashModal(0);
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
     icon: '',

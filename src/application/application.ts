@@ -188,7 +188,14 @@ export class SuiApplication {
       }, 1);
     } else if (this.config.mode === 'application') {
       this.createUiDom();
-      await SuiSampleMedia.samplePromise(SuiOscillator.audio);
+      const navigation = this.navigation
+      if (navigation) {
+        navigation.showProgressModal('Loading audio samples');
+        await SuiSampleMedia.samplePromise(SuiOscillator.audio, (percent) => {
+          navigation.setProgress(percent);
+        });
+        navigation.hideProgressModal();
+      }
       const queryString = new QueryParser();
       const languageSelect = queryString.pairs.find((x) => x['language']) ?? { 'language': 'en' }
       if (languageSelect) {

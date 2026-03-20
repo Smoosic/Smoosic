@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+		<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Smoosic Editor</title>
+        <link href="../styles/bravura-font-codes.css" rel="stylesheet">
+        <link href="../styles/bootstrap.css" rel="stylesheet">
+		<link href="../styles/fonts.css" type="text/css" rel="stylesheet">
+        <link href="../styles/media.css" rel="stylesheet">
+        <link href="../styles/ribbon.css" rel="stylesheet">
+        <link href="../styles/dialogs.css" rel="stylesheet">
+        <link href="../styles/menus.css" rel="stylesheet">
+        <link href="../styles/piano.css" rel="stylesheet">
+        <link href="../styles/tree.css" rel="stylesheet">
+        <!-- script type="text/javascript" src="../../../vexflow_smoosic/build/cjs/vexflow-debug.js"></script -->
+        <!-- script type="text/javascript" src="../../node_modules/vexflow_smoosic/build/cjs/vexflow-debug-with-tests.js"></script -->
+        <!-- script type="text/javascript" src="../../../vexflow_smoosic/build/cjs/vexflow-debug-with-tests.js"></script -->
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.slim.js" ></script>
+        <script type="text/javascript" src="../jszip.js"></script>
+		<script type="text/javascript" src="../smoosic.js" ></script>
+    <script type="text/javascript">
+           document.addEventListener("DOMContentLoaded", function (event) {
+               var config = { mode: 'library', domContainer:'libmode'};
+               const score = Smo.SmoScore.getDefaultScore(Smo.SmoScore.defaults, null);
+               config.initialScore = score;
+               Smo.SuiApplication.configure(config);
+           });
+       </script>
+</head>
+<body>
+  <!-- audio crossOrigin="anonymous" id="sample" src="https://smoosic.github.io/Smoosic/build/sound/piano_middle_C.mp3" / -->
+  <div id="libmode">
+  </div>
+</body>
+</html>

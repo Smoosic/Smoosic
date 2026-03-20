@@ -319,6 +319,9 @@ body.printing .printFrame {
     flex-flow:column nowrap;
     flex: 1 1 auto;
   }
+  .musicRelief .score-container div {
+    background-color: #fff;
+  }
   .horizontal.musicRelief {
     flex-flow:row nowrap;
   }
@@ -336,7 +339,6 @@ body.printing .printFrame {
 
 .musicRelief {
 	background:#99a;
-
 }
 .media {
 	display:flex;

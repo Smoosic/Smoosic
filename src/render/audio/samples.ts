@@ -2,6 +2,7 @@
 // Copyright (c) Aaron David Newman 2021.
 import { SmoAudioPitch } from '../../smo/data/music';
 import { PromiseHelpers } from '../../common/promiseHelpers';
+import { Ref } from 'vue';
 import { SmoOscillatorInfo, SmoInstrument, SmoOscillatorInfoAllTypes,
   SmoOscillatorInfoNumberType, SmoOscillatorInfoNumberArType, SmoOscillatorInfoStringType, SmoOscillatorInfoStringNullType,
   SmoOscillatorInfoWaveformType, SmoOscillatorInfoSustainType, SmoOscillatorInfoOptionsType } from '../../smo/data/staffModifiers';
@@ -93,7 +94,7 @@ export class SuiSampleMedia {
   * Load samples so we can play the music
   * @returns - promise, resolved when loaded
   */
-  static async samplePromise(audio: AudioContext): Promise<any> {
+  static async samplePromise(audio: AudioContext, setProgress: (percent: number) => void): Promise<any> {
     let i = 0;
     const instrumentKeys = Object.keys(instrumentSampleMap);
     const context = new AudioContext() as unknown as AudioContext;
@@ -111,6 +112,7 @@ export class SuiSampleMedia {
       await instrument.load;
       instrument.output.addEffect("reverb", new Reverb(context), 0.1);
       loadedSoundfonts[key] = instrument;
+      setProgress(Math.round(((i + 1) / instrumentKeys.length) * 100));
     }
   }  
 }
