@@ -243,6 +243,7 @@ export class VxMeasure implements VxMeasureIf {
         vexNote.setStave(this.stave);
       }
     }
+    smoNote.vexNote = vexNote;
     const tiedOverPitches = tickIndex === 0 ? this.tiedOverPitches : [];
     const noteData: VexNoteModifierIf = {
       smoMeasure: this.smoMeasure,

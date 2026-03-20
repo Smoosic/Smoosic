@@ -11,6 +11,7 @@ import { SmoAttrs, Ticks, Pitch, getId, SmoObjectParams, Transposable, SvgBox, S
 import { smoSerialize } from '../../common/serializationHelpers';
 import { SmoMusic } from './music';
 import { defaultNoteScale, FontInfo, getChordSymbolGlyphFromCode } from '../../common/vex';
+import {GraceNote} from "vexflow_smoosic";
 
 /**
  * A note modifier is anything that is mapped to the note, but not part of the
@@ -220,6 +221,7 @@ export class SmoGraceNote extends SmoNoteModifierBase implements Transposable {
   clef: string = 'treble';
   noteType: string = 'n';
   renderId: string | null = null;
+  vexGraceNote: GraceNote | null = null;//todo: this is added here to help with EntryCaret
   hasTabNote: boolean = false;
 
   tickCount() {
