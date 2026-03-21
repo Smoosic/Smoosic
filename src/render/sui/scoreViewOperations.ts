@@ -53,8 +53,8 @@ declare var SmoConfig: SmoRenderConfiguration;
  * @category SuiRender
  */
 export class SuiScoreViewOperations extends SuiScoreView {
-  constructor(config: SmoRenderConfiguration, svgContainer: HTMLElement, score: SmoScore, scrollSelector: HTMLElement, undoBuffer: UndoBuffer) {
-    super(config, svgContainer, score, scrollSelector, undoBuffer);
+  constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer) {
+    super(config, score, undoBuffer);
   }
 
   /**

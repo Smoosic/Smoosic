@@ -112,8 +112,13 @@ export class NoteEntryCaret {
 		this.note = selection.note;
 		this.graceNote = graceNote;
 		this.activeNote = graceNote ?? selection.note;
+    const pageBox = this.activeNote?.logicalBox;
+    if (pageBox) {
+      this.context = this.tracker.renderer.pageMap.getRenderer(pageBox);
+    }
 		this.voice = selection.selector.voice;
 		this.vexNoteAbsoluteX = targetVexNote.getAbsoluteX();
+    console.log(`Setting selection. Absolute X: ${this.vexNoteAbsoluteX}, Grace note: ${!!graceNote}`);
 		this.vexNoteHeadWidth = targetVexNote.getMetrics().glyphWidth!;
 		this.vexNoteXShift = targetVexNote.getXShift();
 		this._calculateDisplacedHeadPosition();
@@ -239,7 +244,7 @@ export class NoteEntryCaret {
 			return;
 		}
 		this._calculateCaretBoundaryBoxCoordinates(this.selection.measure, this.note!, this.graceNote);
-		this._resolveContext();
+		// this._resolveContext();
 		this._fillOccupiedStaffLines(this.selection.measure, this.activeNote);
 		this._renderCursorRectangleElement();
 
@@ -342,7 +347,10 @@ export class NoteEntryCaret {
 		const scrollState = this.tracker?.scroller.scrollState;
 		const bb = SvgHelpers.boxPoints(ev.clientX + scrollState.x, ev.clientY + scrollState.y, 1, 1);
 		const point = this.tracker.renderer.pageMap.clientToSvg(bb);
-
+    const horizontal = this.context?.layoutSource?.isLayoutHorizontal();
+    if (horizontal && this.context) {
+      point.x -= this.context.box.x;
+    }
 		return SvgHelpers.doesBox1ContainBox2(this.caretBoundaryBox, point);
 	}
 
