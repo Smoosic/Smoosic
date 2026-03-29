@@ -192,6 +192,9 @@ body.alt-key button.hover-text .ribbon-button-hotkey {
 .hide {
   display: none !important;
 }
+.invisible {
+  visibility: hidden !important;
+}
 .controls-top button.duration.expanded.tuplet span.ribbon-button-hotkey  {
 	font-size:1em;
   padding-left: 7px;

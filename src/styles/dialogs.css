@@ -495,14 +495,29 @@ button.nav-link {
 	margin:10px;
 }
 
+.helpDialog .button-left,
 .attributeModal .buttonContainer .button-left {
 	margin-right:5px;
 }
+.helpDialog .button-left {
+  padding-left: 10px;
+}
+.helpDialog .button-right {
+  padding-right: 10px;
+}
+.prev-topic-text {
+  margin-left: 5px;
+}
+.next-topic-text {
+  margin-right: 5px;
+}
+.helpDialog .button-center,
 .attributeModal .buttonContainer .button-center {
 	margin-right:5px;
 	margin-left:5px;
 }
 
+.helpDialog .button-right,
 .attributeModal .buttonContainer .button-right {
 	margin-left:5px;
 }
@@ -923,17 +938,15 @@ body.splashScreen .bugDialog {
 
 }
 
-.helpDialog  {
-    display:none;
-}
+
 /* change did not get propogated */
-body.showHelpDialog .helpDialog {
+#help-dialog-container .helpDialog {
 	display:flex;
   overflow: hidden;
 	background: #eef;
   flex: 1 0 100%;
   flex-flow:column wrap;
-  overflow:auto;
+  overflow-y:auto;
 	margin: 8px;
 	padding: 10px;
   position: absolute;
@@ -984,7 +997,7 @@ body.showHelpDialog .helpDialog {
   position: absolute;
   left: 2px;
 }
-body.showHelpDialog .helpDialog button.close {
+.helpDialog button.close {
   position: absolute;
   right: 5px;
   color: red;

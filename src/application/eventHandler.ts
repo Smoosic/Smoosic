@@ -228,7 +228,7 @@ export class SuiEventHandler implements ModalEventHandler {
     }
   }
   menuHelp() {
-    SuiHelp.displayHelp();
+    this.view.navigation.showHelpModal();
   }
   keyUp(evdata: any) {
     if (!evdata.ctrlKey && SuiEventHandler.ctrlKeyPressed) {
@@ -278,7 +278,7 @@ export class SuiEventHandler implements ModalEventHandler {
     const dataCopy = SuiTracker.serializeEvent(evdata);
     await this.view.renderer.updatePromise();
     if (dataCopy.key == '?') {
-      SuiHelp.displayHelp();
+      this.view.navigation.showHelpModal();
     }
     if (dataCopy.key == 'Enter') {
       this.trackerModifierSelect(dataCopy);

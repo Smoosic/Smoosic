@@ -108,6 +108,9 @@ export class SuiApplication {
   instance: SuiInstance | null = null;
   config: SmoConfiguration;
   score: SmoScore | null = null;
+  // If no score is found in local storage or remote, we create a default score.  
+  // This is a signal that the user is new, so we can show them the help screen.
+  firstTimeUser: boolean = false;
   navigation?: SuiNavigation;
   view: SuiScoreViewOperations | null = null;
   createUiDom() {
@@ -188,6 +191,10 @@ export class SuiApplication {
       }, 1);
     } else if (this.config.mode === 'application') {
       this.createUiDom();
+      if (this.firstTimeUser) {
+        this.navigation?.showHelpModal();
+      }
+
       const navigation = this.navigation
       if (navigation) {
         navigation.showProgressModal('Loading audio samples');
@@ -247,9 +254,7 @@ export class SuiApplication {
         this.score = this.tryParse(localScore);
       } else {
         this.score = SmoScore.getDefaultScore(SmoScore.defaults, null);
-        if (this.config.mode === 'application') {
-          SuiHelp.displayHelp();
-        }
+        this.firstTimeUser = true;
       }
     }
     return this.score;

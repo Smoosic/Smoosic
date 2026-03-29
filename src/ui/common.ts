@@ -51,6 +51,7 @@ export interface CrashDialog {
 }
 export interface DomDialogNotifiers {
   showSplash: Ref<boolean>,
+  showHelpDialog: Ref<boolean>,
   splashTimer: Ref<number>,
   debugFlags: DomDebugFlag[],
   crashDialog: CrashDialog,

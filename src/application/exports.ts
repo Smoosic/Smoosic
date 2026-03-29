@@ -50,7 +50,7 @@ import { SuiGlobalLayoutDialogVue } from '../ui/dialogs/globalLayout';
 import { SuiScoreViewDialogVue } from '../ui/dialogs/scoreView';import { SuiLibraryDialog } from '../ui/dialogs/library';
 import { SuiChordChangeDialog } from '../ui/dialogs/chordChange';
 import { SuiLyricDialog } from '../ui/dialogs/lyric';
-import { SuiTextBlockDialog, helpModal } from '../ui/dialogs/textBlock';
+import { SuiTextBlockDialog } from '../ui/dialogs/textBlock';
 import { SuiDynamicModifierDialog } from '../ui/dialogs/dynamics';
 import { SuiSlurAttributesDialog } from '../ui/dialogs/slur';
 import { SuiPedalMarkingDialog } from '../ui/dialogs/pedalMarking';
@@ -359,7 +359,7 @@ export const Smo = {
   SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
   SuiTimeSignatureDialog,SuiTextBlockDialog, SuiLyricDialog, SuiChordChangeDialog,
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
-  SuiHairpinAttributesDialog, SuiStaffGroupDialogVue, helpModal,
+  SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,
   SuiScorePreferencesDialogVue,
   SuiPartInfoDialogVue, SuiOrnamentDialogVue, 
   SuiArticulationDialogVue, 

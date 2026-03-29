@@ -4,6 +4,7 @@ import { SuiPiano } from '../render/sui/piano';
 import { SvgHelpers } from '../render/sui/svgHelpers';
 import { SuiNavigation, scrollHandler, debugFlag } from '../render/sui/configuration';
 import progressComponent from './components/progress.vue';
+import helpDialog from './components/dialogs/helpContainer.vue';
 import { createApp, ref, Ref,reactive } from 'vue';
 declare var $: any;
 
@@ -22,6 +23,7 @@ export class SuiNavigationDom implements SuiNavigation {
   initialized: boolean = false;
   showSplash: Ref<boolean> = ref(false);
   splashTimer: Ref<number> = ref(0);
+  showHelpDialog: Ref<boolean> = ref(false);
   progressPercentValue: Ref<number> = ref(0);
   showAttributeDialog: Ref<boolean> = ref(false);
   crashReport: Ref<string> = ref('');
@@ -45,6 +47,12 @@ export class SuiNavigationDom implements SuiNavigation {
   }
   setProgress(percent: number) {
     this.progressPercentValue.value = percent;
+  }
+  showHelpModal() {
+    const domId = replaceVueRoot($('#help-dialog-container')[0]);
+    const closeCb = () => this.showHelpDialog.value = false;
+    this.showHelpDialog.value = true;
+    createApp(helpDialog, { domId: domId, closeCb }).mount('#' + domId);
   }
   isInitialized() {
     return this.initialized;
@@ -115,6 +123,7 @@ export class SuiNavigationDom implements SuiNavigation {
     const getDialogNotifiers = (): DomDialogNotifiers => {
       return { debugFlags: this.debugFlags, showSplash: this.showSplash, splashTimer: this.splashTimer, 
         showAttributeDialog: this.showAttributeDialog,
+        showHelpDialog: this.showHelpDialog,
         crashDialog: { url: this.crashUrl, bodyText: this.crashReport, 
           show: this.showCrashReport } };
     }

@@ -16,7 +16,7 @@ export class SuiHelpMenu extends SuiConfiguredMenu {
  */
 const topicMenuOption: SuiConfiguredMenuOption = {
   handler: async (menu: SuiMenuBase) => {
-    SuiHelp.displayHelp();
+    menu.view.renderer.navigation.showHelpModal();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
     icon: '',

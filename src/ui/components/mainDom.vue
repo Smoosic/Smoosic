@@ -15,6 +15,7 @@ const pianoKeys = useTemplateRef('pianoKeys');
 const showSplash: Ref<boolean> = ref(false);
 const dialogNotifiers = props.getDialogNotifiers();
 const showAttributeDialog = dialogNotifiers.showAttributeDialog;
+const showHelpDialog = dialogNotifiers.showHelpDialog;
 const crashDialog: CrashDialog = dialogNotifiers.crashDialog;
 const showDebugRegion = computed(() => {
   return dialogNotifiers.debugFlags.some((flag) => flag.htmlString.length > 0);
@@ -62,6 +63,7 @@ watch ((dialogNotifiers.splashTimer), (newVal) => {
   <div class="draganime hide" style="width: 380px; height: 153.031px; left: 754px; top: 265px;"></div>
   <div class="dialogContainer attributeDialog" id="attribute-modal-container"></div>
   <div id="render-progress"></div>
+  <div id="help-dialog-container" :class="{ hide: !showHelpDialog }" class="card-view"></div>
   <div class="vueDialogContainer vue-modal-container" 
     :id="getId('vue-modal-container')" :class="{ hide: !showAttributeDialog }"></div>
   <div class="dom-container" :class="{ masked: dialogNotifiers.showSplash.value }">

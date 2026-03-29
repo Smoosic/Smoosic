@@ -192,7 +192,7 @@ export class RibbonButtons {
         createAndDisplayDialog(SuiTempoDialog, params);
       }
     } else if (buttonData.ctor === 'helpModal') {
-      SuiHelp.displayHelp();
+      this.view.navigation.showHelpModal();
     }
   }
   executeButtonMenu(buttonElement: string, buttonData: ButtonDefinition) {

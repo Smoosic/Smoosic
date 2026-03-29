@@ -2,15 +2,21 @@
 // Copyright (c) Aaron David Newman 2021.
 import { buildDom, draggable, createTopDomContainer } from '../common/htmlHelpers';
 import { SmoLanguage } from './i18n/language';
+import { Ref, ref } from 'vue';
 declare var $: any;
 
+export interface HtmlHelpData {
+  title: string,
+  html: string
+}
 /**
  * @internal
  */
 export interface HtmlHelpBlock {
   title: string,
   html: string,
-  index: number
+  index: number,
+  show: Ref<boolean>
 }
 export type HelpMode = 'cards' | 'expand';
 /**
@@ -20,7 +26,7 @@ export class SuiHelp {
   static helpMode: HelpMode = 'cards';
   static created = false;
   static currentCard: number = 0;
-  static displayHelp() {
+  /* static displayHelp() {
     $('body').addClass('showHelpDialog');
     if (!SuiHelp.created) {
       createTopDomContainer('helpDialog');
@@ -53,7 +59,7 @@ export class SuiHelp {
       moveParent: true
     });
     SuiHelp.setCards();
-  }
+  } */
   static setCards() {
     $('.helpDialog').addClass('card-view');
     const lines = $('.helpDialog .helpLine');
@@ -110,14 +116,14 @@ export class SuiHelp {
     return r;
   }
 
-  static get helpHtml() {
+  static get helpHtml(): HtmlHelpBlock[] {
     /* [cardKeysHtmlEn, cardNotesLetterHtmlEn, cardNotesChromaticHtmlEn, cardNotesChordsHtmlEn,
   cardNotesRestsHtmlEn, cardDurationNotesHtmlEn, cardDurationTupletsHtmlEn,
   cardSelectionsNotesHtmlEn, cardSelectionsModifiersHtmlEn, cardSelectionsNonSelectableHtmlEn, cardSelectionsSlashHtmlEn,
   cardBeamsAndStemsDirectionHtmlEn, cardBeamsAndStemsGroupingHtmlEn,
   cardMeasuresAddDeleteHtmlEn, cardVoicesCreateDeleteHtmlEn, cardVoicesHiddenNotesHtmlEn
 ]; */
-    const cards = [
+    const cards: HtmlHelpData[] = [
       { title: 'Keys', html: SmoLanguage.getHelpFile('cardKeysHtml') },
       { title: 'Notes - letter notes', html: SmoLanguage.getHelpFile('cardNotesLetterHtml') },
       { title: 'Notes - chromatic and octave', html: SmoLanguage.getHelpFile('cardNotesChromaticHtml') },
@@ -137,7 +143,7 @@ export class SuiHelp {
     ];
     const blocks: HtmlHelpBlock[] = [];
     cards.forEach((card, cardIx) => {
-      blocks.push({ index: cardIx, ...card});
+      blocks.push({ index: cardIx, show: ref(false), ...card});
     });
     return blocks;
   }

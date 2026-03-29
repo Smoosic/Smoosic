@@ -118,7 +118,7 @@ export class NoteEntryCaret {
     }
 		this.voice = selection.selector.voice;
 		this.vexNoteAbsoluteX = targetVexNote.getAbsoluteX();
-    console.log(`Setting selection. Absolute X: ${this.vexNoteAbsoluteX}, Grace note: ${!!graceNote}`);
+    // console.log(`Setting selection. Absolute X: ${this.vexNoteAbsoluteX}, Grace note: ${!!graceNote}`);
 		this.vexNoteHeadWidth = targetVexNote.getMetrics().glyphWidth!;
 		this.vexNoteXShift = targetVexNote.getXShift();
 		this._calculateDisplacedHeadPosition();

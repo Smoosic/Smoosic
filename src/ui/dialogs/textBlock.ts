@@ -481,12 +481,4 @@ export class SuiTextBlockDialog extends SuiDialogBase {
     });
   }
 }
-/**
- * @category SuiDialog
- */
-export class helpModal {
-  static createAndDisplay() {
-    SuiHelp.displayHelp();
-    return closeDialogPromise();
-  }
-}
+
