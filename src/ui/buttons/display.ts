@@ -3,6 +3,7 @@ import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SuiKeySignatureDialog } from '../dialogs/keySignature';
 import { SuiTimeSignatureDialog } from '../dialogs/timeSignature';
 import { SuiTempoDialog } from '../dialogs/tempo';
+import { SuiScoreViewDialogVue } from '../dialogs/scoreView';
 import { KeyEvent } from '../../smo/data/common';
 declare var $: any;
 
@@ -44,7 +45,19 @@ export class DisplaySettings extends SuiButton {
     $(this.buttonElement[0]).find('.ribbon-button-hotkey').text(this.buttonData.rightText);
     this.enablePartSelection();
   }
-
+  setView() {
+    SuiScoreViewDialogVue(
+      {
+        completeNotifier: this.completeNotifier!,
+        view: this.view,
+        eventSource: this.eventSource,
+        id: 'scoreViewDialog',
+        ctor: 'SuiScoreViewDialog',
+        tracker: this.view.tracker,
+        modifier: null,
+        startPromise: null
+      });
+  }
   refresh() {
     this.view.refreshViewport();
   }

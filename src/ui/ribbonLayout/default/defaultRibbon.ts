@@ -32,7 +32,7 @@ export class defaultRibbonLayout {
     return ['DebugGroup', 'DebugButton2'];
   }
   static get displayIds() {
-    return ['selectPart', 'refresh', 'zoomout', 'zoomin', 'playButton2', 'stopButton2', 'keySignature', 'ribbonTempo', 'ribbonTime'];
+    return ['selectPart', 'setView','refresh', 'zoomout', 'zoomin', 'playButton2', 'stopButton2', 'keySignature', 'ribbonTempo', 'ribbonTime'];
   }
   static get displayButtons(): ButtonDefinition[] {
     return [{
@@ -44,6 +44,15 @@ export class defaultRibbonLayout {
       ctor: 'DisplaySettings',
       group: 'quickButtons',
       id: 'selectPart'
+    },  {
+      leftText: 'View',
+      rightText: '',
+      classes: 'icon',
+      icon: 'icon-smo icon-eye menu-icon fs-3',
+      action: 'collapseChild',
+      ctor: 'DisplaySettings',
+      group: 'quickButtons',
+      id: 'setView'
     }, {
       leftText: 'Refresh',
       rightText: '',

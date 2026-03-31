@@ -449,7 +449,6 @@ export class SuiLayoutFormatter {
           // so the next system starts at the left edge of the next page
           // +1 to guarantee that the first pixel starts on the next page
           x = this.currentPage * scoreLayout.pageWidth + 1;
-          console.log(`est ${measureEstimate.x} width ${scoreLayout.pageWidth}`);
           y = scoreLayout.topMargin;
         }
   
