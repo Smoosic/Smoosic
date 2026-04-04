@@ -131,7 +131,7 @@ body {
 }
 /* override bootstrap */
 body.modal {
-  display: block; 
+  display: block;
 }
 li.nav-item button.nav-link {
   text-align: left;
@@ -167,7 +167,7 @@ h1 {
 .testTitle {
 	height: 20px;
 	font-size:1.2em;
-    margin:0;
+  margin:0;
 }
 
 #birdy {
@@ -319,6 +319,15 @@ body.printing .printFrame {
     flex-flow:column nowrap;
     flex: 1 1 auto;
   }
+  .musicRelief .score-container div {
+    background-color: #fff;
+  }
+  .horizontal.musicRelief {
+    flex-flow:row nowrap;
+  }
+  .horizontal.musicRelief .score-container {
+    display: flex;
+  }
   .workspace {
     padding-top: 2px;
     position:relative;
@@ -330,7 +339,6 @@ body.printing .printFrame {
 
 .musicRelief {
 	background:#99a;
-
 }
 .media {
 	display:flex;
@@ -344,8 +352,8 @@ body.printing .printFrame {
     display:none;
 }
 
-.musicContainer {
-    position: relative;
+.score-container {
+  position: relative;
 	background:#fff;
 }
 .overlay {
