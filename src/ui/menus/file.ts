@@ -95,7 +95,7 @@ export class SuiFileMenu extends SuiMenuBase {
       this.view.quickSave();
     } else if (text === 'printScore') {
       this.systemPrint();
-    } 
+    }
     this.complete();
   }
   keydown() { }

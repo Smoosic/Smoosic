@@ -496,7 +496,7 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @returns
      */
     removeSystemBreaks(): Promise<any>;
-    renumberMeasures(measureIndex: number, localIndex: number): Promise<void>;
+    renumberMeasures(measureIndex: number, displayIndex: number): Promise<void>;
     /**
      * Play the music from the starting selection
      * @returns

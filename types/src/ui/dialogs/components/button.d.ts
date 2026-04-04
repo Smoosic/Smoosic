@@ -50,5 +50,5 @@ export interface SuiButtonCompositeParams {
 export declare class SuiButtonComposite extends SuiButtonComponent {
     parentControl: SuiComponentParent;
     constructor(dialog: SuiDialogNotifier, parameters: SuiButtonCompositeParams);
-    handleChanged(): void;
+    handleChanged(): Promise<void>;
 }

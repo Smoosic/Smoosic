@@ -42,7 +42,7 @@ export declare class SuiTextBlockDialog extends SuiDialogBase {
     display(): void;
     _resetAttachToSelector(): void;
     _activateAttachToSelector(): void;
-    changed(): void;
+    changed(): Promise<void>;
     highlightActiveRegion(): void;
     evKey(evdata: any): void;
     mouseUp(): void;

@@ -1,8 +1,3 @@
-/**
- * Superset of configuration required to initialize Smoosic, either the appliation or library.
- * @module configuration
- */
-import { SmoRenderConfiguration } from "../render/sui/configuration";
 import { SmoScore } from "../smo/data/score";
 import { ModalEventHandler } from "./common";
 import { KeyBindingConfiguration, SmoUiConfiguration } from "../ui/configuration";
@@ -16,6 +11,14 @@ export declare var ConfigurationStringOptions: ConfigurationStringOption[];
 export declare var ConfigurationNumberOptions: ConfigurationNumberOption[];
 /**
  * Application configuration parameters, can be referenced by the running application or changed
+ * mode - whether this is a library or application (library does rendering, application starts the UI)
+ * language - startup language
+ * initialScore? - the library score JSON, if you are loading from a JSON string, or a SmoScore object
+ * remoteScore? - path to a remote score, if loading from an URL
+ * domContainer - the top-level of the UI, including the music and all the HTML controls.  This must exist before the application starts.
+ * scoreDomContainer - the parent of the actual score.  In application mode, the application creates this.
+ * navigation - creates scoreDomContainer under domContainer, along with other UI scaffolding.
+ *
  * @category SuiApplication
  */
 export interface SmoConfigurationParams {
@@ -25,7 +28,6 @@ export interface SmoConfigurationParams {
     initialScore?: string | SmoScore;
     remoteScore?: string;
     domContainer: string | HTMLElement;
-    scoreDomContainer: string | HTMLElement;
     leftControls?: string | HTMLElement;
     topControls?: string | HTMLElement;
     libraryUrl?: string;
@@ -51,7 +53,7 @@ export interface SmoConfigurationParams {
  * @param idleRedrawTime - how often the entire score re-renders
  * @category SuiApplication
  */
-export declare class SmoConfiguration implements SmoRenderConfiguration, SmoUiConfiguration {
+export declare class SmoConfiguration implements SmoUiConfiguration {
     mode: SmoMode;
     language: string;
     domContainer?: string | HTMLElement;
@@ -59,7 +61,6 @@ export declare class SmoConfiguration implements SmoRenderConfiguration, SmoUiCo
     remoteScore?: string;
     leftControls?: string | HTMLElement;
     topControls?: string | HTMLElement;
-    scoreDomContainer: string | HTMLElement;
     libraryUrl?: string;
     demonPollTime: number;
     idleRedrawTime: number;
@@ -68,7 +69,7 @@ export declare class SmoConfiguration implements SmoRenderConfiguration, SmoUiCo
     ribbonLayout: RibbonLayout;
     audioAnimation: SuiAudioAnimationParams;
     buttonDefinition: ButtonDefinition[];
-    static get defaults(): SmoConfiguration;
+    static get defaults(): SmoConfigurationParams;
     static get keyBindingDefaults(): KeyBindingConfiguration;
     constructor(params: Partial<SmoConfigurationParams>);
 }

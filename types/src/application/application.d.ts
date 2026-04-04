@@ -10,6 +10,7 @@ import { RibbonButtons } from '../ui/buttons/ribbon';
 import { SuiKeyCommands } from './keyCommands';
 import { SuiEventHandler } from './eventHandler';
 import { KeyBinding } from './common';
+import { SuiNavigation } from '../render/sui/configuration';
 export interface pairType {
     [key: string]: string;
 }
@@ -29,6 +30,7 @@ export interface SuiRendererInstance {
  */
 export interface SuiInstance {
     view: SuiScoreViewOperations;
+    navigation: SuiNavigation;
     eventSource: BrowserEventSource;
     undoBuffer: UndoBuffer;
     tracker: SuiTracker;
@@ -57,11 +59,11 @@ export declare class SuiApplication {
     instance: SuiInstance | null;
     config: SmoConfiguration;
     score: SmoScore | null;
+    navigation?: SuiNavigation;
     view: SuiScoreViewOperations | null;
-    domElement: HTMLElement;
+    createUiDom(): void;
     static configure(params: Partial<SmoConfigurationParams>): Promise<SuiApplication>;
     constructor(config: SmoConfiguration);
-    _getDomContainer(): HTMLElement;
     static instance: SuiInstance;
     static initSync(): void;
     /**
@@ -87,8 +89,7 @@ export declare class SuiApplication {
      * @returns promise for a remote load.  If a local load, will resolve immediately
      */
     createScore(): Promise<SmoScore | null>;
-    _tryParse(scoreJson: string): SmoScore;
-    _startApplication(): void;
+    tryParse(scoreJson: string): SmoScore;
     createView(score: SmoScore): SuiRendererInstance | null;
     /**
      * Convenience constructor, take the score and render it in the
@@ -97,6 +98,5 @@ export declare class SuiApplication {
     createUi(): void;
     static loadMusicFont(face: string, url: string): Promise<void>;
     static registerFonts(): Promise<void>;
-    _deferCreateTranslator(): void;
     static _deferLanguageSelection(lang: string): void;
 }

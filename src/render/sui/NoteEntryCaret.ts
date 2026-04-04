@@ -58,6 +58,7 @@ export class NoteEntryCaret {
 	view: SuiScoreViewOperations;
 
 	selection: SmoSelection | null = null;
+  pageDimensions: SvgBox = SvgBox.default;
 	note: SmoNote | null = null;
 	graceNote: SmoGraceNote | null = null;
 	activeNote: Transposable | null = null;
@@ -112,8 +113,13 @@ export class NoteEntryCaret {
 		this.note = selection.note;
 		this.graceNote = graceNote;
 		this.activeNote = graceNote ?? selection.note;
+    const pageBox = this.activeNote?.logicalBox;
+    if (pageBox) {
+      this.context = this.tracker.renderer.pageMap.getRenderer(pageBox);
+    }
 		this.voice = selection.selector.voice;
 		this.vexNoteAbsoluteX = targetVexNote.getAbsoluteX();
+    // console.log(`Setting selection. Absolute X: ${this.vexNoteAbsoluteX}, Grace note: ${!!graceNote}`);
 		this.vexNoteHeadWidth = targetVexNote.getMetrics().glyphWidth!;
 		this.vexNoteXShift = targetVexNote.getXShift();
 		this._calculateDisplacedHeadPosition();
@@ -239,7 +245,7 @@ export class NoteEntryCaret {
 			return;
 		}
 		this._calculateCaretBoundaryBoxCoordinates(this.selection.measure, this.note!, this.graceNote);
-		this._resolveContext();
+		// this._resolveContext();
 		this._fillOccupiedStaffLines(this.selection.measure, this.activeNote);
 		this._renderCursorRectangleElement();
 
@@ -252,8 +258,11 @@ export class NoteEntryCaret {
 
 	private _calculateCaretBoundaryBoxCoordinates(measure: SmoMeasure, note: SmoNote, graceNote: SmoGraceNote | null): void {
 		const staffY = measure.staffY;
+    if (!this.context) {
+      return;
+    }
 		// Calculate top Y: staff Y minus ledger lines above
-		const y = staffY - (NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT);
+		const y = staffY - (NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT) - this.context.box.y;
 
 		this.caretBoundaryBox = SvgHelpers.boxPoints(
 			this.vexNoteAbsoluteX - this.vexNoteLeftDisplacedHeadPx + this.vexNoteXShift,
@@ -261,10 +270,6 @@ export class NoteEntryCaret {
 			this.vexNoteHeadWidth + this.vexNoteLeftDisplacedHeadPx + this.vexNoteRightDisplacedHeadPx,
 			NoteEntryCaret.CARET_HEIGHT
 		);
-	}
-
-	private _resolveContext(): void {
-		this.context = this.tracker.renderer.pageMap.getRenderer(this.caretBoundaryBox);
 	}
 
 	private _fillOccupiedStaffLines(measure: SmoMeasure, note: Transposable) {
@@ -308,7 +313,7 @@ export class NoteEntryCaret {
 	private _renderCursorRectangleElement(): void {
 		if (this.context)	{
 			// Adjust coordinates for the page context
-			const adjustedY = this.caretBoundaryBox.y - this.context.box.y;
+			const adjustedY = this.caretBoundaryBox.y;
 			// Create the cursor rectangle element
 			const x = this.vexNoteAbsoluteX + this.vexNoteXShift;
 			const y = adjustedY + (NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT) - (NoteEntryCaret.STAFF_LINE_HEIGHT / 2);
@@ -342,7 +347,15 @@ export class NoteEntryCaret {
 		const scrollState = this.tracker?.scroller.scrollState;
 		const bb = SvgHelpers.boxPoints(ev.clientX + scrollState.x, ev.clientY + scrollState.y, 1, 1);
 		const point = this.tracker.renderer.pageMap.clientToSvg(bb);
-
+    const horizontal = this.context?.layoutSource?.isLayoutHorizontal();
+    if (!this.context) {
+      return false;
+    }
+    if (horizontal && this.context) {
+      point.x -= this.context.box.x;
+    } else {
+      point.y -= this.context.box.y;
+    }
 		return SvgHelpers.doesBox1ContainBox2(this.caretBoundaryBox, point);
 	}
 

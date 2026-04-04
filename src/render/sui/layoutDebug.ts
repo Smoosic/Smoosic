@@ -4,6 +4,8 @@ import { SvgHelpers } from './svgHelpers';
 import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { SmoMeasure } from '../../smo/data/measure';
 import { SmoSelector } from '../../smo/xform/selections';
+import  {SuiNavigation } from './configuration';
+
 declare var $: any;
 
 /**
@@ -68,32 +70,35 @@ export class layoutDebug {
       LAST: 8
     };
   }
-  static testThrow: boolean = false;
+  testThrow: boolean = false;
   static get codeRegionStrings(): string[] {
     return ['COMPUTE', 'PREFORMATA', 'PREFORMATB', 'PREFORMATC', 'FORMAT', 'RENDER', 'UPDATE_MAP', 'POST_RENDER', 'MAP'];
   }
-  static mask: number = 0;
-  static _textDebug: number[] = [];
-  static timestampHash: Record<number, number> = {};
-  static _dialogEvents: string[] = [];
-
-  static clearTimestamps() {
+  mask: number = 0;
+  _textDebug: number[] = [];
+  timestampHash: Record<number, number> = {};
+  _dialogEvents: string[] = [];
+  navigation: SuiNavigation;
+  constructor(navigation:SuiNavigation) {
+    this.navigation = navigation;
+  }
+  clearTimestamps() {
     for (var i = 0; i <= layoutDebug.codeRegions.LAST; ++i) {
-      layoutDebug.timestampHash[i] = 0;
+      this.timestampHash[i] = 0;
     }
   }
 
-  static setTimestamp(region: number, millis: number) {
-    layoutDebug.timestampHash[region] += millis;
+  setTimestamp(region: number, millis: number) {
+    this.timestampHash[region] += millis;
   }
-  static printTimeReport() {
+  printTimeReport() {
     let total = 0;
     let report: Record<string, CodeRegion> = {};
     let i = 0;
     for (i = 0; i <= layoutDebug.codeRegions.LAST; ++i) {
-      total += layoutDebug.timestampHash[i];
+      total += this.timestampHash[i];
       report[layoutDebug.codeRegionStrings[i]] = {
-        time: layoutDebug.timestampHash[i], percent: 0
+        time: this.timestampHash[i], percent: 0
       };
     }
     report['total'] = { time: total, percent: 100 };
@@ -104,101 +109,105 @@ export class layoutDebug {
     console.log(JSON.stringify(report, null, ' '));
   }
 
-  static flagSet(value: number) {
-    return layoutDebug.mask & value;
+  flagSet(value: number) {
+    return this.mask & value;
   }
 
-  static clearAll() {
-    layoutDebug.mask = 0;
+  clearAll() {
+    this.mask = 0;
+    this.setFlagDivs();
   }
-  static setAll() {
-    layoutDebug.mask = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256 + 1024 + 2048;
+  setAll() {
+    this.mask = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256 + 1024 + 2048;
   }
-  static setRenderFlags() {
-    layoutDebug.mask = 1 + 2 + 4 + 8 + 16 + 32 + 1024 + 2048;
+  setRenderFlags() {
+    this.mask = 1 + 2 + 4 + 8 + 16 + 32 + 1024 + 2048;
   }
-  static clearDebugBoxes(value: number) {
-    if (layoutDebug.flagSet(value)) {
+  clearDebugBoxes(value: number) {
+    if (this.flagSet(value)) {
       var selector = 'g.' + layoutDebug.classes[value];
       $(selector).remove();
     }
   }
-  static debugBox(svg: SVGSVGElement, box: SvgBox | null, flag: number) {
+  debugBox(svg: SVGSVGElement, box: SvgBox | null, flag: number) {
     if (!box) {
       return;
     }
     if (!box.height) {
       box.height = 1;
     }
-    if (layoutDebug.flagSet(flag)) {
+    if (this.flagSet(flag)) {
       SvgHelpers.debugBox(svg, box, layoutDebug.classes[flag], 0);
     }
   }
 
-  static setFlag(value: number) {
+  setFlag(value: number) {
     var flag = layoutDebug.values[value];
-    if (typeof (layoutDebug.mask) == 'undefined') {
-      layoutDebug.mask = flag;
+    if (typeof (this.mask) == 'undefined') {
+      this.mask = flag;
       return;
     }
-    layoutDebug.mask |= flag;
-    layoutDebug.setFlagDivs();
+    this.mask |= flag;
+    this.setFlagDivs();
   }
-  static setFlagDivs() {
-    $('.scroll-box-debug').remove();
-    $('.drag-debug').remove();
-    $('.mouse-debug').remove();
+  setFlagDivs() {
+    if (!this.flagSet(layoutDebug.values.scroll)) {
+      this.navigation.showDebugString('scroll', '');
+    }
+    if (!this.flagSet(layoutDebug.values.mouseDebug)) {
+      this.navigation.showDebugString('mouse', '');
+    }
+    if (!this.flagSet(layoutDebug.values.dragDebug)) {
+      this.navigation.showDebugString('drag', '');
+    }
     $('.play-debug').remove();
-    if (layoutDebug.mask & layoutDebug.values.scroll) {
+    if (this.mask & layoutDebug.values.scroll) {
       const dbgDiv = $('<div class="scroll-box-debug"/>');
       $('body').append(dbgDiv);  
     }
-    if (layoutDebug.mask & layoutDebug.values.mouseDebug) {
+    if (this.mask & layoutDebug.values.mouseDebug) {
       const dbgDiv = $('<div class="mouse-debug"/>');
       $('body').append(dbgDiv);  
     }
-    if (layoutDebug.mask & layoutDebug.values.dragDebug) {
+    if (this.mask & layoutDebug.values.dragDebug) {
       const dbgDiv = $('<div class="drag-debug"/>');
       $('body').append(dbgDiv);  
     }
-    if (layoutDebug.mask & layoutDebug.values.play) {
+    if (this.mask & layoutDebug.values.play) {
       const dbgDiv = $('<div class="play-debug"/>');
       $('body').append(dbgDiv);  
     }
   }
-  static updateScrollDebug(point: SvgPoint) {
+  updateScrollDebug(point: SvgPoint) {
     const displayString = 'X: ' + point.x + ' Y: ' + point.y;
-    $('.scroll-box-debug').text(displayString);
-    $('.scroll-box-debug').css('left', '2%').css('top', '20px');
+    this.navigation.showDebugString('scroll', displayString);
   }
-  static updateMouseDebug(client: SvgPoint, logical: SvgPoint, offset: SvgPoint) {
+  updateMouseDebug(client: SvgPoint, logical: SvgPoint, offset: SvgPoint) {
     const displayString = `clientX: ${client.x} clientY: ${client.y} svg: (${logical.x},${logical.y}) offset (${offset.x}, ${offset.y})`;
-    $('.mouse-debug').text(displayString);
-    $('.mouse-debug').css('left', '2%').css('top', '60px').css('position','absolute').css('font-size','11px');
+    this.navigation.showDebugString('mouse', displayString);
   }
-  static updateDragDebug(client: SvgPoint, logical: SvgPoint, state: string) {
+  updateDragDebug(client: SvgPoint, logical: SvgPoint, state: string) {
     const displayString = `clientX: ${client.x} clientY: ${client.y} svg: (${logical.x},${logical.y}) state ${state})`;
-    $('.drag-debug').text(displayString);
-    $('.drag-debug').css('left', '2%').css('top', '80px').css('position','absolute').css('font-size','11px');
+    this.navigation.showDebugString('drag', displayString);
   }
-  static updatePlayDebug(selector: SmoSelector, logical: SvgBox) {
+  updatePlayDebug(selector: SmoSelector, logical: SvgBox) {
     const displayString = `mm: ${selector.measure} tick: ${selector.tick} svg: (${logical.x},${logical.y}, ${logical.width}, ${logical.height})`;
     $('.play-debug').text(displayString);
     $('.play-debug').css('left', '2%').css('top', '100px').css('position','absolute').css('font-size','11px');
   }
 
-  static addTextDebug(value: number) {
-    layoutDebug._textDebug.push(value);
+  addTextDebug(value: number) {
+    this._textDebug.push(value);
     //console.log(value);
   }
 
-  static addDialogDebug(value: string) {
-    layoutDebug._dialogEvents.push(value);
+  addDialogDebug(value: string) {
+    this._dialogEvents.push(value);
     // console.log(value);
   }
 
-  static measureHistory(measure: SmoMeasure, oldVal: string, newVal: any, description: string) {
-    if (layoutDebug.flagSet(layoutDebug.values.measureHistory)) {
+  measureHistory(measure: SmoMeasure, oldVal: string, newVal: any, description: string) {
+    if (this.flagSet(layoutDebug.values.measureHistory)) {
       var oldExp = (typeof ((measure as any).svg[oldVal]) == 'object') ?
         JSON.stringify((measure as any).svg[oldVal]).replace(/"/g, '') : (measure as any).svg[oldVal];
       var newExp = (typeof (newVal) == 'object') ? JSON.stringify(newVal).replace(/"/g, '') : newVal;

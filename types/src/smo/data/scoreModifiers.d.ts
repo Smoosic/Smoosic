@@ -116,6 +116,7 @@ export interface SmoScorePreferencesParams {
     hideEmptyLines: boolean;
     transposingScore: boolean;
     showPartNames: boolean;
+    horizontalDisplay?: boolean;
 }
 /**
  * Some default SMO behavior
@@ -138,6 +139,7 @@ export declare class SmoScorePreferences {
     autoScrollPlayback: boolean;
     transposingScore: boolean;
     showPartNames: boolean;
+    horizontalDisplay: boolean;
     static get defaults(): SmoScorePreferencesParams;
     constructor(params: SmoScorePreferencesParams);
     serialize(): SmoScorePreferencesParams;
@@ -186,7 +188,7 @@ export declare class SmoFormattingManager extends SmoScoreModifierBase {
      * Update the measure format for the measure at the given index
      * @param format
      */
-    updateMeasureFormat(format: SmoMeasureFormat): void;
+    updateMeasureFormat(format: SmoMeasureFormat, measureIndex: number): void;
     /**
      * Update the measure format based on the format of a given measure
      * @param measure
@@ -257,9 +259,12 @@ export declare class SmoPageLayout extends SmoScoreModifierBase {
     constructor(params: SmoPageLayoutParams);
     serialize(): any;
 }
+export type displayMode = 'vertical' | 'horizontal';
 export type ScaledGlobalAttributes = 'pageWidth' | 'pageHeight';
-export type GlobalLayoutAttributes = 'pageWidth' | 'pageHeight' | 'noteSpacing' | 'svgScale' | 'zoomScale' | 'proportionality' | 'maxMeasureSystem';
+export type GlobalLayoutAttributes = 'pageWidth' | 'pageHeight' | 'noteSpacing' | 'svgScale' | 'zoomScale' | 'proportionality' | 'maxMeasureSystem' | 'displayMode';
+export type GlobalLayoutNumberAttributes = 'pageWidth' | 'pageHeight' | 'noteSpacing' | 'svgScale' | 'zoomScale' | 'proportionality' | 'maxMeasureSystem';
 export declare const GlobalLayoutAttributesArray: GlobalLayoutAttributes[];
+export declare const GlobalLayoutNumberAttributesArray: GlobalLayoutNumberAttributes[];
 /**
  * Global layout are parameters that determine the layout of the whole score, because they affect the containing svg element
  * @category SmoObject
@@ -272,7 +277,9 @@ export interface SmoGlobalLayout {
     pageHeight: number;
     proportionality: number;
     maxMeasureSystem: number;
+    displayMode: displayMode;
 }
+export declare function isSmoGlobalLayout(params: Partial<SmoGlobalLayout>): params is SmoGlobalLayout;
 /**
  * Used to create {@link SmoLayoutManagerParams}
  * @category SmoObject

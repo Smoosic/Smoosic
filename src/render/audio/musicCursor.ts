@@ -56,6 +56,7 @@ export const  defaultClearAudioAnimationHandler = (delay: number) => {
     const context = renderer.pageMap.getRenderer(measure.svg.logicalBox);
     const topBox = SvgHelpers.smoBox(zmeasureSel.measure.svg.logicalBox);
     topBox.y -= context.box.y;
+    topBox.x -= context.box.x;
     const botBox = SvgHelpers.smoBox(measure.svg.logicalBox);
     botBox.y -= context.box.y;
     const height = (botBox.y + botBox.height) - topBox.y;
@@ -67,10 +68,11 @@ export const  defaultClearAudioAnimationHandler = (delay: number) => {
     let x = topBox.x + measure.svg.adjX + offsetPct * measureWidth;
     const noteBox = score.staves[selector.staff].measures[selector.measure].voices[selector.voice].notes[selector.tick];
     if (noteBox && noteBox.logicalBox) {
-      x = noteBox.logicalBox.x;
+      x = noteBox.logicalBox.x - context.box.x;
     }
     const screenBox = SvgHelpers.boxPoints(x, y, width, height);
     const fillParams: Record<string, string> = {};
+    console.log(`topbox xy ${measure.svg.logicalBox.x}, ${measure.svg.logicalBox.y} x ${x}, ${y}`);
     fillParams['fill-opacity'] = '0.5';
     fillParams['fill'] = '#4444ff';
     const ctx = context.getContext();
@@ -80,7 +82,7 @@ export const  defaultClearAudioAnimationHandler = (delay: number) => {
     ctx.rect(x, screenBox.y, width, screenBox.height, fillParams);
     ctx.closeGroup();
     ctx.restore();
-    layoutDebug.updatePlayDebug(selector, measure.svg.logicalBox);
+    view.debug.updatePlayDebug(selector, measure.svg.logicalBox);
     if (view.score.preferences.autoScrollPlayback) {
       scroller.scrollVisibleBox(zmeasureSel.measure.svg.logicalBox);
     }

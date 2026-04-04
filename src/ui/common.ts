@@ -1,5 +1,8 @@
 import { ButtonDefinition } from '../ui/buttons/button';
 import { KeyEvent } from '../smo/data/common';
+import { SuiNavigation } from '../render/sui/configuration';
+import { SuiScoreView } from '../render/sui/scoreView';
+import { Ref } from 'vue';
 declare var $: any;
 /**
  * Define the base class for a modal component that resolves a promise when it is dismissed
@@ -37,7 +40,28 @@ export interface SelectOption {
   icon?: string,
   active?: boolean
 }
-export const modalContainerId = '#vue-modal-container';
+export interface DomDebugFlag {
+  category: string,
+  htmlString: string
+}
+export interface CrashDialog {
+  url: string,
+  bodyText: Ref<string>,
+  show: Ref<boolean>
+}
+export interface DomDialogNotifiers {
+  showSplash: Ref<boolean>,
+  showHelpDialog: Ref<boolean>,
+  splashTimer: Ref<number>,
+  debugFlags: DomDebugFlag[],
+  crashDialog: CrashDialog,
+  showAttributeDialog: Ref<boolean>
+}
+export interface ExceptionParameters {
+  view: SuiScoreView,
+  navigation: SuiNavigation
+}
+export const modalContainerId = '.vue-modal-container';
 /**
  * Remove and replace an element, so we can reattach Vue to it
  * @param element the ID or element we are replacing
@@ -45,7 +69,9 @@ export const modalContainerId = '#vue-modal-container';
  */
 export const replaceVueRoot = (element: string | HTMLElement): string => {
   if (typeof element === 'string') {
-    if (!element.startsWith('#')) {
+    if ($(element).length === 1) {
+      element = `#${$(element)[0].id}`;
+    } else if (!element.startsWith('#')) {
       element = `#${element}`;
     }
   } else {
@@ -56,7 +82,7 @@ export const replaceVueRoot = (element: string | HTMLElement): string => {
     $('body').append(el);    
   }
   $(element).empty();
-  $('#attribute-modal-container').empty();
+  // $('#attribute-modal-container').empty();
   const parentId = $(element)[0].id;
   const newId = `${parentId}-1`;
   const newElement = $(`<div id="${newId}"></div>`);

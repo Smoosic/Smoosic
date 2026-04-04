@@ -20,6 +20,7 @@ import { SuiKeySignatureDialog } from '../dialogs/keySignature';
 import { default as ribbonApp } from '../components/buttons/ribbon.vue';
 import { default as ribbonSidebarApp } from '../components/buttons/sidebar.vue';
 import { SuiTimeSignatureDialog } from '../dialogs/timeSignature';
+import { SuiScoreViewDialogVue } from '../dialogs/scoreView';
 
 declare var $: any;
 
@@ -108,6 +109,19 @@ export class RibbonButtons {
     this.collapseChildren = [];
   }
   async executeQuickButton(button: ButtonDefinition) {
+    if (button.id === 'setView') {
+    SuiScoreViewDialogVue(
+      {
+        completeNotifier: this.controller,
+        view: this.view,
+        eventSource: this.eventSource,
+        id: 'scoreViewDialog',
+        ctor: 'SuiScoreViewDialog',
+        tracker: this.view.tracker,
+        modifier: null,
+        startPromise: null
+      });
+    }
     if (button.id === 'zoomin') {
       const globalLayout = this.view.score.layoutManager!.getGlobalLayout();
       globalLayout.zoomScale /= 1.1;
@@ -192,7 +206,7 @@ export class RibbonButtons {
         createAndDisplayDialog(SuiTempoDialog, params);
       }
     } else if (buttonData.ctor === 'helpModal') {
-      SuiHelp.displayHelp();
+      this.view.navigation.showHelpModal();
     }
   }
   executeButtonMenu(buttonElement: string, buttonData: ButtonDefinition) {

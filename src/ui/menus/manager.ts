@@ -60,8 +60,10 @@ export class SuiMenuManager {
   menuPosition: SvgBox = { x: 250, y: 40, width: 1, height: 1 };
   tracker: SuiTracker;
   menuBind: KeyBinding[] = SuiMenuManager.menuKeyBindingDefaults;
+  debug: layoutDebug;
   constructor(params: SuiMenuManagerParams) {
     this.eventSource = params.eventSource;
+    this.debug = params.view.debug;
     this.view = params.view;
     this.bound = false;    
     this.menuContainer = params.menuContainer ?? createTopDomContainer('.menuContainer');
@@ -210,11 +212,11 @@ export class SuiMenuManager {
       return;
     }
     this.bindEvents();
-    layoutDebug.addDialogDebug('slash menu creating closeMenuPromise');
+    this.debug.addDialogDebug('slash menu creating closeMenuPromise');
     // A menu asserts this event when it is done.
     this.closeMenuPromise = new Promise((resolve) => {
       $('body').off('menuDismiss').on('menuDismiss', () => {
-        layoutDebug.addDialogDebug('menuDismiss received, resolve closeMenuPromise');
+        this.debug.addDialogDebug('menuDismiss received, resolve closeMenuPromise');
         self.unattach();
         $('body').removeClass('slash-menu d-block');
         self.closeMenuPromise = null;
@@ -258,7 +260,7 @@ export class SuiMenuManager {
     this.menuPosition = { x: 250, y: 40, width: 1, height: 1 };
     // If we were called from the ribbon, we notify the controller that we are
     // taking over the keyboard.  If this was a key-based command we already did.
-    layoutDebug.addDialogDebug('createMenu creating ' + action);
+    this.debug.addDialogDebug('createMenu creating ' + action);
 
     const params: SuiMenuParams = 
     {

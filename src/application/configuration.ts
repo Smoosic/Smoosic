@@ -3,7 +3,7 @@
  * Superset of configuration required to initialize Smoosic, either the appliation or library.
  * @module configuration
  */
-import { SmoRenderConfiguration } from "../render/sui/configuration";
+import { SmoRenderConfiguration, SuiNavigation } from "../render/sui/configuration";
 import { SmoScore } from "../smo/data/score";
 import { ModalEventHandler } from "./common";
 import { KeyBindingConfiguration, SmoUiConfiguration } from "../ui/configuration";
@@ -27,6 +27,14 @@ export var ConfigurationNumberOptions: ConfigurationNumberOption[] = ['demonPoll
 
 /**
  * Application configuration parameters, can be referenced by the running application or changed
+ * mode - whether this is a library or application (library does rendering, application starts the UI)
+ * language - startup language
+ * initialScore? - the library score JSON, if you are loading from a JSON string, or a SmoScore object
+ * remoteScore? - path to a remote score, if loading from an URL
+ * domContainer - the top-level of the UI, including the music and all the HTML controls.  This must exist before the application starts.
+ * scoreDomContainer - the parent of the actual score.  In application mode, the application creates this.
+ * navigation - creates scoreDomContainer under domContainer, along with other UI scaffolding.
+ * 
  * @category SuiApplication
  */
 export interface SmoConfigurationParams {
@@ -36,7 +44,6 @@ export interface SmoConfigurationParams {
   initialScore?: string | SmoScore;
   remoteScore?: string;
   domContainer: string | HTMLElement;
-  scoreDomContainer: string | HTMLElement;
   leftControls?: string | HTMLElement;
   topControls?: string | HTMLElement;
   libraryUrl?: string;
@@ -63,7 +70,7 @@ export interface SmoConfigurationParams {
  * @param idleRedrawTime - how often the entire score re-renders
  * @category SuiApplication
  */
- export class SmoConfiguration implements SmoRenderConfiguration, SmoUiConfiguration {
+ export class SmoConfiguration implements SmoUiConfiguration {
   mode: SmoMode;
   language: string = '';
   domContainer?: string | HTMLElement;
@@ -71,7 +78,6 @@ export interface SmoConfigurationParams {
   remoteScore?: string;
   leftControls?: string | HTMLElement;
   topControls?: string | HTMLElement;
-  scoreDomContainer: string | HTMLElement;
   libraryUrl?: string;
   demonPollTime: number = 0; // how often we poll the score to see if it changed
   idleRedrawTime: number = 0;
@@ -81,13 +87,13 @@ export interface SmoConfigurationParams {
   audioAnimation: SuiAudioAnimationParams;
   buttonDefinition: ButtonDefinition[];
 
-  static get defaults(): SmoConfiguration {
+  static get defaults(): SmoConfigurationParams {
     return {
       mode: 'application',
       language: 'en',
       leftControls: 'controls-left',
       topControls: 'controls-top',
-      scoreDomContainer: 'smo-scroll-region',
+      domContainer: '',
       libraryUrl: 'https://smoosic.github.io/SmoScores/links/smoLibrary.json',
       demonPollTime: 50, // how often we poll the score to see if it changed
       idleRedrawTime: 1000, // maximum time between score modification and render
@@ -116,9 +122,9 @@ export interface SmoConfigurationParams {
       const sp: string | undefined = params[param] ?? defs[param];
       this[param] = sp ?? '';
     });
+    this.domContainer = params.domContainer;
     this.leftControls = params.leftControls ?? defs.leftControls;
     this.topControls = params.topControls ?? defs.topControls;
-    this.scoreDomContainer = params.scoreDomContainer ?? defs.scoreDomContainer;
     this.initialScore = params.initialScore ?? undefined;
     ConfigurationNumberOptions.forEach((param) => {
       this[param] = params[param] ?? defs[param];

@@ -4,10 +4,11 @@ interface Props {
   domId: string,
   headline: string,
   message: string,
-  okCb: () => void
+  commitCb: () => void,
+  cancelCb: () => void
 }
 const props = defineProps<Props>();
-  const { domId, headline, message, okCb } = { ...props };
+  const { domId, headline, message, commitCb, cancelCb } = { ...props };
   const top = '100';
   const left = '100';
   const getDomId = () => {
@@ -33,7 +34,8 @@ const props = defineProps<Props>();
         <p>{{ message }} </p>
       </div>
       <div class="buttonContainer">
-        <button class="ok-button button-left btn btn-primary" @click.prevent="okCb">OK</button>        
+        <button class="ok-button button-left btn btn-primary" @click.prevent="commitCb">OK</button>
+        <button v-if="cancelCb" class="cancel-button button-right btn btn-secondary hide" @click.prevent="cancelCb">Cancel</button>
       </div>
     </div>
     </div>

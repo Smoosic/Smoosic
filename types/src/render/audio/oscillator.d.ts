@@ -86,6 +86,7 @@ export declare class SuiOscillatorSoundfont extends SuiOscillator {
     velocity: number;
     delayTime: number;
     detune: number;
+    static debug: boolean;
     constructor(params: SuiOscillatorParams);
     play(): void;
 }

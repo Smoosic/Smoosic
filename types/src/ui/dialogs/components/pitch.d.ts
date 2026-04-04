@@ -43,7 +43,7 @@ export interface SuiPitchCompositeParams extends SuiPitchComponentParams {
 export declare class SuiPitchComposite extends SuiPitchComponent {
     parentControl: SuiComponentParent;
     constructor(dialog: SuiDialogNotifier, parameters: SuiPitchCompositeParams);
-    handleChanged(): void;
+    handleChanged(): Promise<void>;
 }
 /**
  * @category SuiDialog

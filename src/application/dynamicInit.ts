@@ -6,7 +6,12 @@ import { collapsableButtonInit } from '../ui/buttons/collapsable';
 import { menuTranslationsInit } from '../ui/menus/manager';
 import { initDialogTranslationElements, initDialogConstructors } from '../ui/dialogs/factory';
 let dynamicCtorInitComplete = false;
-export const dynamicCtorInit = () => {
+/**
+ * Dynamic constructors are factories for UI elements (dialogs, menus) that control musical elements (e.g. slur, dynamics etc).  
+ * We create them before the score, 
+ * so that when the score is rendered, elements of the score can be bound to the appropriate UI elements.
+ */
+export const createDialogFactories = () => {
   if (!dynamicCtorInitComplete) {
     noteModifierDynamicCtorInit();
     measureModifierDynamicCtorInit();

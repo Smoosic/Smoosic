@@ -19,10 +19,9 @@ import { ModifierTab } from '../smo/xform/selections';
 import { SvgHelpers } from '../render/sui/svgHelpers';
 import { SuiMenuManager } from '../ui/menus/manager';
 import { SmoConfiguration } from './configuration';
-import { SuiDom } from './dom';
 import { NoteEntryCaret } from '../render/sui/NoteEntryCaret';
 import {NoteEntryMediator} from "../render/sui/NoteEntryMediator";
-import { SuiNavigation } from '../ui/navigation'
+import { SuiNavigation } from '../render/sui/configuration';
 declare var $: any;
 
 /**
@@ -33,6 +32,7 @@ export interface EventHandlerParams {
   view: SuiScoreViewOperations,
   eventSource: BrowserEventSource,
   tracker: SuiTracker,
+  navigation: SuiNavigation,
   keyCommands: SuiKeyCommands,
   menus: SuiMenuManager,
   completeNotifier: CompleteNotifier,
@@ -73,12 +73,13 @@ export class SuiEventHandler implements ModalEventHandler {
   menus: SuiMenuManager;
   piano: SuiPiano | null = null;
   exhandler: SuiExceptionHandler;
+  navigation: SuiNavigation
   noteEntryCaret: NoteEntryCaret;
   noteEntryMediator: NoteEntryMediator;
 
   constructor(params: EventHandlerParams) {
     SuiEventHandler.instance = this;
-
+    this.navigation = params.navigation;
     this.view = params.view;
     this.config = params.config;
     this.menus = params.menus;
@@ -103,22 +104,22 @@ export class SuiEventHandler implements ModalEventHandler {
     this.noteEntryMediator = new NoteEntryMediator(this.tracker, this.noteEntryCaret, this.view);
   }
 
-  private static handleScrollEventDefer(handler: SuiEventHandler) {
-    if (handler.trackScrolling) {
+  private handleScrollEventDefer() {
+    if (this.trackScrolling) {
       return;
     }
-    const scrollRegion: HTMLElement | null = document.getElementById(SuiDom.scrollRegionId);
+    const scrollRegion: HTMLElement | null = this.navigation.scrollContainer;
     setTimeout(() => {
-      handler.trackScrolling = false;
+      this.trackScrolling = false;
       if (scrollRegion) {
         const scrollLeft = scrollRegion.scrollLeft;
         const scrollTop = scrollRegion.scrollTop;
-        handler.view.handleScrollEvent(scrollLeft, scrollTop);
+        this.view.handleScrollEvent(scrollLeft, scrollTop);
       }
     }, 500);
   }
   handleScrollEvent() {
-    SuiEventHandler.handleScrollEventDefer(this);
+    this.handleScrollEventDefer();
   }
 
   createPiano() {
@@ -185,7 +186,7 @@ export class SuiEventHandler implements ModalEventHandler {
   // in the tracker.
   bindResize() {
     const self = this;
-    const el: HTMLElement = $(SuiNavigation.scrollable)[0];
+    const el: HTMLElement = $(this.navigation.scrollContainer)[0];
     // unit test programs don't have resize html
     if (!el) {
       return;
@@ -227,7 +228,7 @@ export class SuiEventHandler implements ModalEventHandler {
     }
   }
   menuHelp() {
-    SuiHelp.displayHelp();
+    this.view.navigation.showHelpModal();
   }
   keyUp(evdata: any) {
     if (!evdata.ctrlKey && SuiEventHandler.ctrlKeyPressed) {
@@ -277,7 +278,7 @@ export class SuiEventHandler implements ModalEventHandler {
     const dataCopy = SuiTracker.serializeEvent(evdata);
     await this.view.renderer.updatePromise();
     if (dataCopy.key == '?') {
-      SuiHelp.displayHelp();
+      this.view.navigation.showHelpModal();
     }
     if (dataCopy.key == 'Enter') {
       this.trackerModifierSelect(dataCopy);

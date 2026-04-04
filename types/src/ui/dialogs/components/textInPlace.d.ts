@@ -34,7 +34,7 @@ export declare class SuiTextInPlace extends SuiComponentBase {
     show(): void;
     hide(): void;
     get html(): import("../../../common/htmlHelpers").DomBuilder;
-    endSession(): void;
+    endSession(): Promise<void>;
     get isRunning(): boolean | null;
     getValue(): SmoTextGroup;
     _getInputElement(): any;

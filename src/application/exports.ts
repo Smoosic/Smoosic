@@ -10,7 +10,6 @@ import { SuiEventHandler } from './eventHandler';
 import { SuiExceptionHandler } from '../ui/exceptions';
 import { Qwerty } from '../ui/qwerty';
 import { SuiPiano } from '../render/sui/piano';
-import { SuiDom } from './dom';
 import { SuiHelp } from '../ui/help';
 import { CollapseRibbonControl, ExtendedCollapseParent } from '../ui/buttons/collapsable';
 import { DisplaySettings } from '../ui/buttons/display';
@@ -27,7 +26,7 @@ import { cardKeysHtmlEn, cardNotesLetterHtmlEn, cardNotesChromaticHtmlEn, cardNo
   cardBeamsAndStemsDirectionHtmlEn, cardBeamsAndStemsGroupingHtmlEn,
   cardMeasuresAddDeleteHtmlEn, cardVoicesCreateDeleteHtmlEn, cardPartAddDeleteHtmlEn
 } from '../ui/i18n/language_en';
-import { dynamicCtorInit } from './dynamicInit';
+import { createDialogFactories } from './dynamicInit';
 // ui dialogs and menus
 // Dialogs
 import { SuiDialogBase, createAndDisplayDialog } from '../ui/dialogs/dialog';
@@ -51,7 +50,7 @@ import { SuiGlobalLayoutDialogVue } from '../ui/dialogs/globalLayout';
 import { SuiScoreViewDialogVue } from '../ui/dialogs/scoreView';import { SuiLibraryDialog } from '../ui/dialogs/library';
 import { SuiChordChangeDialog } from '../ui/dialogs/chordChange';
 import { SuiLyricDialog } from '../ui/dialogs/lyric';
-import { SuiTextBlockDialog, helpModal } from '../ui/dialogs/textBlock';
+import { SuiTextBlockDialog } from '../ui/dialogs/textBlock';
 import { SuiDynamicModifierDialog } from '../ui/dialogs/dynamics';
 import { SuiSlurAttributesDialog } from '../ui/dialogs/slur';
 import { SuiPedalMarkingDialog } from '../ui/dialogs/pedalMarking';
@@ -65,7 +64,7 @@ import { SuiMicrotoneDialogVue } from '../ui/dialogs/microtones';
 import { SuiArpeggioDialog } from '../ui/dialogs/arpeggio';
 import { SuiClefChangeDialog } from '../ui/dialogs/clefChange';
 import { SuiPartInfoDialogVue } from '../ui/dialogs/partInfo';
-import { SuiNavigation } from '../ui/navigation';
+import { SuiNavigationDom } from '../ui/navigation';
 import { SuiFileUploadDialog, SuiFileSaveDialog, SuiPrintDialog } from '../ui/dialogs/fileDialogs';
     // Dialog components
 
@@ -146,7 +145,9 @@ import { SmoBeamer } from '../smo/xform/beamers';
 import { SmoOrnament, SmoArticulation, SmoDynamicText, SmoGraceNote, SmoMicrotone, SmoLyric,
   SmoArpeggio, SmoClefChange, noteModifierDynamicCtorInit } from '../smo/data/noteModifiers';
 import { SmoSystemStaff } from '../smo/data/systemStaff';
-import { SmoSystemGroup, SmoAudioPlayerSettings, SmoScorePreferences, scoreModifierDynamicCtorInit } from '../smo/data/scoreModifiers';
+import { SmoSystemGroup, SmoAudioPlayerSettings, SmoScorePreferences, scoreModifierDynamicCtorInit,
+  GlobalLayoutNumberAttributesArray, displayMode
+ } from '../smo/data/scoreModifiers';
 import { SmoTextGroup, SmoTextGroupParams } from '../smo/data/scoreText';
 import { SmoOperation } from '../smo/xform/operations';
 import { ScoreRoadMapBuilder } from '../smo/xform/roadmap';
@@ -168,12 +169,10 @@ import { SuiPitchDialogVue } from '../ui/dialogs/pitch';
 const getClass = (jsonString: string) => {
     return eval('Smo.' + jsonString);
 };
-export * from '../ui/modalDialogs';
 export * from './application';
 export * from './common';
 export * from './configuration';
 export * from './dynamicInit';
-export * from './dom';
 export * from './eventHandler';
 export * from '../common/midi-parser';
 export * from './generateVexTests';
@@ -335,9 +334,9 @@ export const Smo = {
   // Application-level classes
   SmoConfiguration,
   SuiApplication,
-  dynamicCtorInit,
+  createDialogFactories,
   parseMidi,
-  SuiDom,  SuiEventHandler, SuiExceptionHandler,
+  SuiEventHandler, SuiExceptionHandler,
   Qwerty, SuiHelp, SmoTranslationEditor, ModalEventHandler,
   // Ribbon buttons
   simpleRibbonLayout,
@@ -355,11 +354,12 @@ export const Smo = {
   SuiTempoDialog, SuiInstrumentDialogVue, SuiModifierDialogFactory, SuiLibraryDialog,
   SuiTextBracketDialog, SuiKeySignatureDialog, SuiKeySignatureAdapter,
   SuiScoreViewDialogVue, SuiGlobalLayoutDialogVue, SuiScoreIdentificationDialogVue, 
+  GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
   SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
   SuiTimeSignatureDialog,SuiTextBlockDialog, SuiLyricDialog, SuiChordChangeDialog,
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
-  SuiHairpinAttributesDialog, SuiStaffGroupDialogVue, helpModal,
+  SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,
   SuiScorePreferencesDialogVue,
   SuiPartInfoDialogVue, SuiOrnamentDialogVue, 
   SuiArticulationDialogVue, 
@@ -417,6 +417,6 @@ SuiPitchComposite,
     getClass,
   // utilities
   buildDom, addFileLink, InputTrapper, draggable, closeDialogPromise, getDomContainer, createTopDomContainer,
-  renderVexTests, replaceVueRoot, SuiNavigation
+  renderVexTests, replaceVueRoot, SuiNavigationDom
 }
 export default Smo;

@@ -20,7 +20,14 @@ import { TimeSignature, SmoTempoText } from '../../smo/data//measureModifiers';
 import { SvgPageMap } from './svgPageMap';
 import { VexFlow, defaultMeasurePadding } from '../../common/vex';
 import { TextFormatter } from '../../common/textformatter';
+import { isHorizontalLayout } from './mapper';
 const VF = VexFlow;
+export interface SuiFormatterParameters {
+  score: SmoScore,
+  svg: SvgPageMap,
+  renderedPages: Record<number, RenderedPage | null>,
+  debug: layoutDebug  
+}
 /**
  * @category SuiRender
  */
@@ -64,12 +71,15 @@ export class SuiLayoutFormatter {
   svg: SvgPageMap;
   renderedPages: Record<number,RenderedPage | null>;
   lines: number[] = [];
+  horizontalGaps: Record<number, number> = {};
+  debug: layoutDebug;
   measuresRenderedThisPage: number = 0;
-  constructor(score: SmoScore, svg: SvgPageMap, renderedPages: Record<number, RenderedPage | null>) {
-    this.score = score;
-    this.svg = svg;
+  constructor(params: SuiFormatterParameters) {
+    this.score = params.score;
+    this.svg = params.svg;
     this.columnMeasureMap = {};
-    this.renderedPages = renderedPages;
+    this.renderedPages = params.renderedPages;
+    this.debug = params.debug;
     this.score.staves.forEach((staff) => {
       staff.measures.forEach((measure) => {
         if (!this.columnMeasureMap[measure.measureNumber.measureIndex]) {
@@ -80,6 +90,9 @@ export class SuiLayoutFormatter {
     });
   }
    
+  get horizontal(): boolean {
+    return isHorizontalLayout(this.score.layoutManager?.getGlobalLayout());
+  }
   /**
    * Once we know which line a measure is going on, make a map for it for easy
    * looking during rendering
@@ -125,7 +138,7 @@ export class SuiLayoutFormatter {
     const lm: SmoLayoutManager = this.score!.layoutManager!;
     // See if this measure breaks a page.
     const maxY = bottomMeasure.lowestY;
-    const forceBreak = currentLine[0].format.pageBreak && this.measuresRenderedThisPage > 0;
+    const forceBreak = (currentLine[0].format.pageBreak && this.measuresRenderedThisPage > 0) || this.horizontal;
     if (maxY > ((this.currentPage + 1) * scoreLayout.pageHeight) - scoreLayout.bottomMargin ||
       forceBreak) {
       this.currentPage += 1;
@@ -133,21 +146,33 @@ export class SuiLayoutFormatter {
       lm.addToPageLayouts(this.currentPage);
       scoreLayout = lm.getScaledPageLayout(this.currentPage);
 
-      // When adjusting the page, make it so the top staff of the system
-      // clears the bottom of the page.
-      const topMeasure = currentLine.reduce((a, b) =>
-        a.svg.logicalBox.y < b.svg.logicalBox.y ? a : b
-      );
-      const minMaxY = topMeasure.svg.logicalBox.y;
-      pageAdj = (this.currentPage * scoreLayout.pageHeight) - minMaxY;
-      pageAdj = pageAdj + scoreLayout.topMargin;
+  
+      /* if (this.horizontal) {
+        const rightMeasure = currentLine.reduce((a, b) =>
+          a.svg.logicalBox.x + a.svg.logicalBox.width < b.svg.logicalBox.x + b.svg.logicalBox.width ? a : b
+        );
+        const minMaxX = rightMeasure.svg.logicalBox.x + rightMeasure.svg.logicalBox.width;
+        pageAdj = (this.currentPage * scoreLayout.pageWidth) - minMaxX;
+        pageAdj = pageAdj + scoreLayout.leftMargin;
+        currentLine.forEach((measure) => {  
+          measure.setX(measure.staffX + pageAdj, '_checkPageBreak');
+        });
+      } */
+     if (!this.horizontal) {
+        const topMeasure = currentLine.reduce((a, b) =>
+          a.svg.logicalBox.y < b.svg.logicalBox.y ? a : b
+        );
+        const minMaxY = topMeasure.svg.logicalBox.y;
+        pageAdj = (this.currentPage * scoreLayout.pageHeight) - minMaxY;
+        pageAdj = pageAdj + scoreLayout.topMargin;
 
-      // For each measure on the current line, move it down past the page break;
-      currentLine.forEach((measure) => {
-        measure.adjustY(pageAdj);
-        measure.setY(measure.staffY + pageAdj, '_checkPageBreak');
-        measure.svg.pageIndex = this.currentPage;
-      });
+        // For each measure on the current line, move it down past the page break;
+        currentLine.forEach((measure) => {
+          measure.adjustY(pageAdj);
+          measure.setY(measure.staffY + pageAdj, '_checkPageBreak');
+          measure.svg.pageIndex = this.currentPage;
+        });
+      }
     }
     return scoreLayout;
   }
@@ -344,12 +369,15 @@ export class SuiLayoutFormatter {
     let currentLine: SmoMeasure[] = []; // the system we are esimating
     let measureEstimate: MeasureEstimate | null = null;
 
-    layoutDebug.clearDebugBoxes(layoutDebug.values.pre);
-    layoutDebug.clearDebugBoxes(layoutDebug.values.system);
+    this.debug.clearDebugBoxes(layoutDebug.values.pre);
+    this.debug.clearDebugBoxes(layoutDebug.values.system);
     const timestamp = new Date().valueOf();
 
     y = scoreLayout.topMargin;
     x = scoreLayout.leftMargin;
+    // For horizontal layout, keep track of the left edge of the page, which will be different each page.
+    // For vertical layout it is always 0
+    let pageLeftMargin = 0;
 
     while (measureIx < this.score.staves[0].measures.length) {
       if (this.score.isPartExposed()) {
@@ -359,14 +387,27 @@ export class SuiLayoutFormatter {
         }
       }
       measureEstimate = this.estimateColumn(scoreLayout, measureIx, systemIndex, lineIndex, x, y);
+      // For horizontal mode, we want the pages to be as close as possible so don't consider 
+      // left or right margin.
+      const effectiveWidth = scoreLayout.displayMode === 'horizontal' ? 
+        scoreLayout.pageWidth
+        : scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin);
+      const systemBreak = scoreLayout.displayMode === 'horizontal' ? false :measureEstimate.measures[0].format.systemBreak
       x = measureEstimate.x;
       if (systemIndex > 0 &&
-        (measureEstimate.measures[0].format.systemBreak || measureEstimate.x > (scoreLayout.pageWidth - scoreLayout.leftMargin))) {
-        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, false);
+        (systemBreak || 
+          measureEstimate.x > pageLeftMargin + effectiveWidth)) {
+        // Always justify the measures in y direction, even in horizontal model, so lyrics, staff lines etc. match up
+        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, false, pageLeftMargin);
+        
         // find the measure with the lowest y extend (greatest y value), not necessarily one with lowest
-        // start of staff.
+        // start of staff. bottomMeasure is ignored if layout is horizontal since we always break at the 
+        // end of a system.
         const bottomMeasure: SmoMeasure = currentLine.reduce((a, b) =>
           a.lowestY > b.lowestY ? a : b
+        );
+        const rightmostMeasure: SmoMeasure = currentLine.reduce((a, b) =>
+          a.rightmostX > b.rightmostX ? a : b
         );
         this.checkPageBreak(scoreLayout, currentLine, bottomMeasure);
         const renderedPage: RenderedPage | null = this.renderedPages[pageCheck];
@@ -386,9 +427,9 @@ export class SuiLayoutFormatter {
         }
         pageCheck = this.currentPage;
 
-        const ld = layoutDebug;
+        const ld = this.debug;
         const sh = SvgHelpers;
-        if (layoutDebug.mask & layoutDebug.values.system) {
+        if (this.debug.mask & layoutDebug.values.system) {
           currentLine.forEach((measure) => {
             if (measure.svg.logicalBox) {
               const context = this.svg.getRenderer(measure.svg.logicalBox);
@@ -400,20 +441,31 @@ export class SuiLayoutFormatter {
         }
 
         // Now start rendering on the next system.
-        y = bottomMeasure.lowestY + scoreLayout.interGap;
+        if (!this.horizontal) {
+          y = bottomMeasure.lowestY + scoreLayout.interGap;
+          x = scoreLayout.leftMargin;
+        } else {
+          // For horizontal layout, we 'page' at the end of each system.
+          // so the next system starts at the left edge of the next page
+          // +1 to guarantee that the first pixel starts on the next page
+          x = this.currentPage * scoreLayout.pageWidth + 1;
+          y = scoreLayout.topMargin;
+        }
   
         currentLine = [];
         systemIndex = 0;
-        x = scoreLayout.leftMargin;
         lineIndex += 1;
         this.lines.push(lineIndex);
         measureEstimate = this.estimateColumn(scoreLayout, measureIx, systemIndex, lineIndex, x, y);
         x = measureEstimate.x;
+        if (scoreLayout.displayMode === 'horizontal') {
+          pageLeftMargin += scoreLayout.pageWidth;
+        }
       }
       measureEstimate?.measures.forEach((measure) => {
         const context = this.svg.getRenderer(measure.svg.logicalBox);
         if (context) {
-          layoutDebug.debugBox(context.svg, measure.svg.logicalBox, layoutDebug.values.pre);
+          this.debug.debugBox(context.svg, measure.svg.logicalBox, layoutDebug.values.pre);
         }
       });
       this.updateSystemMap(measureEstimate.measures, lineIndex, systemIndex);
@@ -424,11 +476,21 @@ export class SuiLayoutFormatter {
       // If this is the last measure but we have not filled the x extent,
       // still justify the vertical staves and check for page break.
       if (this.isLastVisibleMeasure(measureIx) && measureEstimate !== null) {
-        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, true);
+        this.justifyY(scoreLayout, measureEstimate.measures.length, currentLine, true, pageLeftMargin);
         const bottomMeasure = currentLine.reduce((a, b) =>
           a.svg.logicalBox.y + a.svg.logicalBox.height > b.svg.logicalBox.y + b.svg.logicalBox.height ? a : b
         );
         scoreLayout = this.checkPageBreak(scoreLayout, currentLine, bottomMeasure);
+      }
+    }
+    if (scoreLayout.displayMode === 'horizontal') {
+      const rowKeys = Object.keys(this.horizontalGaps);
+      for (let i = 0; i < this.score.staves.length; ++i) {
+        if (this.horizontalGaps[i]) {
+          this.score.staves[i].measures.forEach((measure) => {
+            measure.setY(this.horizontalGaps[i], 'horizontal gap adjustment');
+          });
+        }
       }
     }
     // If a measure was added to the last page, make sure we re-render the page
@@ -438,7 +500,7 @@ export class SuiLayoutFormatter {
         this.renderedPages[this.currentPage] = null;
       }
     }
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.COMPUTE, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.COMPUTE, new Date().valueOf() - timestamp);
   }
   
   static estimateMusicWidth(smoMeasure: SmoMeasure, tickContexts: Record<number, SuiTickContext>): number {
@@ -607,15 +669,17 @@ export class SuiLayoutFormatter {
    * @param currentLine 
    * @param columnCount 
    * @param lastSystem 
+   * @param pageLeftMargin - if horizontal layout, the start x of the page
    */
-  justifyY(scoreLayout: ScaledPageLayout, rowCount: number, currentLine: SmoMeasure[], lastSystem: boolean) {
+  justifyY(scoreLayout: ScaledPageLayout, rowCount: number, currentLine: SmoMeasure[], 
+    lastSystem: boolean, pageLeftMargin: number) {
     const sh = SvgHelpers;
     // If there are fewer measures in the system than the max, don't justify.
     // We estimate the staves at the same absolute y value.
     // Now, move them down so the top of the staves align for all measures in a  row.
     const measuresToHide: SmoMeasure[] = [];
     const rows: Array<SmoMeasure[]> = [];
-    let anyNotes = false;
+    let anyNotes = false;    
     for (let i = 0; i < rowCount; ++i) {
       // lowest staff has greatest staffY value.
       const rowAdj = currentLine.filter((mm) => mm.svg.rowInSystem === i);
@@ -647,7 +711,7 @@ export class SuiLayoutFormatter {
       const rightStaff = rowAdj.reduce((a, b) =>
         a.staffX + a.staffWidth > b.staffX + b.staffWidth ?  a : b);
 
-      const ld = layoutDebug;
+      const ld = this.debug;
       let justifyX = 0;
       let columnCount = rowAdj.length;
       // missing offset is for systems that have fewer measures than the default (due to section break or score ending)
@@ -659,8 +723,18 @@ export class SuiLayoutFormatter {
           columnCount = scoreLayout.maxMeasureSystem;
       }
       if (scoreLayout.maxMeasureSystem > 1 || !lastSystem) {
-        justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + rightStaff.staffX + rightStaff.staffWidth + missingOffset))
-          / columnCount);
+        if (scoreLayout.displayMode === 'horizontal') {
+          /*justifyX = Math.round((scoreLayout.pageWidth - (rightStaff.staffX - pageLeftMargin)
+            + rightStaff.staffWidth + missingOffset)
+            / columnCount); */
+          justifyX = Math.round((scoreLayout.pageWidth - (
+            (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
+            / columnCount);
+        } else {
+          justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + 
+            (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
+            / columnCount);
+        }
       }
       let justOffset = 0;
       rowAdj.forEach((measure) => {
@@ -675,10 +749,10 @@ export class SuiLayoutFormatter {
         justOffset += justifyX;
       });
     }
-    // If a full line doesn't contain any music, hide it.
-    if (this.score.preferences.hideEmptyLines && anyNotes) {
-      let adjY = 0;
-      for (let i = 0; i < rowCount; ++i) {
+    let adjY = 0;
+    for (let i = 0; i < rowCount; ++i) {
+      // If a full line doesn't contain any music, hide it.
+      if (this.score.preferences.hideEmptyLines && anyNotes) {
         const rowAdj = measuresToHide.filter((mm) => mm.svg.rowInSystem === i);
         if (rowAdj.length) {
           adjY += rowAdj[0].svg.logicalBox.height;
@@ -692,6 +766,14 @@ export class SuiLayoutFormatter {
             row.setY(row.svg.staffY - adjY, 'format-hide');
             row.adjustY(-adjY);
           });
+        }
+      }
+      // When this page is aligned, record the lowest y for each row, so we can align all the pages
+      // vertically.
+      if (scoreLayout.displayMode === 'horizontal') {
+        this.horizontalGaps[i] = this.horizontalGaps[i] ?? 0;
+        if (rows[i].length > 0) {
+          this.horizontalGaps[i] = Math.max(this.horizontalGaps[i], rows[i][0].staffY);
         }
       }
     }

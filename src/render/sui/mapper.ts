@@ -8,12 +8,34 @@ import { SmoSystemStaff } from '../../smo/data/systemStaff';
 import { SmoMeasure, SmoVoice } from '../../smo/data/measure';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SmoNoteModifierBase, SmoLyric } from '../../smo/data/noteModifiers';
-import { SvgBox } from '../../smo/data/common';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { SmoNote } from '../../smo/data/note';
+import { SmoGlobalLayout } from '../../smo/data/scoreModifiers';
 import { SmoScore, SmoModifier } from '../../smo/data/score';
 import { SvgPageMap } from './svgPageMap';
 import { VxMeasure } from '../vex/vxMeasure';
 import {SuiScoreRender} from "./scoreRender";
+
+/**
+ * Decide if this layout is horizontal or vertical
+ * @param layout 
+ * @returns 
+ */
+export function isHorizontalLayout(layout?: SmoGlobalLayout): boolean {
+  if (!layout || !layout.displayMode || layout.displayMode === 'vertical') {
+    return false;
+  }
+  return layout.displayMode === 'horizontal';
+}
+/**
+ * Provide the layout and some convenience functions for horizontal vs. vertical layout
+ */
+export interface layoutProvider {
+  getLayout(): SmoGlobalLayout | undefined;
+  isLayoutHorizontal(): boolean;
+  getFlowDimensionExtent(box: SvgBox): number;
+  getFlowDimensionPosition(box: SvgBox| SvgPoint): number;
+}
 
 /**
  * DI information about renderer, so we can notify renderer and it can contain
@@ -35,6 +57,7 @@ export interface SuiRendererBase {
   renderPromise(): Promise<any>,
   addToReplaceQueue(mm: SmoSelection[]): void,
   renderElement: Element,
+  debug: layoutDebug
   renderer: SuiScoreRender
 }
 /**
@@ -71,11 +94,13 @@ export abstract class SuiMapper {
   selectionRects: Record<number, OutlineInfo[]> = {};
   outlines: Record<string, OutlineInfo> = {};
   mapping: boolean = false;
+  debug: layoutDebug;
 
   constructor(renderer: SuiRendererBase, scroller: SuiScroller) {
     // renderer renders the music when it changes
     this.renderer = renderer;
     this.scroller = scroller;
+    this.debug = renderer.debug;
     this.modifierIndex = -1;
     this.localModifiers = [];
     // index if a single pitch of a chord is selected
@@ -503,7 +528,7 @@ export abstract class SuiMapper {
     if (selectionChanged) {
       this.deferHighlight();
     }
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.MAP, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.MAP, new Date().valueOf() - timestamp);
   }
 
   _getTicksFromSelections(): number {
@@ -575,7 +600,7 @@ export abstract class SuiMapper {
     }  else if (this.areSelectionsAdjacent() && this.selections.length > 1) {
       // If there are adjacent selections, restore selections to the ticks that are in the score now
       if (!firstSelection) {
-        layoutDebug.setTimestamp(layoutDebug.codeRegions.UPDATE_MAP, new Date().valueOf() - ts);
+        this.debug.setTimestamp(layoutDebug.codeRegions.UPDATE_MAP, new Date().valueOf() - ts);
         return;
       }
       this.selections = [];
@@ -593,7 +618,7 @@ export abstract class SuiMapper {
     this.deferHighlight();
     this._createLocalModifiersList();
     this.mapping = false;
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.UPDATE_MAP, new Date().valueOf() - ts);
+    this.debug.setTimestamp(layoutDebug.codeRegions.UPDATE_MAP, new Date().valueOf() - ts);
   }
   createMousePositionBox(logicalBox: SvgBox) {
     const pageMap = this.renderer.pageMap;

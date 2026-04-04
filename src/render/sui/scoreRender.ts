@@ -17,7 +17,7 @@ import { SmoBeamer } from '../../smo/xform/beamers';
 import { SuiTextBlock } from './textRender';
 import { layoutDebug } from './layoutDebug';
 import { SourceSansProFont } from '../../styles/font_metrics/ssp-sans-metrics';
-import { SmoRenderConfiguration } from './configuration';
+import { SmoRenderConfiguration, SuiNavigation } from './configuration';
 import { createTopDomContainer } from '../../common/htmlHelpers';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { SvgPageMap, SvgPage } from './svgPageMap';
@@ -38,7 +38,8 @@ const VF = VexFlow;
   elementId: any,
   score: SmoScore,
   config: SmoRenderConfiguration,
-  undoBuffer: UndoBuffer
+  undoBuffer: UndoBuffer,
+  debug: layoutDebug
 }
 /**
  * @category SuiRender
@@ -55,15 +56,24 @@ export class SuiScoreRender {
   constructor(params: ScoreRenderParams) {    
     this.elementId = params.elementId;
     this.score = params.score;
-    this.vexContainers = new SvgPageMap(this.score.layoutManager!.globalLayout, this.elementId, this.score.layoutManager!.pageLayouts);
+    this.debug = params.debug;
+    this.navigation = params.config.navigation;
+    this.vexContainers = new SvgPageMap(
+      { layout: this.score.layoutManager!.globalLayout,
+         container: this.elementId, 
+         pages: this.score.layoutManager!.pageLayouts,
+         debug: this.debug 
+      });
     this.setViewport();
   }
+  debug: layoutDebug;
   elementId: any;
   startRenderTime: number = 0;
   formatter: SuiLayoutFormatter | null = null;
   vexContainers: SvgPageMap;
   // vexRenderer: any = null;
   score: SmoScore | null = null;
+  navigation: SuiNavigation;
   measureMapper: SuiMapper | null = null;
   measuresToMap: MapParameters[] = [];
   viewportChanged: boolean = false;
@@ -344,7 +354,7 @@ export class SuiScoreRender {
       this.lyricsToOffset.set(vxSystem.lineIndex, vxSystem);
     }
     // vxSystem.updateLyricOffsets();
-    layoutDebug.setTimestamp(layoutDebug.codeRegions.POST_RENDER, new Date().valueOf() - timestamp);
+    this.debug.setTimestamp(layoutDebug.codeRegions.POST_RENDER, new Date().valueOf() - timestamp);
   }
   _renderNextSystemPromise(systemIx: number, keys: number[], printing: boolean) {
     return new Promise((resolve: any) => {
@@ -355,11 +365,9 @@ export class SuiScoreRender {
   }
 
   async _renderNextSystem(lineIx: number, keys: number[], printing: boolean) {
-    createTopDomContainer('#renderProgress', 'progress');
     if (lineIx < keys.length) {
       const progress = Math.round((100 * lineIx) / keys.length);
-      $('#renderProgress').attr('max', 100);
-      $('#renderProgress').val(progress);
+      this.navigation.setProgress(progress);
       await this._renderNextSystemPromise(lineIx,keys, printing);
       lineIx++;
       await this._renderNextSystem(lineIx, keys, printing);
@@ -380,12 +388,12 @@ export class SuiScoreRender {
       if (this._autoAdjustRenderTime) {
         this.renderTime = new Date().valueOf() - this.startRenderTime;
       }
-      $('body').removeClass('show-render-progress');
+      this.navigation.hideProgressModal();
       // indicate the display is 'clean' and up-to-date with the score
       $('body').removeClass('refresh-1');
       if (this.measureMapper !== null) {
         this.measureMapper.updateMap();
-        if (layoutDebug.mask & layoutDebug.values['artifactMap']) {
+        if (this.debug.mask & layoutDebug.values['artifactMap']) {
           this.score?.staves.forEach((staff) => {
             staff.measures.forEach((mm) => {
               mm.voices.forEach((voice: SmoVoice) => {
@@ -595,7 +603,6 @@ export class SuiScoreRender {
     $('.measure-format').remove();
    
     if (!printing) {
-      $('body').addClass('show-render-progress');
       const isShowing = SuiPiano.isShowing;
       if (this.score.preferences.showPiano && !isShowing) {
         SuiPiano.showPiano();
@@ -609,6 +616,8 @@ export class SuiScoreRender {
     this.startRenderTime = new Date().valueOf();
     this.renderingPage = -1;
     this.vexContainers.updateContainerOffset(this.measureMapper!.scroller.scrollState);
+    this.navigation.showProgressModal('Rendering score...');
+
     await this._renderNextSystem(0, lines, printing);
   }
   // Number the measures at the first measure in each system.
@@ -669,7 +678,13 @@ export class SuiScoreRender {
     }
     const score = this.score;
     $('head title').text(this.score.scoreInfo.name);
-    const formatter = new SuiLayoutFormatter(score, this.vexContainers, this.renderedPages);
+    const formatter = new SuiLayoutFormatter(
+      {
+        score: score, 
+        svg: this.vexContainers, 
+        renderedPages: this.renderedPages, 
+        debug: this.debug
+      });
     Object.keys(this.renderedPages).forEach((key) => {
       this.vexContainers.clearModifiersForPage(parseInt(key));
     });

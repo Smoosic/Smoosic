@@ -62,5 +62,5 @@ export interface SuiRockerCompositeParams {
 export declare class SuiRockerComposite extends SuiRockerComponent {
     parentControl: SuiComponentParent;
     constructor(dialog: SuiDialogNotifier, parameters: SuiRockerCompositeParams);
-    handleChanged(): void;
+    handleChanged(): Promise<void>;
 }

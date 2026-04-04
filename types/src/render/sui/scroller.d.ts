@@ -1,5 +1,11 @@
 import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { SvgPageMap } from './svgPageMap';
+import { layoutDebug } from './layoutDebug';
+export interface SuiScrollerParams {
+    selector: HTMLElement;
+    svgPages: SvgPageMap;
+    debug: layoutDebug;
+}
 /**
  * Respond to scroll events in music DOM, and handle the scroll of the viewport
  * @category SuiRender
@@ -12,7 +18,8 @@ export declare class SuiScroller {
     viewport: SvgBox;
     logicalViewport: SvgBox;
     scrolling: boolean;
-    constructor(selector: HTMLElement, svgPages: SvgPageMap);
+    debug: layoutDebug;
+    constructor(params: SuiScrollerParams);
     get scrollState(): SvgPoint;
     restoreScrollState(state: SvgPoint): void;
     handleScroll(x: number, y: number): void;

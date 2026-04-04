@@ -462,8 +462,9 @@ export class SmoScore {
       systemGroups: [],
       metadata: SmoScore.scoreMetadataDefaults
     };
-    if (this.layoutManager) {
+    if (this.layoutManager) {      
       obj.layoutManager = this.layoutManager.serialize();
+      obj.layoutManager.globalLayout.displayMode = 'vertical'; // horizontal mode is display-only
     }
     obj.metadata!.fonts = JSON.parse(JSON.stringify(this.fonts));
     obj.metadata!.renumberingMap = JSON.parse(JSON.stringify(this.renumberingMap));
@@ -511,6 +512,13 @@ export class SmoScore {
     this.preferences = pref;
     SmoMeasure.defaultDupleDuration = pref.defaultDupleDuration;
     SmoMeasure.defaultTripleDuration = pref.defaultTripleDuration;
+    if (this.layoutManager) {
+      if (pref.horizontalDisplay) {
+        this.layoutManager.globalLayout.displayMode = 'horizontal';
+      } else {
+        this.layoutManager.globalLayout.displayMode = 'vertical';
+      }
+    }
   }
   get engravingFont(): engravingFontType {
     const efont = this.fonts.find((x) => x.purpose === SmoScore.fontPurposes.ENGRAVING);

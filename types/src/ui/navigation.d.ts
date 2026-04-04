@@ -1,15 +1,37 @@
+import { DomDebugFlag } from './common';
+import { SuiNavigation, scrollHandler, debugFlag } from '../render/sui/configuration';
 import { Ref } from 'vue';
-export type scrollHandler = (ev: any) => void;
-export declare class SuiNavigation {
-    static instance: SuiNavigation;
-    bugModalView: Ref<boolean>;
+export declare class SuiNavigationDom implements SuiNavigation {
+    static _instance: SuiNavigationDom;
+    static get instance(): SuiNavigationDom;
+    _displayMode: Ref<string>;
+    crashUrl: string;
     scrollHandlers: scrollHandler[];
-    constructor(uiDomContainer: HTMLElement);
-    static get scrollable(): string;
+    _outerContainer?: HTMLElement;
+    _scrollContainer?: HTMLElement;
+    _scoreContainer?: HTMLElement;
+    debugFlags: DomDebugFlag[];
+    initialized: boolean;
+    showSplash: Ref<boolean>;
+    splashTimer: Ref<number>;
+    crashReport: Ref<string>;
+    showCrashReport: Ref<boolean>;
+    displayExceptionDialog(message: string): void;
+    isInitialized(): boolean;
+    createDebugFlags(): void;
+    get displayMode(): string;
+    set displayMode(value: string);
+    get outerContainer(): HTMLElement | undefined;
+    set outerContainer(value: HTMLElement | undefined);
+    get scrollContainer(): HTMLElement;
+    get scoreContainer(): HTMLElement;
+    constructor(uiDomContainer?: HTMLElement);
+    initialize(): void;
+    showDebugString(flag: debugFlag, htmlString: string): void;
+    get scrollable(): string;
     pushScrollHandler(handler: scrollHandler): void;
     popScrollHandler(): scrollHandler | undefined;
-    showBugModal(): void;
-    hideBugModal(): void;
+    showSplashModal(timeout?: number): void;
     showDialogModal(): void;
     hideDialogModal(): void;
 }

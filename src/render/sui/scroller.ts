@@ -5,7 +5,11 @@ import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { SvgPageMap } from './svgPageMap';
 import { layoutDebug } from './layoutDebug';
 declare var $: any;
-
+export interface SuiScrollerParams {
+  selector: HTMLElement,
+  svgPages: SvgPageMap,
+  debug: layoutDebug
+}
 /**
  * Respond to scroll events in music DOM, and handle the scroll of the viewport
  * @category SuiRender
@@ -18,15 +22,17 @@ export class SuiScroller {
   viewport: SvgBox = SvgBox.default;
   logicalViewport: SvgBox = SvgBox.default;
   scrolling: boolean = false;
+  debug: layoutDebug;
   // ### constructor
   // selector is the scrollable DOM container of the music container
   // (grandparent of svg element)
-  constructor(selector: HTMLElement, svgPages: SvgPageMap) {
+  constructor(params: SuiScrollerParams) {
     const self = this;
-    this.selector = selector;
+    this.selector = params.selector;
     this._scroll = { x: 0, y: 0 };
-    this.svgPages = svgPages;
-    const scroller = $(selector);
+    this.svgPages = params.svgPages;
+    this.debug = params.debug;
+    const scroller = $(this.selector);
     this._offsetInitial = { x: $(scroller).offset().left, y: $(scroller).offset().top };
   }
 
@@ -45,10 +51,10 @@ export class SuiScroller {
     this.deferUpdateDebug();
   }
   updateDebug() {
-    layoutDebug.updateScrollDebug(this._scroll);
+    this.debug.updateScrollDebug(this._scroll);
   }
   deferUpdateDebug() {
-    if (layoutDebug.mask & layoutDebug.values.scroll) {
+    if (this.debug.mask & layoutDebug.values.scroll) {
       setTimeout(() => {
         this.updateDebug();
       }, 1);

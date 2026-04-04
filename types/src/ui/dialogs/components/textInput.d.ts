@@ -47,7 +47,7 @@ export interface SuiTextInputCompositeParams {
 export declare class SuiTextInputComposite extends SuiTextInputComponent {
     parentControl: SuiComponentParent;
     constructor(dialog: SuiDialogNotifier, parameters: SuiTextInputCompositeParams);
-    handleChanged(): void;
+    handleChanged(): Promise<void>;
 }
 /**
  * A static text message that appears in the dialog

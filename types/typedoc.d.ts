@@ -1,7 +1,6 @@
 export * from './src/application/application';
 export * from './src/application/common';
 export * from './src/application/configuration';
-export * from './src/application/dom';
 export * from './src/application/eventHandler';
 export * from './src/application/exports';
 export * from './src/application/generateVexTests';

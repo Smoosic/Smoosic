@@ -4,7 +4,8 @@ import selectComp from './select.vue';
 import numberInputApp from './numberInput.vue';
 import { SelectOption } from '../../common';
 import { SmoPartInfo, SmoPartInfoStringType, SmoPartInfoNumType, SmoPartInfoBooleanType } from '../../../smo/data/partInfo';
-import { GlobalLayoutAttributes, SmoLayoutManager, GlobalLayoutAttributesArray } from '../../../smo/data/scoreModifiers';
+import { GlobalLayoutAttributes, 
+  GlobalLayoutNumberAttributes, displayMode, GlobalLayoutAttributesArray, GlobalLayoutNumberAttributesArray } from '../../../smo/data/scoreModifiers';
 import dialogContainer from './dialogContainer.vue';
 
 interface Props {
@@ -23,13 +24,18 @@ const writeBooleanValue = async (attr: SmoPartInfoBooleanType, value: boolean) =
   partInfo[attr] = value;
   await updatePartInfoCb(partInfo);
 }
-const writeLayoutValue = async (attr: GlobalLayoutAttributes, value: number) => {
+const writeLayoutValue = async (attr: GlobalLayoutAttributes, value: number | displayMode) => {
     // no change?
     if (partInfo.layoutManager.globalLayout[attr] === value) {
       return;
     }
-    partInfo.layoutManager.globalLayout[attr] = value;
-    await updatePartInfoCb(partInfo);
+    if (GlobalLayoutNumberAttributesArray.indexOf(attr as GlobalLayoutNumberAttributes) >= 0 && typeof value === 'number') {
+      partInfo.layoutManager.globalLayout[attr as GlobalLayoutNumberAttributes] = value;
+      await updatePartInfoCb(partInfo);
+    } else if (attr === 'displayMode' && typeof value === 'string') {
+      partInfo.layoutManager.globalLayout.displayMode = value as displayMode;
+      await updatePartInfoCb(partInfo);
+    }
 }
 const pageSizes: SelectOption[] = [
   { label: 'Letter', value: 'letter' },
@@ -102,8 +108,8 @@ watch (includeNext, async (newVal, oldVal) => {
 
 type numberWriterType = (value: number) => Promise<void>;
 
-const updateLayoutFunc = (param: GlobalLayoutAttributes): numberWriterType => {
-  const cb = async (value: number) => {
+const updateLayoutFunc = (param: GlobalLayoutAttributes): numberWriterType => {  
+  const cb = async (value: number | displayMode) => {
     await writeLayoutValue(param, value);
   }
   return cb;

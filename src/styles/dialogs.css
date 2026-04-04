@@ -250,7 +250,7 @@ body .vueDialogContainer>div {
 body.showVueDialog .vueDialogContainer, 
 body.showVueDialog .modal{
   position:absolute;
-	display:block;
+	/* display:block;  */
 	z-index:3;
 }
 .draggable-button {
@@ -495,14 +495,29 @@ button.nav-link {
 	margin:10px;
 }
 
+.helpDialog .button-left,
 .attributeModal .buttonContainer .button-left {
 	margin-right:5px;
 }
+.helpDialog .button-left {
+  padding-left: 10px;
+}
+.helpDialog .button-right {
+  padding-right: 10px;
+}
+.prev-topic-text {
+  margin-left: 5px;
+}
+.next-topic-text {
+  margin-right: 5px;
+}
+.helpDialog .button-center,
 .attributeModal .buttonContainer .button-center {
 	margin-right:5px;
 	margin-left:5px;
 }
 
+.helpDialog .button-right,
 .attributeModal .buttonContainer .button-right {
 	margin-left:5px;
 }
@@ -900,7 +915,7 @@ body.bugReport .bug-modal {
   display: flex;
 }
 
-.bug-modal .modal {
+.modal.show {
   display: block;
 }
 .bug-title {
@@ -923,17 +938,15 @@ body.splashScreen .bugDialog {
 
 }
 
-.helpDialog  {
-    display:none;
-}
+
 /* change did not get propogated */
-body.showHelpDialog .helpDialog {
+#help-dialog-container .helpDialog {
 	display:flex;
   overflow: hidden;
 	background: #eef;
   flex: 1 0 100%;
   flex-flow:column wrap;
-  overflow:auto;
+  overflow-y:auto;
 	margin: 8px;
 	padding: 10px;
   position: absolute;
@@ -984,7 +997,7 @@ body.showHelpDialog .helpDialog {
   position: absolute;
   left: 2px;
 }
-body.showHelpDialog .helpDialog button.close {
+.helpDialog button.close {
   position: absolute;
   right: 5px;
   color: red;
@@ -1161,7 +1174,7 @@ button.translate-submit-button {
   border-radius: 4px;
 }
 
-#renderProgress {
+#render-progress {
   display: none;
   width:200px;
   height:25px;
@@ -1175,20 +1188,14 @@ button.translate-submit-button {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.8em;
 }
-#renderProgress:after {
-	margin: -25px 0 0 100px;
-	padding:0;
-	display:inline-block;
-	content: attr(value) '%';
-}
-#renderProgress[value]::-webkit-progress-bar {
+#render-progress[value]::-webkit-progress-bar {
   background-color:#eee;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
 }
 
-#renderProgress[value]::-webkit-progress-value {
+#render-progress[value]::-webkit-progress-value {
   background: #F70;
 }
-body.show-render-progress #renderProgress {
+body.progress-modal #render-progress {
   display: block;
 }

@@ -1,6 +1,7 @@
 import { SvgHelpers, StrokeInfo } from "./svgHelpers";
 import { SvgPoint, SvgBox, Renderable, ElementLike, RemoveElementLike } from '../../smo/data/common';
 import { layoutDebug } from './layoutDebug';
+import { layoutProvider, isHorizontalLayout } from "./mapper";
 import { SmoGlobalLayout, SmoPageLayout } from '../../smo/data/scoreModifiers';
 import { SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
@@ -15,6 +16,12 @@ const VF = VexFlow;
  * @module /render/sui/svgPageMap
  */
 declare var $: any;
+export interface SvgPageMapParameters {
+  layout: SmoGlobalLayout, 
+  container: HTMLElement,
+  pages: SmoPageLayout[], 
+  debug: layoutDebug
+}
 /**
  * A selection map maps a sub-section of music (a measure, for instance) to a region
  * on the screen.  SelectionMap can contain other SelectionMaps with
@@ -179,6 +186,17 @@ export class MappedSystems extends SelectionMap<MappedMeasures, number> {
     }
   }
 }
+export function getDiv(dim: number, box: SvgBox, divSize: number, layoutSource: layoutProvider): number {
+  return Math.round((dim - layoutSource.getFlowDimensionExtent(box)) / divSize);
+}
+
+export interface SvgPageParameters {
+  renderer: Renderer,
+  layoutSource: layoutProvider,
+  pageNumber: number,
+  box: SvgBox,
+  debug: layoutDebug
+}
 /**
  * Each page is a different SVG element, with its own offset within the DOM. This
  * makes partial updates faster.  SvgPage keeps track of all musical elements in SelectionMaps.
@@ -188,11 +206,13 @@ export class MappedSystems extends SelectionMap<MappedMeasures, number> {
  */
 export class SvgPage {
   _renderer: Renderer;
+  layoutSource: layoutProvider;
   pageNumber: number;
   box: SvgBox;
   systemMap: MappedSystems = new MappedSystems();
   modifierYKeys: number[] = [];
   modifierTabDivs: Record<number, ModifierTab[]> = {};
+  debug: layoutDebug;
   static get defaultMap() {
     return {
       box: SvgBox.default,
@@ -214,12 +234,14 @@ export class SvgPage {
     return this._renderer.getContext() as SVGContext;
   }
   get divSize(): number {
-    return this.box.height / SvgPage.modifierDivs;
+    return this.layoutSource.getFlowDimensionExtent(this.box) / SvgPage.modifierDivs;
   }
-  constructor(renderer: Renderer, pageNumber: number, box: SvgBox) {
-    this._renderer = renderer;
-    this.pageNumber = pageNumber;
-    this.box = box;
+  constructor(params: SvgPageParameters) {
+    this._renderer = params.renderer;
+    this.layoutSource = params.layoutSource;
+    this.pageNumber = params.pageNumber;
+    this.box = params.box;
+    this.debug = params.debug;
     let divEnd = this.divSize;
     for (let i = 0; i < SvgPage.modifierDivs; ++i) {
       this.modifierYKeys.push(divEnd);
@@ -231,8 +253,8 @@ export class SvgPage {
    * @param y 
    * @returns 
    */
-  divIndex(y: number): number {
-    return Math.round((y - this.box.y) / this.divSize);
+  divIndex(dim: number): number {
+    return Math.round((dim - this.layoutSource.getFlowDimensionPosition(this.box)) / this.divSize);
   }
   /**
    * Remove all elements and modifiers in this page, for a redraw.
@@ -248,7 +270,7 @@ export class SvgPage {
    */
   clearMeasure(selection: SmoSelection) {    
     this.systemMap.clearMeasure(selection);
-    const div = this.divIndex(selection.measure.svg.logicalBox.y);
+    const div = this.divIndex(this.layoutSource.getFlowDimensionPosition(selection.measure.svg.logicalBox));
     if (div < this.modifierYKeys.length) {
       const mods: ModifierTab[] = [];
       this.modifierTabDivs[div].forEach((mt: ModifierTab) => {
@@ -268,7 +290,7 @@ export class SvgPage {
    * @param modifier 
    */
   addModifierTab(modifier: ModifierTab) {
-    const div = this.divIndex(modifier.box.y);
+    const div = this.divIndex(this.layoutSource.getFlowDimensionPosition(modifier.box));
     if (div < this.modifierYKeys.length) {
       if (!this.modifierTabDivs[div]) {
         this.modifierTabDivs[div] = [];
@@ -298,7 +320,7 @@ export class SvgPage {
    */
   findModifierTabs(box: SvgBox): ModifierTab[] {
     const rv:ModifierTab[] = [];
-    const div = this.divIndex(box.y);
+    const div = this.divIndex(this.layoutSource.getFlowDimensionPosition(box));
     if (div < this.modifierYKeys.length) {
       if (this.modifierTabDivs[div]) {
         this.modifierTabDivs[div].forEach((modTab) => {
@@ -383,16 +405,36 @@ export class SvgPageMap {
       };
     }
     containerOffset: SvgPoint = SvgPoint.default;
+    debug: layoutDebug;
+    getLayout(): SmoGlobalLayout {
+      return this._layout;
+    }
+    isLayoutHorizontal(): boolean {
+      return isHorizontalLayout(this._layout);
+    }
+    getFlowDimensionPosition(box: SvgBox | SvgPoint): number{ 
+      if (this.isLayoutHorizontal()) {
+        return box.x;
+      }
+      return box.y;
+    }
+    getFlowDimensionExtent(box: SvgBox): number{ 
+      if (this.isLayoutHorizontal()) {
+        return box.width;
+      }
+      return box.height;
+    }
     /**
      * 
      * @param layout - defines the page width/height and relative zoom common to all the pages
      * @param container - the parent DOM element that contains all the pages
      * @param pages - the layouts (margins, etc) for each pages.
      */
-    constructor(layout: SmoGlobalLayout, container: HTMLElement, pages: SmoPageLayout[]) {
-        this._layout = layout;
-        this._container = container;
-        this._pageLayouts = pages;
+    constructor(params: SvgPageMapParameters) {
+        this._layout = params.layout;
+        this._container = params.container;
+        this._pageLayouts = params.pages;
+        this.debug = params.debug;
     }
     get container() {
         return this._container;
@@ -433,13 +475,21 @@ export class SvgPageMap {
     get totalHeight() {
       return this.pageDivHeight * this.pageLayouts.length;
     }
+    get totalWidth() {
+      return this.pageDivWidth * this.pageLayouts.length;
+    }
     /**
      * create/re-create all the page SVG elements
      */
     createRenderers() {
       // $(this.container).html('');
-      $(this.container).css('width', '' + Math.round(this.pageDivWidth) + 'px');
-      $(this.container).css('height', '' + Math.round(this.totalHeight) + 'px');
+      if (this.isLayoutHorizontal()) {
+        $(this.container).css('width', '' + Math.round(this.totalWidth) + 'px');
+        $(this.container).css('height', '' + Math.round(this.pageDivHeight) + 'px');
+      } else {
+        $(this.container).css('width', '' + Math.round(this.pageDivWidth) + 'px');
+        $(this.container).css('height', '' + Math.round(this.totalHeight) + 'px');
+      }
       const toRemove: HTMLElement[] = [];
       this.vfRenderers.forEach((renderer) => {
           const container = (renderer.svg as SVGSVGElement).parentElement;
@@ -455,6 +505,14 @@ export class SvgPageMap {
           this.addPage();
       });
     }
+    topY(ix: number): number {
+      const dim = this.isLayoutHorizontal() ? 0 : this.pageHeight;
+      return dim * ix;
+    }
+    topX(ix: number): number {
+      const dim = this.isLayoutHorizontal() ? this.pageWidth : 0;
+      return dim * ix;
+    }
     addPage() {
       const ix = this.vfRenderers.length;
       const container = document.createElement('div');
@@ -463,11 +521,13 @@ export class SvgPageMap {
       const vexRenderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
       const svg = (vexRenderer.getContext() as any).svg as SVGSVGElement;
       SvgHelpers.svgViewport(svg, 0, 0, this.pageDivWidth, this.pageDivHeight, this.renderScale * this.zoomScale);
-      const topY = this.pageHeight * ix;
-      const box = SvgHelpers.boxPoints(0, topY, this.pageWidth, this.pageHeight);
-      const page = new SvgPage(vexRenderer, ix, box);
+      const topY = this.topY(ix);
+      const topX = this.topX(ix);
+      const box = SvgHelpers.boxPoints(topX, topY, this.pageWidth, this.pageHeight);
+      const page = new SvgPage({ renderer: vexRenderer, layoutSource: this, 
+        pageNumber: ix, box, debug: this.debug });
       this.vfRenderers.push(page);
-      if (layoutDebug.mask & layoutDebug.values.page) {
+      if (this.debug.mask & layoutDebug.values.page) {
         const dbgBox = JSON.parse(JSON.stringify(box));
         const dims = this.pageLayouts[ix];
         dbgBox.x += dims.leftMargin;
@@ -496,8 +556,8 @@ export class SvgPageMap {
       const x = (box.x - this.containerOffset.x) / cof;
       const y = (box.y - this.containerOffset.y) / cof;
       const logicalBox = SvgHelpers.boxPoints(x, y, Math.max(box.width / cof, 1), Math.max(box.height / cof, 1));
-      if (layoutDebug.mask | layoutDebug.values['mouseDebug']) {
-        layoutDebug.updateMouseDebug(box, logicalBox, this.containerOffset);
+      if (this.debug.mask & layoutDebug.values['mouseDebug']) {
+        this.debug.updateMouseDebug(box, logicalBox, this.containerOffset);
       }
       return logicalBox;
     }
@@ -608,8 +668,9 @@ export class SvgPageMap {
         this._pageLayouts = layouts;
 
         // update page height
-        const totalHeight = this.pageDivHeight *  this.pageLayouts.length ;
-        $(this.container).css('width', '' + Math.round(this.pageDivWidth) + 'px');
+        const totalHeight = this.isLayoutHorizontal() ? this.pageDivHeight : this.pageDivHeight *  this.pageLayouts.length;
+        const totalWidth = this.isLayoutHorizontal() ? this.pageDivWidth *  this.pageLayouts.length : this.pageDivWidth;
+        $(this.container).css('width', '' + Math.round(totalWidth) + 'px');
         $(this.container).css('height', '' + Math.round(totalHeight) + 'px');
     }
     /**
@@ -639,11 +700,13 @@ export class SvgPageMap {
      * @returns 
      */
     getRendererFromPoint(point: SvgPoint): SvgPage | null {
-        const ix = Math.floor(point.y / (this.layout.pageHeight / this.layout.svgScale));
-        if (ix < this.vfRenderers.length) {
-            return this.vfRenderers[ix];
-        }
-        return null;
+      const pointDim = this.getFlowDimensionPosition(point);
+      const pageDim = this.isLayoutHorizontal() ? this.pageWidth : this.pageHeight;
+      const ix = Math.floor(pointDim / pageDim);
+      if (ix < this.vfRenderers.length) {
+          return this.vfRenderers[ix];
+      }
+      return null;
     }
     /**
      * Return the SvgPage based on SVG point (conversion from client coordinates already done)

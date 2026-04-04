@@ -1,0 +1,10 @@
+<svg id="eye1_svg6" viewBox="0 0 44 48" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round" fill="var(--color0, #000)" width="29.333333" height="32" stroke-dasharray="none" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <style>
+        :root, .palette0 {color: currentColor;
+            --color0: #000;
+        }
+    </style>
+    <metadata id="eye1_metadata12" fill="#000" />
+    <path id="eye1_path885" style="paint-order:fill markers" opacity="1" d="M22 12c-9.9411 0-18 9-18 14 0 4 8.0589 14 18 14s18-9 18-14c0-4-8.0589-14-18-14zM22 17c6.0046 1e-4 13.0009 5.8419 13 10-7e-4 4.1573-6.9965 7.9999-13 8-6.0035-1e-4-12-6.2539-12-9 0-2.2539 5.9954-8.9999 12-9z" />
+    <path id="eye1_path903" style="paint-order:fill markers" opacity="1" d="M22.1285 21c-3.0376 0-5.5 2.4624-5.5 5.5 0 3.0376 2.4624 5.5 5.5 5.5 3.0375 0 5.5-2.4624 5.5-5.5 0-3.0376-2.4625-5.5-5.5-5.5zM22 23c1.568-3e-4 3.9331 1.7726 3.9336 3.6186 4e-4 1.8468-2.2632 3.3817-3.8319 3.3814-1.5679-1e-3-3.4737-1.7047-3.4732-3.5506C18.6289 24.6043 20.4327 23.001 22 23z" />
+</svg>

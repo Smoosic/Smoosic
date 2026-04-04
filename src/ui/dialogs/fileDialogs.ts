@@ -19,7 +19,7 @@ import { SuiFileInput } from '../fileio/fileInput';
 import { default as messageDialog } from '../components/dialogs/modalMessage.vue';
 import { default as fileUploadApp } from '../components/dialogs/fileUpload.vue';
 import { default as saveFileApp } from '../components/dialogs/save.vue';
-import { SuiNavigation } from '../navigation';
+import { SuiNavigationDom } from '../navigation';
 declare var $: any;
 
 export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
@@ -162,16 +162,18 @@ export const SuiFileSaveDialog  = async (parameters: SuiDialogParams) => {
 export const SuiPrintDialog = async (parameters: SuiDialogParams) => {
   await parameters.view.renderer.renderForPrintPromise();
   window.print();
-  const okCb = () => {
-    $('body').removeClass('printing');
+  $('body').removeClass('printing');
+  const okCb = async () => {
     parameters.view.renderer.restoreLayoutAfterPrint();
     window.dispatchEvent(new Event('resize'));
-    SuiNavigation.instance.hideDialogModal();
   }
   const rootId = replaceVueRoot(modalContainerId);
-  const appParams = { domId: rootId, okCb, message: 'Print complete!', headline: 'Printing' };
-  createApp(messageDialog as any, appParams).mount('#' + rootId);
-  SuiNavigation.instance.showDialogModal();
-  
+  const appParams = { domId: rootId, okCb, message: 'Print complete!', headline: 'Printing' };  
+  InstallDialog({
+    root: rootId,
+    app: messageDialog,
+    dialogParams: parameters,
+    appParams,
+    commitCb: okCb, cancelCb: okCb});
 }
 

@@ -8,6 +8,7 @@ import { StaffModifierBase } from '../../smo/data/staffModifiers';
 import { SuiMapper } from './mapper';
 import { VxSystem } from '../vex/vxSystem';
 import { SuiLayoutFormatter, RenderedPage } from './formatter';
+import { layoutDebug } from './layoutDebug';
 import { SmoRenderConfiguration } from './configuration';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { SvgPageMap, SvgPage } from './svgPageMap';
@@ -21,6 +22,7 @@ export interface ScoreRenderParams {
     score: SmoScore;
     config: SmoRenderConfiguration;
     undoBuffer: UndoBuffer;
+    debug: layoutDebug;
 }
 /**
  * @category SuiRender
@@ -38,6 +40,7 @@ export interface MapParameters {
 **/
 export declare class SuiScoreRender {
     constructor(params: ScoreRenderParams);
+    debug: layoutDebug;
     elementId: any;
     startRenderTime: number;
     formatter: SuiLayoutFormatter | null;
