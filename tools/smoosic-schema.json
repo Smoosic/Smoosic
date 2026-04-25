@@ -811,14 +811,14 @@
           "custom"
         ]
       },
-      "SmoTempoText": {
+      "SmoTempo": {
         "type": "object",
         "required": [
           "ctor"
         ],
         "properties": {
           "ctor": {
-            "const": "SmoTempoText"
+            "const": "SmoTempo"
           },
           "tempoMode": {
             "type": "string",
@@ -988,7 +988,7 @@
           "default": "treble"
         },
         "tempo": {
-          "$ref": "#/definitions/measureModifierSchema/SmoTempoText"
+          "$ref": "#/definitions/measureModifierSchema/SmoTempo"
         },
         "format": {
           "$ref": "#/definitions/measureModifierSchema/TimeSignature"
@@ -1795,7 +1795,7 @@
           "tempo": {
             "type": "object",
             "additionaProperties": {
-              "$ref": "#/definitions/measureModifierSchema/SmoTempoText"
+              "$ref": "#/definitions/measureModifierSchema/SmoTempo"
             }
           }
         }

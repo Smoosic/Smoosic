@@ -7,7 +7,7 @@
 import { SmoToMidi } from "./smoToMidi";
 import { Clef, Pitch } from "../data/common";
 import { SmoMeasure } from "../data/measure";
-import { SmoTempoText, TimeSignature } from "../data/measureModifiers";
+import { SmoTempo, SmoTimeSignature } from "../data/measureModifiers";
 import { SmoMusic } from "../data/music";
 import { SmoNote } from "../data/note";
 import { SmoScore } from "../data/score";
@@ -18,7 +18,7 @@ import {SmoTuplet, SmoTupletTree} from "../data/tuplet";
 import { SmoOperation } from "../xform/operations";
 
 export type MidiEventType = 'text' | 'copyrightNotice' | 'trackName' | 'instrumentName' | 'lyrics' | 'marker' |
-  'cuePoint' | 'channelPrefix' | 'portPrefix' | 'endOfTrack' | 'setTempo' | 'smpteOffset' | 'timeSignature' | 'keySignature' |
+  'cuePoint' | 'channelPrefix' | 'portPrefix' | 'endOfTrack' | 'setTempo' | 'smpteOffset' | 'SmoTimeSignature' | 'keySignature' |
   'sequencerSpecific' | 'unknownMeta' |
   'noteOff' | 'noteOn' | 'noteAftertouch' | 'controller' | 'programChange' | 'channelAftertouch' | 'pitchBend';
 
@@ -46,8 +46,8 @@ export interface MidiTrackEvent {
  */
 export interface RunningMetadata {
   keySignature: string,
-  timeSignature: TimeSignature,
-  tempo: SmoTempoText
+  timeSignature: SmoTimeSignature,
+  tempo: SmoTempo
 }
 /**
  * @category serialization
@@ -75,8 +75,8 @@ export interface EventSmoData {
   tupletInfo: MidiTupletInfo | null,
   isRest: boolean,
   isTied: boolean,
-  timeSignature: TimeSignature,
-  tempo: SmoTempoText,
+  timeSignature: SmoTimeSignature,
+  tempo: SmoTempo,
   keySignature: string,
   measure: number,
   tick: number
@@ -100,8 +100,8 @@ export function getValueForTick<T>(arg: Record<number, T>, tick: number) {
  * @category serialization
  */
 export class MidiToSmo {
-  timeSignatureMap: Record<number, TimeSignature> = {};
-  tempoMap: Record<number, SmoTempoText> = {};
+  SmoTimeSignatureMap: Record<number, SmoTimeSignature> = {};
+  tempoMap: Record<number, SmoTempo> = {};
   keySignatureMap: Record<number, string> = {};
   tieMap: Record<number, number[]> = {};
   timeDivision: number = 480;
@@ -153,8 +153,8 @@ export class MidiToSmo {
   constructor(midi: any, quantizeDuration: number) {
     this.midi = midi;
     // console.log(JSON.stringify(midi, null, ''));
-    this.timeSignatureMap[0] = new TimeSignature(TimeSignature.defaults);
-    this.tempoMap[0] = new SmoTempoText(SmoTempoText.defaults);
+    this.SmoTimeSignatureMap[0] = new SmoTimeSignature(SmoTimeSignature.defaults);
+    this.tempoMap[0] = new SmoTempo(SmoTempo.defaults);
     this.keySignatureMap[0] = 'c';
     this.timeDivision = midi.header.ticksPerBeat;
     this.quantizeTicks = quantizeDuration;
@@ -175,11 +175,11 @@ export class MidiToSmo {
    * @param ticks 
    * @returns 
    */
-  getTimeSignature(ticks: number): TimeSignature {
-    if (this.timeSignatureMap[ticks]) {
-      return this.timeSignatureMap[ticks];
+  getSmoTimeSignature(ticks: number): SmoTimeSignature {
+    if (this.SmoTimeSignatureMap[ticks]) {
+      return this.SmoTimeSignatureMap[ticks];
     }
-    return getValueForTick(this.timeSignatureMap, ticks);
+    return getValueForTick(this.SmoTimeSignatureMap, ticks);
   }
   /**
    * @internal
@@ -199,7 +199,7 @@ export class MidiToSmo {
    */
   getMetadata(ticks: number) {
     return { tempo: this.getTempo(ticks), 
-      timeSignature: this.getTimeSignature(ticks), keySignature: this.getKeySignature(ticks).toLowerCase() };
+      timeSignature: this.getSmoTimeSignature(ticks), keySignature: this.getKeySignature(ticks).toLowerCase() };
   }
   /**
    * We process 3 types of metadata at present:  time signature, tempo and keysignature.
@@ -209,22 +209,21 @@ export class MidiToSmo {
   handleMetadata(trackEvent: MidiTrackEvent, ticks: number) {
     if (trackEvent.meta) {
       const mtype = trackEvent.type;
-      if (mtype === 'timeSignature') {
+      if (mtype === 'SmoTimeSignature') {
         /**
          * whenever we get a time signature event, recompute ticks per measure
          */
         const numerator = trackEvent.numerator!;
         const denominator = trackEvent.denominator!;
-        const tsDef = TimeSignature.defaults;
-        tsDef.actualBeats = numerator;
-        tsDef.beatDuration = denominator;
-        const ts = new TimeSignature(tsDef);
-        this.timeSignatureMap[ticks] = ts;
+        const tsDef = SmoTimeSignature.defaults;
+        tsDef.times.push({actualBeats: numerator, beatDuration:denominator});
+        const ts = new SmoTimeSignature(tsDef);
+        this.SmoTimeSignatureMap[ticks] = ts;
       } else if (mtype === 'setTempo') {
         const bpm = 60 / (trackEvent.microsecondsPerBeat! / 1000000);
-        const tempoDef = SmoTempoText.defaults;
+        const tempoDef = SmoTempo.defaults;
         tempoDef.bpm = bpm;
-        this.tempoMap[ticks] = new SmoTempoText(tempoDef);
+        this.tempoMap[ticks] = new SmoTempo(tempoDef);
       } else if (mtype === 'keySignature') {
         const mdata = trackEvent.key!;
         if (mdata === 0) {
@@ -255,8 +254,8 @@ export class MidiToSmo {
    */
   createNewEvent(metadata: RunningMetadata): EventSmoData {
     return {
-      pitches: [], durationTicks: 0, tupletInfo: null, isRest: false, timeSignature: new TimeSignature(metadata.timeSignature),
-      tempo: new SmoTempoText(metadata.tempo), keySignature: metadata.keySignature, measure: 0, tick: 0, isTied: false
+      pitches: [], durationTicks: 0, tupletInfo: null, isRest: false, timeSignature: new SmoTimeSignature(metadata.timeSignature),
+      tempo: new SmoTempo(metadata.tempo), keySignature: metadata.keySignature, measure: 0, tick: 0, isTied: false
     };
   }
   /**
@@ -264,8 +263,8 @@ export class MidiToSmo {
    */
   static copyEvent(o: EventSmoData): EventSmoData {
     const pitches = JSON.parse(JSON.stringify(o.pitches));
-    const timeSignature = new TimeSignature(o.timeSignature);
-    const tempo = new SmoTempoText(o.tempo);
+    const timeSignature = new SmoTimeSignature(o.timeSignature);
+    const tempo = new SmoTempo(o.tempo);
     return ({
       pitches, durationTicks: o.durationTicks, tupletInfo: o.tupletInfo, isRest: o.isRest, timeSignature, tempo, keySignature: o.keySignature,
       measure: o.measure, tick: o.tick, isTied: o.isTied
@@ -298,8 +297,8 @@ export class MidiToSmo {
       if (measure === null || ev.measure > measureIndex) {
         const measureDefs = SmoMeasure.defaults;
         measureDefs.keySignature = ev.keySignature;
-        measureDefs.timeSignature = new TimeSignature(ev.timeSignature);
-        measureDefs.tempo = new SmoTempoText(ev.tempo);
+        measureDefs.timeSignature = new SmoTimeSignature(ev.timeSignature);
+        measureDefs.tempo = new SmoTempo(ev.tempo);
         measure = new SmoMeasure(measureDefs);
         measure.voices.push({ notes: [] });
         measureIndex = ev.measure;

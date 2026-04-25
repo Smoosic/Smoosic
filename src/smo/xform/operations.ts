@@ -10,8 +10,8 @@ import { SmoArticulation, SmoGraceNote, SmoLyric, SmoMicrotone, SmoOrnament,
   SmoDynamicText, 
   SmoTabNote} from '../data/noteModifiers';
 import {
-  SmoRehearsalMark, SmoMeasureText, SmoVolta, SmoMeasureFormat, SmoTempoText, SmoBarline,
-  TimeSignature, SmoRepeatSymbol
+  SmoRehearsalMark, SmoMeasureText, SmoVolta, SmoMeasureFormat, SmoTempo, SmoBarline,
+  SmoTimeSignature, SmoRepeatSymbol
 } from '../data/measureModifiers';
 import { SmoStaffHairpin, SmoSlur, SmoTie, StaffModifierBase, SmoTieParams, SmoInstrument, SmoStaffHairpinParams,
   SmoSlurParams, SmoInstrumentMeasure, SmoStaffTextBracket, SmoStaffTextBracketParams,
@@ -139,7 +139,7 @@ export class SmoOperation {
       score.staves[tabStaves[0].startSelector.staff].removeTabStaves(tabStaves);
     }
   }
-  static setTimeSignature(score: SmoScore, selections: SmoSelection[], timeSignature: TimeSignature) {
+  static setTimeSignature(score: SmoScore, selections: SmoSelection[], timeSignature: SmoTimeSignature) {
     const selectors: SmoSelector[] = [];
     let i = 0;
     // change the time signature for each stave in the score
@@ -151,7 +151,7 @@ export class SmoOperation {
     });
     selectors.forEach((selector: SmoSelector) => {
       const rowSelection: SmoSelection = (SmoSelection.measureSelection(score, selector.staff, selector.measure) as SmoSelection);
-      rowSelection.measure.timeSignature = new TimeSignature(timeSignature);
+      rowSelection.measure.timeSignature = new SmoTimeSignature(timeSignature);
       rowSelection.measure.alignNotesWithTimeSignature();
     });
   }
@@ -744,7 +744,7 @@ export class SmoOperation {
     });
   }
 
-  static addTempo(score: SmoScore, selection: SmoSelection, tempo: SmoTempoText) {
+  static addTempo(score: SmoScore, selection: SmoSelection, tempo: SmoTempo) {
     score.staves.forEach((staff) => {
       staff.addTempo(tempo, selection.selector.measure);
     });
@@ -1050,7 +1050,10 @@ export class SmoOperation {
       }
     });
     selections[0].staff.measureInstrumentMap = instMap;
-    selections[0].staff.updateInstrumentOffsets();
+    // Don't update transpositions if everything is in concert key.
+    if (!score.preferences.transposingScore){
+      selections[0].staff.updateInstrumentOffsets();
+    }
     score.setNoteInstrumentProperties();
   }
   static computeMultipartRest(score: SmoScore) {

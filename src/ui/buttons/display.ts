@@ -1,7 +1,7 @@
 import { SuiButton, SuiButtonParams } from './button';
 import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SuiKeySignatureDialog } from '../dialogs/keySignature';
-import { SuiTimeSignatureDialog } from '../dialogs/timeSignature';
+import { SuiTimeSignatureDialogVue } from '../dialogs/timeSignature';
 import { SuiTempoDialog } from '../dialogs/tempo';
 import { SuiScoreViewDialogVue } from '../dialogs/scoreView';
 import { KeyEvent } from '../../smo/data/common';
@@ -96,7 +96,7 @@ export class DisplaySettings extends SuiButton {
     if (!this.completeNotifier) {
       return;
     }
-    createAndDisplayDialog(SuiTimeSignatureDialog, {
+    SuiTimeSignatureDialogVue({
       completeNotifier: this.completeNotifier,
       view: this.view,
       eventSource: this.eventSource,

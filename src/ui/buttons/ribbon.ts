@@ -19,7 +19,7 @@ import { createApp, ref, reactive, watch } from 'vue';
 import { SuiKeySignatureDialog } from '../dialogs/keySignature';
 import { default as ribbonApp } from '../components/buttons/ribbon.vue';
 import { default as ribbonSidebarApp } from '../components/buttons/sidebar.vue';
-import { SuiTimeSignatureDialog } from '../dialogs/timeSignature';
+import { SuiTimeSignatureDialogVue } from '../dialogs/timeSignature';
 import { SuiScoreViewDialogVue } from '../dialogs/scoreView';
 
 declare var $: any;
@@ -150,7 +150,7 @@ export class RibbonButtons {
       if (!this.controller) {
         return;
       }
-      createAndDisplayDialog(SuiTimeSignatureDialog, {
+      SuiTimeSignatureDialogVue({
         completeNotifier: this.controller,
         view: this.view,
         eventSource: this.eventSource,

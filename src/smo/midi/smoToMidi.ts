@@ -5,7 +5,7 @@
  * @module /smo/midi/smoToMidi
  */
 import { SmoMusic } from '../data/music';
-import { TimeSignature, SmoTempoText } from '../data/measureModifiers';
+import { SmoTimeSignature, SmoTempo } from '../data/measureModifiers';
 import { ScoreRoadMapBuilder } from '../xform/roadmap';
 import { SmoScore } from '../data/score';
 import { PopulateAudioData } from '../xform/updateAudio';
@@ -67,8 +67,8 @@ import Writer from 'midi-writer-js';
 export interface MidiTrackHash {
   track: any,
   lastMeasure: number,
-  timeSignature?: TimeSignature,
-  tempo?: SmoTempoText,
+  timeSignature?: SmoTimeSignature,
+  tempo?: SmoTempo,
   keySignature?: string
 }
 function stavesToSkip(score: SmoScore): number[] {

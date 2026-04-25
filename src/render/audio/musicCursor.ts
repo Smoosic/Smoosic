@@ -72,7 +72,7 @@ export const  defaultClearAudioAnimationHandler = (delay: number) => {
     }
     const screenBox = SvgHelpers.boxPoints(x, y, width, height);
     const fillParams: Record<string, string> = {};
-    console.log(`topbox xy ${measure.svg.logicalBox.x}, ${measure.svg.logicalBox.y} x ${x}, ${y}`);
+    // console.log(`topbox xy ${measure.svg.logicalBox.x}, ${measure.svg.logicalBox.y} x ${x}, ${y}`);
     fillParams['fill-opacity'] = '0.5';
     fillParams['fill'] = '#4444ff';
     const ctx = context.getContext();

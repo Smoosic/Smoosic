@@ -159,7 +159,7 @@ export abstract class SuiMapper {
         this.localModifiers.push({ index, selection: sel, modifier: volta, box: volta.logicalBox ?? SvgBox.default });
         index += 1;
       });
-      sel.measure.getModifiersByType('SmoTempoText').forEach((tempo) => {
+      sel.measure.getModifiersByType('SmoTempo').forEach((tempo) => {
         this.localModifiers.push({ index, selection: sel, modifier: tempo, box: tempo.logicalBox ?? SvgBox.default });
         index += 1;
       });

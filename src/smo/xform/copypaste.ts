@@ -13,7 +13,7 @@ import { TickMap } from './tickMap';
 import { SmoSystemStaff } from '../data/systemStaff';
 import { getId, Clef, Pitch } from '../data/common';
 import {SmoUnmakeTupletActor} from "./tickDuration";
-import { SmoTempoText, TimeSignature } from '../data/measureModifiers';
+import { SmoTempo, SmoTimeSignature } from '../data/measureModifiers';
 
 /**
  * Used to calculate the offset and transposition of a note to be pasted
@@ -212,8 +212,8 @@ export class PasteBuffer {
     // Ordinarily, the key/tempo/time is mapped to the stave, but since we are pasting measure-by
     // measure here, we want to preserve it.
     clonedMeasure.keySignature = measureSelection.measure.keySignature;
-    clonedMeasure.timeSignature = new TimeSignature(measureSelection.measure.timeSignature);
-    clonedMeasure.tempo = new SmoTempoText(measureSelection.measure.tempo);
+    clonedMeasure.timeSignature = new SmoTimeSignature(measureSelection.measure.timeSignature);
+    clonedMeasure.tempo = new SmoTempo(measureSelection.measure.tempo);
     this.measures.push(clonedMeasure);
 
     const firstMeasure = this.measures[0];

@@ -23,8 +23,8 @@ import { ScoreRenderParams } from './scoreRender';
 import { SmoOperation } from '../../smo/xform/operations';
 import { SuiAudioPlayer } from '../audio/player';
 import { SuiAudioAnimationParams } from '../audio/musicCursor';
-import { SmoTempoText } from '../../smo/data/measureModifiers';
-import { TimeSignature } from '../../smo/data/measureModifiers';
+import { SmoTempo } from '../../smo/data/measureModifiers';
+import { SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { ref, Ref } from 'vue';
 import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { layoutDebug } from './layoutDebug';
@@ -685,8 +685,8 @@ export abstract class SuiScoreView implements layoutProvider {
         }
         nStave.measures.forEach((measure: SmoMeasure, ix) => {
           const srcMeasure = srcStave.measures[ix];
-          measure.tempo = new SmoTempoText(srcMeasure.tempo.serialize());
-          measure.timeSignature = new TimeSignature(srcMeasure.timeSignature);
+          measure.tempo = new SmoTempo(srcMeasure.tempo.serialize());
+          measure.timeSignature = new SmoTimeSignature(srcMeasure.timeSignature);
           measure.keySignature = srcMeasure.keySignature;
         });
         staffMap.push(i);

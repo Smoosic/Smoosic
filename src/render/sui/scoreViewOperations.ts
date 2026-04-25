@@ -14,8 +14,8 @@ import { SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoDynamicText, SmoNoteModifierBase, SmoGraceNote, SmoArticulation, 
   SmoOrnament, SmoLyric, SmoMicrotone, SmoArpeggio, SmoArpeggioType, SmoClefChange, 
   SmoTabNote} from '../../smo/data/noteModifiers';
-import { SmoTempoText, SmoVolta, SmoBarline, SmoRepeatSymbol, 
-  SmoRehearsalMark, SmoMeasureFormat, TimeSignature } from '../../smo/data/measureModifiers';
+import { SmoTempo, SmoVolta, SmoBarline, SmoRepeatSymbol, 
+  SmoRehearsalMark, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { UndoBuffer } from '../../smo/xform/undo';
 import {
   SmoOperation, createStaffModifierType, MakeTupletOperation
@@ -525,7 +525,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
    * Set the time signature for a selection
    * @param timeSignature actual time signature
    */
-  async setTimeSignature(timeSignature: TimeSignature): Promise<void> {
+  async setTimeSignature(timeSignature: SmoTimeSignature): Promise<void> {
     this._undoScore('Set time signature');
     const selections = this.tracker.selections;
     const altSelections = this._getEquivalentSelections(selections);
@@ -627,9 +627,9 @@ export class SuiScoreViewOperations extends SuiScoreView {
    * @param scoreMode if true, update whole score.  Else selections
    * @returns 
    */
-  async updateTempoScore(measure: SmoMeasure, tempo: SmoTempoText, scoreMode: boolean, selectionMode: boolean): Promise<void> {
+  async updateTempoScore(measure: SmoMeasure, tempo: SmoTempo, scoreMode: boolean, selectionMode: boolean): Promise<void> {
     let measureIndex = 0;    
-    const originalTempo = new SmoTempoText(measure.tempo);
+    const originalTempo = new SmoTempo(measure.tempo);
     this._undoColumn('update tempo', measure.measureNumber.measureIndex);
     let startMeasure = measure.measureNumber.measureIndex;
     let endMeasure = this.score.staves[0].measures.length;
@@ -641,14 +641,14 @@ export class SuiScoreViewOperations extends SuiScoreView {
       }
     }
     // If we are only changing the position of the text, it only affects the tempo measure.
-    if (SmoTempoText.eq(originalTempo, tempo) && tempo.yOffset !== originalTempo.yOffset && endMeasure > startMeasure) {
+    if (SmoTempo.eq(originalTempo, tempo) && tempo.yOffset !== originalTempo.yOffset && endMeasure > startMeasure) {
       endMeasure = startMeasure + 1;          
     }
     for (measureIndex = startMeasure; measureIndex < endMeasure; ++measureIndex) {
       if (!scoreMode && !selectionMode) {
         // If not whole score or selections, change until the tempo doesn't match previous measure's tempo (next tempo change)
         const compMeasure = this.score.staves[0].measures[measureIndex];
-        if (SmoTempoText.eq(originalTempo, compMeasure.tempo) || displayed === false) {
+        if (SmoTempo.eq(originalTempo, compMeasure.tempo) || displayed === false) {
           const sel = SmoSelection.measureSelection(this.score, 0, measureIndex);
           const altSel = SmoSelection.measureSelection(this.storeScore, 0, measureIndex);
           if (sel && sel.measure.tempo.display && !displayed) {
@@ -706,17 +706,17 @@ export class SuiScoreViewOperations extends SuiScoreView {
    * default tempo, or the previously-set tempo.
    * @param scoreMode whether to reset entire score
    */
-  async removeTempo(measure: SmoMeasure, tempo: SmoTempoText, scoreMode: boolean, selectionMode: boolean): Promise<void> {
+  async removeTempo(measure: SmoMeasure, tempo: SmoTempo, scoreMode: boolean, selectionMode: boolean): Promise<void> {
     const startSelection = this.tracker.selections[0];
     if (startSelection.selector.measure > 0) {
       const measureIx = startSelection.selector.measure - 1;
       const target = startSelection.staff.measures[measureIx];
       const tempo = target.getTempo();
-      const newTempo = new SmoTempoText(tempo);
+      const newTempo = new SmoTempo(tempo);
       newTempo.display = false;
       this.updateTempoScore(measure, newTempo, scoreMode, selectionMode);
     } else {
-      this.updateTempoScore(measure, new SmoTempoText(SmoTempoText.defaults), scoreMode, selectionMode);
+      this.updateTempoScore(measure, new SmoTempo(SmoTempo.defaults), scoreMode, selectionMode);
     }
     await this.renderer.updatePromise();
   }

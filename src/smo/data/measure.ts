@@ -12,9 +12,9 @@
 import { smoSerialize } from '../../common/serializationHelpers';
 import { SmoMusic } from './music';
 import {
-  SmoBarline, SmoMeasureModifierBase, SmoRepeatSymbol, SmoTempoText, SmoMeasureFormat,
-  SmoVolta, SmoRehearsalMarkParams, SmoRehearsalMark, SmoTempoTextParams, TimeSignature,
-  TimeSignatureParametersSer, SmoMeasureFormatParamsSer, SmoTempoTextParamsSer
+  SmoBarline, SmoMeasureModifierBase, SmoRepeatSymbol, SmoTempo, SmoMeasureFormat,
+  SmoVolta, SmoRehearsalMarkParams, SmoRehearsalMark, SmoTempoParams, SmoTimeSignature,
+  TimeSignatureParametersSer, SmoMeasureFormatParamsSer, SmoTempoParamsSer
 } from './measureModifiers';
 import { SmoNote, NoteType, SmoNoteParamsSer } from './note';
 import { SmoTuplet, SmoTupletParamsSer, SmoTupletParams, SmoTupletTreeParamsSer, SmoTupletTree } from './tuplet';
@@ -148,7 +148,7 @@ export const SmoMeasureStringParams: SmoMeasureStringParam[] = ['keySignature'];
  * @category SmoObject
  */
 export interface SmoMeasureParams {
-  timeSignature: TimeSignature,
+  timeSignature: SmoTimeSignature,
   keySignature: string,
   tupletTrees: SmoTupletTree[],
   transposeIndex: number,
@@ -158,7 +158,7 @@ export interface SmoMeasureParams {
   clef: Clef,
   voices: SmoVoice[],
   activeVoice: number,
-  tempo: SmoTempoText,
+  tempo: SmoTempo,
   format: SmoMeasureFormat | null,
   modifiers: SmoMeasureModifierBase[],
   repeatSymbol: boolean,
@@ -218,7 +218,7 @@ export interface SmoMeasureParamsSer {
   /**
    * tempo at this point
    */
-  tempo: SmoTempoTextParamsSer
+  tempo: SmoTempoParamsSer
 
 }
 
@@ -244,8 +244,8 @@ function isSmoMeasureParamsSer(params: Partial<SmoMeasureParamsSer>):params is S
  * @category SmoObject
  */
 export class SmoMeasure implements SmoMeasureParams, TickMappable {
-  static get timeSignatureDefault(): TimeSignature {
-    return new TimeSignature(TimeSignature.defaults);
+  static get timeSignatureDefault(): SmoTimeSignature {
+    return new SmoTimeSignature(SmoTimeSignature.defaults);
   }
   static defaultDupleDuration: number = 4096;
   static defaultTripleDuration: number = 2048 * 3;
@@ -268,7 +268,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     voices: [],
     format: new SmoMeasureFormat(SmoMeasureFormat.defaults),
     activeVoice: 0,
-    tempo: new SmoTempoText(SmoTempoText.defaults),
+    tempo: new SmoTempo(SmoTempo.defaults),
     repeatSymbol: false,
     repeatCount: 0  
   }
@@ -281,7 +281,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
   static get defaults(): SmoMeasureParams {
     const proto: any = JSON.parse(JSON.stringify(SmoMeasure._defaults));
     proto.format = new SmoMeasureFormat(SmoMeasureFormat.defaults);
-    proto.tempo = new SmoTempoText(SmoTempoText.defaults);
+    proto.tempo = new SmoTempo(SmoTempo.defaults);
     proto.modifiers.push(new SmoBarline({
       position: SmoBarline.positions.start,
       barline: SmoBarline.barlines.singleBar
@@ -294,11 +294,11 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
   }
   // @ignore
   static convertLegacyTimeSignature(ts: string) {
-    const rv = new TimeSignature(TimeSignature.defaults);
+    const rv = new SmoTimeSignature(SmoTimeSignature.defaults);
     rv.timeSignature = ts;
     return rv;
   }
-  timeSignature: TimeSignature = SmoMeasure.timeSignatureDefault;
+  timeSignature: SmoTimeSignature = SmoMeasure.timeSignatureDefault;
   /**
    * Overrides display of actual time signature, in the case of
    * pick-up notes where the actual and displayed durations are different
@@ -329,7 +329,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * the active voice in the editor, if there are multiple voices
    *  */
   activeVoice: number = 0;
-  tempo: SmoTempoText;
+  tempo: SmoTempo;
   beamGroups: ISmoBeamGroup[] = [];
   lines: number = 5;
   /**
@@ -351,7 +351,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * @param params
    */
   constructor(params: SmoMeasureParams) {
-    this.tempo = new SmoTempoText(SmoTempoText.defaults);
+    this.tempo = new SmoTempo(SmoTempo.defaults);
     this.svg = {
       staffWidth: 0,
       unjustifiedWidth: 0,
@@ -392,7 +392,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     this.repeatSymbol = params.repeatSymbol;
     this.measureNumber = JSON.parse(JSON.stringify(params.measureNumber));
     if (params.tempo) {
-      this.tempo = new SmoTempoText(params.tempo);
+      this.tempo = new SmoTempo(params.tempo);
     }
     // Handle legacy time signature format
     if (params.timeSignature) {
@@ -400,7 +400,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       if (typeof (tsAny) === 'string') {
         this.timeSignature = SmoMeasure.convertLegacyTimeSignature(tsAny);
       } else {
-        this.timeSignature = TimeSignature.createFromPartial(tsAny);
+        this.timeSignature = SmoTimeSignature.createFromPartial(tsAny);
       }
     }
     this.voices = params.voices ? params.voices : [];
@@ -454,7 +454,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
   // Return true if the time signatures are the same, for display purposes (e.g. if a time sig change
   // is required)
   */
-  static timeSigEqual(o1: TimeSignature, o2: TimeSignature) {
+  static timeSigEqual(o1: SmoTimeSignature, o2: SmoTimeSignature) {
     return o1.timeSignature === o2.timeSignature && o1.useSymbol === o2.useSymbol;
   }
   /**
@@ -568,7 +568,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       } else if (modifier.ctor === 'SmoBarline' && (modifier as SmoBarline).position === SmoBarline.positions.end
         && (modifier as SmoBarline).barline === SmoBarline.barlines.singleBar) {
         ser = false;
-      } else if (modifier.ctor === 'SmoTempoText') {
+      } else if (modifier.ctor === 'SmoTempo') {
         // we don't save tempo text as a modifier anymore
         ser = false;
       } else if ((modifier as SmoRepeatSymbol).ctor === 'SmoRepeatSymbol' && (modifier as SmoRepeatSymbol).position === SmoRepeatSymbol.positions.start
@@ -639,9 +639,9 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
 
     // explode column-mapped
     if (jsonObj.tempo) {
-      params.tempo = SmoTempoText.deserialize(jsonObj.tempo);
+      params.tempo = SmoTempo.deserialize(jsonObj.tempo);
     } else {
-      params.tempo = new SmoTempoText(SmoTempoText.defaults);
+      params.tempo = new SmoTempo(SmoTempo.defaults);
     }
 
     // timeSignatureString is now part of timeSignature.  upconvert old scores
@@ -654,13 +654,14 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       if (timeSignatureString.length) {
         jsonObj.timeSignature.displayString = timeSignatureString;  
       }
-      params.timeSignature = TimeSignature.deserialize(jsonObj.timeSignature);
+      jsonObj.timeSignature.ctor = 'SmoTimeSignature';
+      params.timeSignature = SmoTimeSignature.deserialize(jsonObj.timeSignature);
     } else {
-      const tparams = TimeSignature.defaults;
+      const tparams = SmoTimeSignature.defaults;
       if (timeSignatureString.length) {
         tparams.displayString = timeSignatureString;
       }
-      params.timeSignature = new TimeSignature(tparams);
+      params.timeSignature = new SmoTimeSignature(tparams);
     }
     params.keySignature = jsonObj.keySignature ?? 'C';
     params.voices = voices;
@@ -725,12 +726,12 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     const measure = new SmoMeasure(params);
     // Handle migration for measure-mapped parameters
     measure.modifiers.forEach((mod) => {
-      if (mod.ctor === 'SmoTempoText') {
-        measure.tempo = (mod as SmoTempoText);
+      if (mod.ctor === 'SmoTempo') {
+        measure.tempo = (mod as SmoTempo);
       }
     });
     if (!measure.tempo) {
-      measure.tempo = new SmoTempoText(SmoTempoText.defaults);
+      measure.tempo = new SmoTempo(SmoTempo.defaults);
     }
 
 
@@ -747,8 +748,8 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     // Ordinarily, the key/tempo/time is mapped to the stave, but since we are pasting measure-by
     // measure here, we want to preserve it.
     clonedMeasure.keySignature = measure.keySignature;
-    clonedMeasure.timeSignature = new TimeSignature(measure.timeSignature);
-    clonedMeasure.tempo = new SmoTempoText(measure.tempo);
+    clonedMeasure.timeSignature = new SmoTimeSignature(measure.timeSignature);
+    clonedMeasure.tempo = new SmoTempo(measure.tempo);
     return clonedMeasure;
   }
   hasNonRestNotes(): boolean {
@@ -834,7 +835,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
   static get emptyMeasureNoteType(): NoteType {
     return SmoMeasure._emptyMeasureNoteType;
   }
-  static timeSignatureNotes(timeSignature: TimeSignature, clef: Clef) {
+  static timeSignatureNotes(timeSignature: SmoTimeSignature, clef: Clef) {
     const pitch = SmoMeasure.defaultPitchForClef[clef];
     const maxTicks = SmoMusic.timeSignatureToTicks(timeSignature.timeSignature);
     const noteTick = 8192 / (timeSignature.beatDuration / 2);
@@ -869,7 +870,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * @returns 
    */
   static getDefaultNotes(params: SmoMeasureParams): SmoNote[] {
-    return SmoMeasure.timeSignatureNotes(new TimeSignature(params.timeSignature), params.clef);
+    return SmoMeasure.timeSignatureNotes(new SmoTimeSignature(params.timeSignature), params.clef);
   }
 
   /**
@@ -888,7 +889,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     smoSerialize.serializedMerge(SmoMeasure.defaultAttributes, params, obj);
     // Don't copy column-formatting options to new measure in new column
     smoSerialize.serializedMerge(SmoMeasure.formattingOptions, SmoMeasure.defaults, obj);
-    obj.timeSignature = new TimeSignature(params.timeSignature);
+    obj.timeSignature = new SmoTimeSignature(params.timeSignature);
     // The measure expects to get concert KS in constructor and adjust for instrument.  So do the
     // opposite.
     obj.keySignature = SmoMusic.vexKeySigWithOffset(obj.keySignature, -1 * obj.transposeIndex);
@@ -1529,18 +1530,18 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     return this.modifiers.filter((mm) => type === mm.attrs.type);
   }
 
-  setTempo(params: SmoTempoTextParams) {
-    this.tempo = new SmoTempoText(params);
+  setTempo(params: SmoTempoParams) {
+    this.tempo = new SmoTempo(params);
   }
   /**
-   * Set measure tempo to the default {@link SmoTempoText}
+   * Set measure tempo to the default {@link SmoTempo}
    */
   resetTempo() {
-    this.tempo = new SmoTempoText(SmoTempoText.defaults);
+    this.tempo = new SmoTempo(SmoTempo.defaults);
   }
   getTempo() {
     if (typeof (this.tempo) === 'undefined') {
-      this.tempo = new SmoTempoText(SmoTempoText.defaults);
+      this.tempo = new SmoTempo(SmoTempo.defaults);
     }
     return this.tempo;
   }

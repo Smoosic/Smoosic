@@ -1,6 +1,6 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SmoTempoText, SmoTempoNumberAttribute, SmoTempoStringAttribute, SmoTempoBooleanAttribute } from '../../smo/data/measureModifiers';
+import { SmoTempo, SmoTempoNumberAttribute, SmoTempoStringAttribute, SmoTempoBooleanAttribute } from '../../smo/data/measureModifiers';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { DialogDefinition, SuiDialogParams } from './dialog';

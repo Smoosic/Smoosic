@@ -13,7 +13,7 @@ import {
   SmoTie,
   TieLine
 } from '../data/staffModifiers';
-import {SmoBarline, SmoMeasureModifierBase, SmoRehearsalMark, SmoTempoText} from '../data/measureModifiers';
+import {SmoBarline, SmoMeasureModifierBase, SmoRehearsalMark, SmoTempo} from '../data/measureModifiers';
 import {SmoPartInfo} from '../data/partInfo';
 import {SmoMeasure} from '../data/measure';
 import {SmoNote} from '../data/note';
@@ -164,7 +164,7 @@ export interface XmlPartGroup {
 export class XmlState {
   static get defaults() {
     return {
-      divisions: 4096, tempo: new SmoTempoText(SmoTempoText.defaults), timeSignature: '4/4', keySignature: 'c',
+      divisions: 4096, tempo: new SmoTempo(SmoTempo.defaults), timeSignature: '4/4', keySignature: 'c',
       clefInfo: [], staffGroups: [], smoStaves: []
     };
   }
@@ -195,7 +195,7 @@ export class XmlState {
   tupletStatesInProgress: Record<number, XmlTupletState> = {};
 
   tickCursor: number = 0;
-  tempo: SmoTempoText = new SmoTempoText(SmoTempoText.defaults);
+  tempo: SmoTempo = new SmoTempo(SmoTempo.defaults);
   staffArray: XmlStaffInfo[] = [];
   staffIndex: number = 0;
   graceNotes: SmoGraceNote[] = [];

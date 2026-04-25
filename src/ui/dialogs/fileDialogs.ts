@@ -65,7 +65,7 @@ export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
     if (filename.endsWith('.mid') || filename.endsWith('.midi')) {
       await commitMidi();
     }
-    else if (filename.endsWith('.xml') || filename.endsWith('.mxml')) {
+    else if (filename.endsWith('.xml') || filename.endsWith('.mxml') || filename.endsWith('.mxl')) {
       await commitXml();
     }
     else if (filename.endsWith('.json')) {

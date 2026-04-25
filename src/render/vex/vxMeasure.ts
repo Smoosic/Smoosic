@@ -543,15 +543,21 @@ export class VxMeasure implements VxMeasureIf {
     this.stave = createStave(smoVexStaveParams);
     if (this.smoMeasure.svg.forceTimeSignature) {
       const ts = this.smoMeasure.timeSignature;
-      let tsString = ts.timeSignature;
+      
       if (this.smoMeasure.timeSignature.useSymbol && ts.actualBeats === 4 && ts.beatDuration === 4) {
-        tsString = 'C';
+        this.stave.addTimeSignature('C');
       } else if (this.smoMeasure.timeSignature.useSymbol && ts.actualBeats === 2 && ts.beatDuration === 4) {
-        tsString = 'C|';
-      } else if (this.smoMeasure.timeSignature.displayString.length) {
-        tsString = this.smoMeasure.timeSignature.displayString;
+        this.stave.addTimeSignature('C|');
+      } else  {
+        let tsString = this.smoMeasure.timeSignature.displayString.length ? this.smoMeasure.timeSignature.displayString : ts.timeSignature;
+        const tsStrings = tsString.split('+');  
+        for (let i = 0; i < tsStrings.length; i++) {
+          const tsString = tsStrings[i].trim();
+          if (tsString.length) {
+            this.stave.addTimeSignature(tsStrings[i].trim());
+          }
+        }
       }
-      this.stave.addTimeSignature(tsString);
     }
     // Connect it to the rendering context and draw!
     this.stave.setContext(this.context.getContext());

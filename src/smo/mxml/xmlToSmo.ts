@@ -8,7 +8,7 @@ import { XmlHelpers } from './xmlHelpers';
 import { XmlVoiceInfo, XmlState, XmlWedgeInfo } from './xmlState';
 import { SmoLayoutManager, SmoPageLayout, SmoSystemGroup } from '../data/scoreModifiers';
 import { SmoTextGroup } from '../data/scoreText';
-import { SmoTempoText, SmoMeasureFormat, SmoMeasureModifierBase, SmoVolta, SmoBarline } from '../data/measureModifiers';
+import { SmoTempo, SmoMeasureFormat, SmoMeasureModifierBase, SmoVolta, SmoBarline } from '../data/measureModifiers';
 import { SmoScore, isEngravingFont } from '../data/score';
 import { SmoMeasure, SmoMeasureParams } from '../data/measure';
 import { SmoMusic } from '../data/music';
@@ -397,11 +397,11 @@ export class XmlToSmo {
   static tempo(element: Element) {
     let tempoText = '';
     let customText = tempoText;
-    const rv: { staffId: number, tempo: SmoTempoText }[] = [];
+    const rv: { staffId: number, tempo: SmoTempo }[] = [];
     const soundNodes = XmlHelpers.getChildrenFromPath(element,
       ['sound']);
     soundNodes.forEach((sound) => {
-      let tempoMode = SmoTempoText.tempoModes.durationMode;
+      let tempoMode = SmoTempo.tempoModes.durationMode;
       tempoText = sound.getAttribute('tempo') as string;
       if (tempoText) {
         const bpm = parseInt(tempoText, 10);
@@ -410,20 +410,20 @@ export class XmlToSmo {
         tempoText = wordNode.length ? wordNode[0].textContent as string :
           tempoText.toString();
         if (isNaN(parseInt(tempoText, 10))) {
-          if (SmoTempoText.tempoTexts[tempoText.toLowerCase()]) {
-            tempoMode = SmoTempoText.tempoModes.textMode;
+          if (SmoTempo.tempoTexts[tempoText.toLowerCase()]) {
+            tempoMode = SmoTempo.tempoModes.textMode;
           } else {
-            tempoMode = SmoTempoText.tempoModes.customMode;
+            tempoMode = SmoTempo.tempoModes.customMode;
             customText = tempoText;
           }
         }
-        const params = SmoTempoText.defaults;
+        const params = SmoTempo.defaults;
         params.tempoMode = tempoMode;
         params.bpm = bpm;
         params.tempoText = tempoText;
         params.customText = customText;
         params.display = true;
-        const tempo = new SmoTempoText(params);
+        const tempo = new SmoTempo(params);
         const staffId = XmlHelpers.getStaffId(element);
         rv.push({ staffId, tempo });
       }
@@ -567,7 +567,7 @@ export class XmlToSmo {
     // Only display tempo if changes.
     if (tempo.length) {
       // TODO: staff ID is with tempo, but tempo is per column in SMO
-      if (!SmoTempoText.eq(xmlState.tempo, tempo[0].tempo)) {
+      if (!SmoTempo.eq(xmlState.tempo, tempo[0].tempo)) {
         xmlState.tempo = tempo[0].tempo;
         xmlState.tempo.display = true;
       }

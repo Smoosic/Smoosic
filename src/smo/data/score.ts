@@ -9,7 +9,7 @@ import { Clef, SvgDimensions } from './common';
 import { SmoMeasure, SmoMeasureParams, ColumnMappedParams, SmoMeasureParamsSer } from './measure';
 import { SmoNoteModifierBase } from './noteModifiers';
 import {
-  SmoTempoText, SmoMeasureFormat, SmoMeasureModifierBase, TimeSignature, TimeSignatureParameters,
+  SmoTempo, SmoMeasureFormat, SmoMeasureModifierBase, SmoTimeSignature, TimeSignatureParameters,
   SmoMeasureFormatParamsSer
 } from './measureModifiers';
 import { StaffModifierBase, SmoInstrument } from './staffModifiers';
@@ -153,8 +153,8 @@ export function isEmptyTextBlock(params: Partial<SmoTextGroupParamsSer>): params
  */
 export interface ColumnParamsMapType {
   keySignature: Record<number, string>,
-  tempo: Record<number, SmoTempoText>,
-  timeSignature: Record<number, TimeSignature>,
+  tempo: Record<number, SmoTempo>,
+  timeSignature: Record<number, SmoTimeSignature>,
   renumberingMap: Record<number, number>
 }
 
@@ -351,8 +351,8 @@ export class SmoScore {
    */
   serializeColumnMapped(func: (measure: SmoMeasure) => ColumnMappedParams) {
     const keySignature: Record<number, string> = {};
-    const tempo: Record<number, SmoTempoText> = {};
-    const timeSignature: Record<number, TimeSignature> = {};
+    const tempo: Record<number, SmoTempo> = {};
+    const timeSignature: Record<number, SmoTimeSignature> = {};
     const renumberingMap: Record<number, number> = {};
     let previous: ColumnMappedParams | null = null;
     this.staves[0].measures.forEach((measure) => {
@@ -381,11 +381,11 @@ export class SmoScore {
           previous!.keySignature = current.keySignature;
           keySignature[ix] = current.keySignature;
         }
-        if (!(TimeSignature.equal(current.timeSignature, previous!.timeSignature))) {
+        if (!(SmoTimeSignature.equal(current.timeSignature, previous!.timeSignature))) {
           previous!.timeSignature = current.timeSignature;
           timeSignature[ix] = current.timeSignature;
         }
-        if (!(SmoTempoText.eq(current.tempo, previous!.tempo))) {
+        if (!(SmoTempo.eq(current.tempo, previous!.tempo))) {
           previous!.tempo = current.tempo;
           tempo[ix] = current.tempo;
         }
@@ -393,7 +393,32 @@ export class SmoScore {
     });
     return { keySignature, tempo, timeSignature, renumberingMap };
   }
-
+  static fixLegacyColumnMappedCtor(scoreObj: any){
+    if (!scoreObj.columnAttributeMap) {
+      return;
+    }
+    if (!scoreObj.columnAttributeMap.tempo) {
+      return;
+    }
+    const tempoKeys = Object.keys(scoreObj.columnAttributeMap.tempo);
+    tempoKeys.forEach((key) => {
+      const t = scoreObj.columnAttributeMap.tempo[key];
+      t.ctor = 'SmoTempo';
+    });
+    const tsKeys = Object.keys(scoreObj.columnAttributeMap.timeSignature);
+    tsKeys.forEach((key) => {
+      const ts = scoreObj.columnAttributeMap.timeSignature[key];
+      ts.ctor = 'SmoTimeSignature';
+      // map legacy time signature format to compound time signature format
+      if (ts.actualBeats && ts.beatDuration && !isNaN(ts.actualBeats) && !isNaN(ts.beatDuration)) {        
+        ts.times = [{ actualBeats: ts.actualBeats, beatDuration: ts.beatDuration }];
+      }
+      // Default will have nothing serialized
+      if (!ts.times) {
+        ts.times = [{ actualBeats: 4, beatDuration: 4 }];
+      }
+    });
+  }
   /**
    * Column-mapped attributes stay the same in each measure until
    * changed, like key-signatures.  We don't store each measure value to
@@ -407,6 +432,7 @@ export class SmoScore {
     if (!scoreObj.columnAttributeMap) {
       return;
     }
+    SmoScore.fixLegacyColumnMappedCtor(scoreObj);
     const attrs = Object.keys(scoreObj.columnAttributeMap);
     scoreObj.staves.forEach((staff: any) => {
       const attrIxMap: any = {};
@@ -429,12 +455,12 @@ export class SmoScore {
           }
           // legacy timeSignature format was just a string 2/4, 3/8 etc.
           if (attr === 'timeSignature') {
-            const ts = new TimeSignature(TimeSignature.defaults);
+            const ts = new SmoTimeSignature(SmoTimeSignature.defaults);
             if (typeof (curValue) === 'string') {
               ts.timeSignature = curValue;
               measure[attr] = ts;
             } else {
-              measure[attr] = TimeSignature.createFromPartial(curValue);
+              measure[attr] = SmoTimeSignature.createFromPartial(curValue);
             }
           } else {
             measure[attr] = curValue;
@@ -878,7 +904,7 @@ export class SmoScore {
     if (measureIndex > 0) {
       const measure = this.staves[0].measures[measureIndex];
       const prev = this.staves[0].measures[measureIndex - 1];
-      if (!start && !TimeSignature.equal(measure.timeSignature, prev.timeSignature)) {
+      if (!start && !SmoTimeSignature.equal(measure.timeSignature, prev.timeSignature)) {
         return false;
       }
       if (!start && measure.keySignature !== prev.keySignature) {

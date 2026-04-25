@@ -6,7 +6,7 @@ import { SmoMusic } from '../data/music';
 import { SmoMeasure, SmoVoice } from '../data/measure';
 import { SmoSystemStaff } from '../data/systemStaff';
 import { SmoScore } from '../data/score';
-import { SmoBarline, TimeSignature, SmoRehearsalMark, SmoMeasureModifierBase } from '../data/measureModifiers';
+import { SmoBarline, SmoTimeSignature, SmoRehearsalMark, SmoMeasureModifierBase } from '../data/measureModifiers';
 import { SmoStaffHairpin, SmoSlur, SmoTie } from '../data/staffModifiers';
 import { SmoArticulation, SmoLyric, SmoOrnament } from '../data/noteModifiers';
 import { SmoSelector } from '../xform/selections';
@@ -14,7 +14,7 @@ import { SmoTuplet, SmoTupletTree } from '../data/tuplet';
 
 import { XmlHelpers } from './xmlHelpers';
 import { smoSerialize } from '../../common/serializationHelpers';
-import { SmoTempoText } from '../data/measureModifiers';
+import { SmoTempo } from '../data/measureModifiers';
 import { XmlToSmo } from './xmlToSmo';
 import { SmoSystemGroup } from '../data/scoreModifiers';
 import { SuiSampleMedia } from '../../render/audio/samples';
@@ -51,8 +51,8 @@ export interface SmoState {
   note?: SmoNote,
   beamState: number,
   beamTicks: number,
-  timeSignature?: TimeSignature,
-  tempo?: SmoTempoText,
+  timeSignature?: SmoTimeSignature,
+  tempo?: SmoTempo,
   currentTupletLevel: number, // not sure about the name
 }
 
@@ -637,13 +637,13 @@ export class SmoToXml {
     if (smoState.tempo) {
       if (tempo.display && measure.measureNumber.measureIndex === 0 && smoState.measureTicks === 0) {
         displayTempo = true;
-      } else if (tempo.display && !SmoTempoText.eq(smoState.tempo, tempo)) {
+      } else if (tempo.display && !SmoTempo.eq(smoState.tempo, tempo)) {
         displayTempo = true;
       }
     } else {
       displayTempo = true;
     }
-    smoState.tempo = new SmoTempoText(tempo);
+    smoState.tempo = new SmoTempo(tempo);
     if (beforeNote === true && smoState.staffPartIx === 0 && smoState.measureTicks === 0 && smoState.partStaves[0].staffId === 0) {
       const mark: SmoMeasureModifierBase | undefined = measure.getRehearsalMark();
       if (mark) {
@@ -661,12 +661,12 @@ export class SmoToXml {
       const tempoElement = nn(directionElement, 'direction-type', null, '');
       XmlHelpers.createAttribute(directionElement, 'placement', 'above');
       let tempoText = tempo.tempoText;
-      if (tempo.tempoMode === SmoTempoText.tempoModes.customMode) {
+      if (tempo.tempoMode === SmoTempo.tempoModes.customMode) {
         tempoText = tempo.customText;
       }
-      if (tempo.tempoMode === SmoTempoText.tempoModes.textMode) {
+      if (tempo.tempoMode === SmoTempo.tempoModes.textMode) {
         nn(tempoElement, 'words', { words: tempoText }, 'words');
-      } else if (tempo.tempoMode === SmoTempoText.tempoModes.customMode || tempo.tempoMode === SmoTempoText.tempoModes.durationMode) {
+      } else if (tempo.tempoMode === SmoTempo.tempoModes.customMode || tempo.tempoMode === SmoTempo.tempoModes.durationMode) {
         const metronomeElement = nn(tempoElement, 'metronome', null, '');
         let durationType = 'quarter';
         let dotType = false;
@@ -901,8 +901,8 @@ export class SmoToXml {
     const nn = XmlHelpers.createTextElementChild;
     const staff = smoState.partStaves[smoState.staffPartIx];
     const measure = staff.measures[smoState.measureIndex];
-    const currentTs = (smoState.timeSignature as TimeSignature) ?? null;
-    if (currentTs !== null && TimeSignature.equal(currentTs, measure.timeSignature)) {
+    const currentTs = (smoState.timeSignature as SmoTimeSignature) ?? null;
+    if (currentTs !== null && SmoTimeSignature.equal(currentTs, measure.timeSignature)) {
       return;
     }
     smoState.timeSignature = measure.timeSignature;

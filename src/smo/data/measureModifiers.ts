@@ -668,10 +668,10 @@ export type SmoTempoBooleanAttribute = 'display';
 
 export type SmoTempoMode = 'duration' | 'text' | 'custom';
 /**
- * constructor parameters for {@link SmoTempoText}
+ * constructor parameters for {@link SmoTempo}
  * @category SmoObject
  */
-export interface SmoTempoTextParams {
+export interface SmoTempoParams {
   /**
    * text (e.g. Allegro) or bpm
    */
@@ -705,7 +705,7 @@ export interface SmoTempoTextParams {
  * serialized tempo parameters
  * @category serialization
  */
-export interface SmoTempoTextParamsSer extends SmoTempoTextParams {
+export interface SmoTempoParamsSer extends SmoTempoParams {
   ctor: string;
 }
 /**
@@ -719,7 +719,7 @@ export interface VexTempoTextParams {
  * Information about both playback tempo and how the tempo is notated.
  * @category SmoObject
  */
-export class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoTextParams {
+export class SmoTempo extends SmoMeasureModifierBase implements SmoTempoParams {
   static get tempoModes(): Record<string, SmoTempoMode> {
     return {
       durationMode: 'duration',
@@ -751,12 +751,12 @@ export class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoText
   /**
    * create defaults for tempo initialization
    */
-  static get defaults(): SmoTempoTextParams {
+  static get defaults(): SmoTempoParams {
     return JSON.parse(JSON.stringify({
-      tempoMode: SmoTempoText.tempoModes.durationMode,
+      tempoMode: SmoTempo.tempoModes.durationMode,
       bpm: 120,
       beatDuration: 4096,
-      tempoText: SmoTempoText.tempoTexts.allegro,
+      tempoText: SmoTempo.tempoTexts.allegro,
       yOffset: 0,
       display: false,
       customText: ''
@@ -765,7 +765,7 @@ export class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoText
   static get attributes() {
     return ['tempoMode', 'bpm', 'display', 'beatDuration', 'tempoText', 'yOffset', 'customText'];
   }
-  tempoMode: SmoTempoMode = SmoTempoText.tempoModes.durationMode
+  tempoMode: SmoTempoMode = SmoTempo.tempoModes.durationMode
   bpm: number = 120;
   beatDuration: number = 4096;
   tempoText: string = 'Allegro';
@@ -784,14 +784,14 @@ export class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoText
    * @param t2 
    * @returns 
    */
-  static eq(t1: SmoTempoText, t2: SmoTempoText) {
+  static eq(t1: SmoTempo, t2: SmoTempo) {
     if (t1.tempoMode !== t2.tempoMode) {
       return false;
     }
-    if (t1.tempoMode === SmoTempoText.tempoModes.durationMode) {
+    if (t1.tempoMode === SmoTempo.tempoModes.durationMode) {
       return t1.bpm === t2.bpm && t1.beatDuration === t2.beatDuration;
     }
-    if (t1.tempoMode === SmoTempoText.tempoModes.textMode) {
+    if (t1.tempoMode === SmoTempo.tempoModes.textMode) {
       return t1.tempoText === t2.tempoText;
     } else {
       return t1.bpm === t2.bpm && t1.beatDuration === t2.beatDuration &&
@@ -801,22 +801,22 @@ export class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoText
 
   static get bpmFromText(): Record<string, number> {
     const rv: any = {};
-    rv[SmoTempoText.tempoTexts.larghissimo] = 24;
-    rv[SmoTempoText.tempoTexts.grave] = 40;
-    rv[SmoTempoText.tempoTexts.lento] = 45;
-    rv[SmoTempoText.tempoTexts.largo] = 40;
-    rv[SmoTempoText.tempoTexts.larghetto] = 60;
-    rv[SmoTempoText.tempoTexts.adagio] = 72;
-    rv[SmoTempoText.tempoTexts.adagietto] = 72;
-    rv[SmoTempoText.tempoTexts.andante_moderato] = 72;
-    rv[SmoTempoText.tempoTexts.andante] = 84;
-    rv[SmoTempoText.tempoTexts.andantino] = 92;
-    rv[SmoTempoText.tempoTexts.moderator] = 96;
-    rv[SmoTempoText.tempoTexts.allegretto] = 96;
-    rv[SmoTempoText.tempoTexts.allegro] = 120;
-    rv[SmoTempoText.tempoTexts.vivace] = 144;
-    rv[SmoTempoText.tempoTexts.presto] = 168;
-    rv[SmoTempoText.tempoTexts.prestissimo] = 240;
+    rv[SmoTempo.tempoTexts.larghissimo] = 24;
+    rv[SmoTempo.tempoTexts.grave] = 40;
+    rv[SmoTempo.tempoTexts.lento] = 45;
+    rv[SmoTempo.tempoTexts.largo] = 40;
+    rv[SmoTempo.tempoTexts.larghetto] = 60;
+    rv[SmoTempo.tempoTexts.adagio] = 72;
+    rv[SmoTempo.tempoTexts.adagietto] = 72;
+    rv[SmoTempo.tempoTexts.andante_moderato] = 72;
+    rv[SmoTempo.tempoTexts.andante] = 84;
+    rv[SmoTempo.tempoTexts.andantino] = 92;
+    rv[SmoTempo.tempoTexts.moderator] = 96;
+    rv[SmoTempo.tempoTexts.allegretto] = 96;
+    rv[SmoTempo.tempoTexts.allegro] = 120;
+    rv[SmoTempo.tempoTexts.vivace] = 144;
+    rv[SmoTempo.tempoTexts.presto] = 168;
+    rv[SmoTempo.tempoTexts.prestissimo] = 240;
 
     return rv as Record<string, number>;
   }
@@ -832,29 +832,32 @@ export class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoText
     return rv;
   }
   toVexTempo(): VexTempoTextParams {
-    if (this.tempoMode === SmoTempoText.tempoModes.durationMode ||
-      this.tempoMode === SmoTempoText.tempoModes.customMode) {
+    if (this.tempoMode === SmoTempo.tempoModes.durationMode ||
+      this.tempoMode === SmoTempo.tempoModes.customMode) {
       return this._toVexDurationTempo();
     }
     return this._toVexTextTempo();
   }
-  serialize(): SmoTempoTextParamsSer {
-    var params: Partial<SmoTempoTextParamsSer> = {};
-    smoSerialize.serializedMergeNonDefault(SmoTempoText.defaults, SmoTempoText.attributes, this, params);
-    params.ctor = 'SmoTempoText';
-    return params as SmoTempoTextParamsSer;
+  serialize(): SmoTempoParamsSer {
+    var params: Partial<SmoTempoParamsSer> = {};
+    smoSerialize.serializedMergeNonDefault(SmoTempo.defaults, SmoTempo.attributes, this, params);
+    params.ctor = 'SmoTempo';
+    return params as SmoTempoParamsSer;
   }
-  constructor(parameters: SmoTempoTextParams | null) {
-    super('SmoTempoText');
+  constructor(parameters: SmoTempoParams | null) {
+    super('SmoTempo');
     let pobj: any = parameters;
     if (typeof (pobj) === 'undefined' || pobj === null) {
       pobj = {};
     }
-    smoSerialize.serializedMerge(SmoTempoText.attributes, SmoTempoText.defaults, this);
-    smoSerialize.serializedMerge(SmoTempoText.attributes, pobj, this);
+    smoSerialize.serializedMerge(SmoTempo.attributes, SmoTempo.defaults, this);
+    smoSerialize.serializedMerge(SmoTempo.attributes, pobj, this);
   }
 }
-
+export interface TimeSignatureTime {
+  actualBeats: number,
+  beatDuration: number
+}
 /**
  * Constructor parameters for a time signature
  * @category SmoObject
@@ -863,14 +866,7 @@ export interface TimeSignatureParameters  {
   /**
    * numerator
    */
-  actualBeats: number,
-  /**
-   * denominator, always power of 2
-   */
-  beatDuration: number,
-  /**
-   * indicates cut time/common time
-   */
+  times: TimeSignatureTime[],
   useSymbol: boolean,
   /**
    * display, else just affects measure lengths.
@@ -879,7 +875,7 @@ export interface TimeSignatureParameters  {
   /**
    * for pickups, display the non-pickup value
    */
-  displayString: string
+  displayString: string,
 }
 
 /**
@@ -897,54 +893,85 @@ export interface TimeSignatureParametersSer extends TimeSignatureParameters {
  * about the display of the time signature.
  * @category SmoObject
  */
-export class TimeSignature extends SmoMeasureModifierBase {
+export class SmoTimeSignature extends SmoMeasureModifierBase {
   static get defaults(): TimeSignatureParameters {
     return {
-      actualBeats: 4,
-      beatDuration: 4,
+      times: [{ actualBeats: 4, beatDuration: 4 }],
       useSymbol: false,
       display: true,
-      displayString: ''
+      displayString: '',
     };
   }
-  static equal(ts1: TimeSignature, ts2: TimeSignature): boolean {
-    return (ts1.actualBeats === ts2.actualBeats && ts1.beatDuration === ts2.beatDuration);
+  static equal(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean {
+    // legacy hack, this can be called before the constructor is called, since these classes used to 
+    // just be strings.  So create the objects.
+    const ts1obj = SmoTimeSignature.createFromPartial(ts1);
+    const ts2obj = SmoTimeSignature.createFromPartial(ts2);
+    if (ts1obj.times.length !== ts2obj.times.length) {
+      return false;
+    }
+    for (let i = 0; i < ts1obj.times.length; i++) {
+      if (ts1obj.times[i].actualBeats !== ts2obj.times[i].actualBeats ||
+        ts1obj.times[i].beatDuration !== ts2obj.times[i].beatDuration) {
+        return false;
+      }
+    }
+    return true;
   }
   static createFromPartial(value: Partial<TimeSignatureParameters>) {
-    const params = TimeSignature.defaults;
-    smoSerialize.serializedMerge(TimeSignature.parameters, value, params);
-    return new TimeSignature(params);
+    const params = SmoTimeSignature.defaults;
+    smoSerialize.serializedMerge(SmoTimeSignature.parameters, value, params);
+    return new SmoTimeSignature(params);
   }
   // timeSignature: string = '4/4';
-  actualBeats: number = 4;
-  beatDuration: number = 4;
+  times: TimeSignatureTime[] = [{ actualBeats: 4, beatDuration: 4 }];
   useSymbol: boolean = false;
   display: boolean = true;
   displayString: string = '';
+  index: number = 0;
+  get beatDuration() {
+    return this.times[this.index].beatDuration;
+  }
+  get actualBeats() {    return this.times[this.index].actualBeats;
+  }
   get timeSignature() {
-    return this.actualBeats.toString() + '/' + this.beatDuration.toString();
+    let str: string[] = [];
+    this.times.forEach((time) => {
+      str.push(`${time.actualBeats}/${time.beatDuration}+`);
+    });
+    return str.join('+');
   }
   static get parameters() {
-    return ['actualBeats', 'beatDuration', 'useSymbol', 'display', 'displayString'];
+    return ['times', 'useSymbol', 'display', 'displayString'];
   }
   static get boolParameters() {
     return [];
   }
   set timeSignature(value: string) {
-    const ar = value.split('/');
-    this.actualBeats = parseInt(ar[0], 10);
-    this.beatDuration = parseInt(ar[1], 10);
+    const timeStrings = value.split('+');
+    this.times = [];
+    for (let i = 0; i < timeStrings.length; i++) {
+      const ar = timeStrings[i].split('/');
+      if (ar.length !== 2) {
+        throw new Error('invalid time signature string');
+      }
+      const actualBeats = parseInt(ar[0], 10);
+      const beatDuration = parseInt(ar[1], 10);
+      this.times.push({ actualBeats, beatDuration });
+    }
   }
   serialize(): TimeSignatureParametersSer {
     const rv: Partial<TimeSignatureParametersSer> = {};
-    smoSerialize.serializedMergeNonDefault(TimeSignature.defaults, TimeSignature.parameters, this, rv);
-    rv.ctor = 'TimeSignature';
+    smoSerialize.serializedMergeNonDefault(SmoTimeSignature.defaults, SmoTimeSignature.parameters, this, rv);
+    rv.ctor = 'SmoTimeSignature';
     return rv as TimeSignatureParametersSer;
   }
   constructor(params: TimeSignatureParameters) {
-    super('TimeSignature');
-    this.actualBeats = params.actualBeats;
-    this.beatDuration = params.beatDuration;
+    super('SmoTimeSignature');
+    if (!params.times || !params.times.length) {
+      params.times = SmoTimeSignature.defaults.times;
+    }
+    this.times = JSON.parse(JSON.stringify(params.times));
     this.useSymbol = params.useSymbol;
     this.display = params.display;
     this.displayString = params.displayString;
@@ -957,6 +984,6 @@ export const measureModifierDynamicCtorInit = () => {
   SmoDynamicCtor['SmoVolta'] = (params: SmoVoltaParams) => new SmoVolta(params);
   SmoDynamicCtor['SmoMeasureText'] = (params: SmoMeasureTextParams) => new SmoMeasureText(params);
   SmoDynamicCtor['SmoRehearsalMark'] = (params: SmoRehearsalMarkParams) => new SmoRehearsalMark(params);
-  SmoDynamicCtor['SmoTempoText'] = (params: SmoTempoTextParams) => new SmoTempoText(params);
-  SmoDynamicCtor['TimeSignature'] = (params: TimeSignatureParameters) => new TimeSignature(params);
+  SmoDynamicCtor['SmoTempo'] = (params: SmoTempoParams) => new SmoTempo(params);
+  SmoDynamicCtor['SmoTimeSignature'] = (params: TimeSignatureParameters) => new SmoTimeSignature(params);
 }

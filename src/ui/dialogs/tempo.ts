@@ -1,6 +1,6 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SmoTempoText, SmoTempoNumberAttribute, SmoTempoStringAttribute, SmoTempoBooleanAttribute } from '../../smo/data/measureModifiers';
+import { SmoTempo, SmoTempoNumberAttribute, SmoTempoStringAttribute, SmoTempoBooleanAttribute } from '../../smo/data/measureModifiers';
 import { SmoSelection } from '../../smo/xform/selections';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { DialogDefinition, SuiDialogParams } from './dialog';
@@ -14,8 +14,8 @@ declare var $: any;
  * @category SuiDialog
  */
 export class SuiTempoAdapter extends SuiComponentAdapter {
-  smoTempoText: SmoTempoText;
-  backup: SmoTempoText;
+  SmoTempo: SmoTempo;
+  backup: SmoTempo;
   applyToAllVal: boolean = false;  
   applyToSelection: boolean = false;
   edited: boolean = false;
@@ -23,26 +23,26 @@ export class SuiTempoAdapter extends SuiComponentAdapter {
   constructor(view: SuiScoreViewOperations, measure: SmoMeasure) {
     super(view);
     this.measure = measure;
-    this.smoTempoText = new SmoTempoText(measure.tempo);
-    this.backup = new SmoTempoText(this.smoTempoText);
+    this.SmoTempo = new SmoTempo(measure.tempo);
+    this.backup = new SmoTempo(this.SmoTempo);
   }
   writeNumber(param: SmoTempoNumberAttribute, value: number) {
-    this.smoTempoText[param] = value;
-    this.view.updateTempoScore(this.measure, this.smoTempoText, this.applyToAll, this.applyToSelection);
+    this.SmoTempo[param] = value;
+    this.view.updateTempoScore(this.measure, this.SmoTempo, this.applyToAll, this.applyToSelection);
     this.edited = true;
   }
   writeBoolean(param: SmoTempoBooleanAttribute, value: boolean) {
-    this.smoTempoText[param] = value;
-    this.view.updateTempoScore(this.measure, this.smoTempoText, this.applyToAll, this.applyToSelection);
+    this.SmoTempo[param] = value;
+    this.view.updateTempoScore(this.measure, this.SmoTempo, this.applyToAll, this.applyToSelection);
     this.edited = true;
   }
   writeString(param: SmoTempoStringAttribute, value: string) {
-    (this.smoTempoText as any)[param] = value;
-    this.view.updateTempoScore(this.measure, this.smoTempoText, this.applyToAll, this.applyToSelection);
+    (this.SmoTempo as any)[param] = value;
+    this.view.updateTempoScore(this.measure, this.SmoTempo, this.applyToAll, this.applyToSelection);
     this.edited = true;
   }
   async remove() {
-    await this.view.removeTempo(this.measure, this.smoTempoText, this.applyToAll, this.applyToSelection);
+    await this.view.removeTempo(this.measure, this.SmoTempo, this.applyToAll, this.applyToSelection);
   }
   async cancel() {
     await this.view.updateTempoScore(this.measure, this.backup, this.applyToAll, this.applyToSelection);
@@ -52,50 +52,50 @@ export class SuiTempoAdapter extends SuiComponentAdapter {
   }
   set applyToAll(val: boolean) {
     this.applyToAllVal = val;
-    this.view.updateTempoScore(this.measure, this.smoTempoText, this.applyToAll, this.applyToSelection);
+    this.view.updateTempoScore(this.measure, this.SmoTempo, this.applyToAll, this.applyToSelection);
     this.edited = true;
   }
   async commit(){
     return PromiseHelpers.emptyPromise();
   }
   get tempoText() {
-    return this.smoTempoText.tempoText;
+    return this.SmoTempo.tempoText;
   }
   set tempoText(value: string) {
     this.writeString('tempoText', value);
   }
   get tempoMode() {
-    return this.smoTempoText.tempoMode;
+    return this.SmoTempo.tempoMode;
   }
   set tempoMode(value: string) {
     this.writeString('tempoMode', value);
   }
   get customText() {
-    return this.smoTempoText.customText;
+    return this.SmoTempo.customText;
   }
   set customText(value: string) {
     this.writeString('customText', value);
   }
   get bpm() {
-    return this.smoTempoText.bpm;
+    return this.SmoTempo.bpm;
   }
   set bpm(value: number) {
     this.writeNumber('bpm', value);
   }
   get display() {
-    return this.smoTempoText.display;
+    return this.SmoTempo.display;
   }
   set display(value: boolean) {
     this.writeBoolean('display', value);
   }
   get beatDuration() {
-    return this.smoTempoText.beatDuration;
+    return this.SmoTempo.beatDuration;
   }
   set beatDuration(value: number) {
     this.writeNumber('beatDuration', value);
   }
   get yOffset() {
-    return this.smoTempoText.yOffset;
+    return this.SmoTempo.yOffset;
   }
   set yOffset(value: number) {
     this.writeNumber('yOffset', value);
@@ -111,7 +111,7 @@ export class SuiTempoDialog extends SuiDialogAdapterBase<SuiTempoAdapter> {
         elements: [
           {
             smoName: 'tempoMode',
-            defaultValue: SmoTempoText.tempoModes.durationMode,
+            defaultValue: SmoTempo.tempoModes.durationMode,
             control: 'SuiDropdownComponent',
             label: 'Tempo Mode',
             options: [{
@@ -162,57 +162,57 @@ export class SuiTempoDialog extends SuiDialogAdapterBase<SuiTempoAdapter> {
           },
           {
             smoName: 'tempoText',
-            defaultValue: SmoTempoText.tempoTexts.allegro,
+            defaultValue: SmoTempo.tempoTexts.allegro,
             control: 'SuiDropdownComponent',
             label: 'Tempo Text',
             classes: 'hide-when-not-text-mode',
             options: [{
-              value: SmoTempoText.tempoTexts.larghissimo,
+              value: SmoTempo.tempoTexts.larghissimo,
               label: 'Larghissimo'
             }, {
-              value: SmoTempoText.tempoTexts.grave,
+              value: SmoTempo.tempoTexts.grave,
               label: 'Grave'
             }, {
-              value: SmoTempoText.tempoTexts.lento,
+              value: SmoTempo.tempoTexts.lento,
               label: 'Lento'
             }, {
-              value: SmoTempoText.tempoTexts.largo,
+              value: SmoTempo.tempoTexts.largo,
               label: 'Largo'
             }, {
-              value: SmoTempoText.tempoTexts.larghetto,
+              value: SmoTempo.tempoTexts.larghetto,
               label: 'Larghetto'
             }, {
-              value: SmoTempoText.tempoTexts.adagio,
+              value: SmoTempo.tempoTexts.adagio,
               label: 'Adagio'
             }, {
-              value: SmoTempoText.tempoTexts.adagietto,
+              value: SmoTempo.tempoTexts.adagietto,
               label: 'Adagietto'
             }, {
-              value: SmoTempoText.tempoTexts.andante_moderato,
+              value: SmoTempo.tempoTexts.andante_moderato,
               label: 'Andante moderato'
             }, {
-              value: SmoTempoText.tempoTexts.andante,
+              value: SmoTempo.tempoTexts.andante,
               label: 'Andante'
             }, {
-              value: SmoTempoText.tempoTexts.andantino,
+              value: SmoTempo.tempoTexts.andantino,
               label: 'Andantino'
             }, {
-              value: SmoTempoText.tempoTexts.moderator,
+              value: SmoTempo.tempoTexts.moderator,
               label: 'Moderato'
             }, {
-              value: SmoTempoText.tempoTexts.allegretto,
+              value: SmoTempo.tempoTexts.allegretto,
               label: 'Allegretto',
             }, {
-              value: SmoTempoText.tempoTexts.allegro,
+              value: SmoTempo.tempoTexts.allegro,
               label: 'Allegro'
             }, {
-              value: SmoTempoText.tempoTexts.vivace,
+              value: SmoTempo.tempoTexts.vivace,
               label: 'Vivace'
             }, {
-              value: SmoTempoText.tempoTexts.presto,
+              value: SmoTempo.tempoTexts.presto,
               label: 'Presto'
             }, {
-              value: SmoTempoText.tempoTexts.prestissimo,
+              value: SmoTempo.tempoTexts.prestissimo,
               label: 'Prestissimo'
             }
             ]

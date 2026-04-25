@@ -3,7 +3,7 @@
 import { SuiMenuBase, SuiMenuParams, MenuDefinition } from './menu';
 import { SmoMeasure } from '../../smo/data/measure';
 import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SuiTimeSignatureDialog } from '../dialogs/timeSignature';
+import { SuiTimeSignatureDialogVue } from '../dialogs/timeSignature';
 
 declare var $: any;
 
@@ -62,7 +62,7 @@ export class SuiTimeSignatureMenu extends SuiMenuBase {
   async selection(ev: any) {
     var text = $(ev.currentTarget).attr('data-value');
     if (text === 'TimeSigOther') {
-      createAndDisplayDialog(SuiTimeSignatureDialog, {
+      SuiTimeSignatureDialogVue({
         completeNotifier: this.completeNotifier!,
         view: this.view,
         eventSource: this.eventSource,

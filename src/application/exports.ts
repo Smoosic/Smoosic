@@ -37,7 +37,7 @@ import { SuiTransposeScoreDialogVue} from '../ui/dialogs/transposeScore';
 import { SuiMeasureFormatDialogVue } from '../ui/dialogs/measureFormat';
 import { SuiInsertMeasuresVue } from '../ui/dialogs/addMeasure';
 import { SuiInstrumentDialogVue } from '../ui/dialogs/instrument';
-import { SuiTimeSignatureDialog } from '../ui/dialogs/timeSignature';
+import { SuiTimeSignatureDialogVue } from '../ui/dialogs/timeSignature';
 import { SuiTempoDialog } from '../ui/dialogs/tempo';
 import { SuiNoteHeadDialog } from '../ui/dialogs/noteHead';
 import { SuiEndingsDialogVue } from '../ui/dialogs/endings';
@@ -153,7 +153,7 @@ import { SmoOperation } from '../smo/xform/operations';
 import { ScoreRoadMapBuilder } from '../smo/xform/roadmap';
 import {
     SmoRehearsalMark, SmoMeasureFormat, SmoBarline, SmoRepeatSymbol,
-    SmoVolta, SmoMeasureText, SmoTempoText, TimeSignature, measureModifierDynamicCtorInit
+    SmoVolta, SmoMeasureText, SmoTempo, SmoTimeSignature, measureModifierDynamicCtorInit
 } from '../smo/data/measureModifiers';
 import { SmoToXml } from '../smo/mxml/smoToXml';
 import { MidiToSmo } from '../smo/midi/midiToSmo';
@@ -357,7 +357,7 @@ export const Smo = {
   GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
   SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
-  SuiTimeSignatureDialog,SuiTextBlockDialog, SuiLyricDialog, SuiChordChangeDialog,
+  SuiTimeSignatureDialogVue,SuiTextBlockDialog, SuiLyricDialog, SuiChordChangeDialog,
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
   SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,
   SuiScorePreferencesDialogVue,
@@ -400,7 +400,7 @@ SuiPitchComposite,
   // score modifiers
   SmoSystemGroup, SmoAudioPlayerSettings, SmoTextGroup,
   // measure modifiers
-  SmoRehearsalMark, SmoMeasureFormat, SmoBarline, SmoRepeatSymbol,  SmoVolta, SmoMeasureText, SmoTempoText, TimeSignature,
+  SmoRehearsalMark, SmoMeasureFormat, SmoBarline, SmoRepeatSymbol,  SmoVolta, SmoMeasureText, SmoTempo, SmoTimeSignature,
   measureModifierDynamicCtorInit,
   // note modifiers
   SmoOrnament, noteModifierDynamicCtorInit,

@@ -9,7 +9,7 @@ import { SmoObjectParams, SmoAttrs, MeasureNumber, getId,
    Pitch, ElementLike } from './common';
 import { SmoMusic } from './music';
 import { SmoMeasure, SmoMeasureParamsSer } from './measure';
-import { SmoMeasureFormat, SmoRehearsalMark, SmoRehearsalMarkParams, SmoTempoTextParams, SmoVolta, SmoBarline } from './measureModifiers';
+import { SmoMeasureFormat, SmoRehearsalMark, SmoRehearsalMarkParams, SmoTempoParams, SmoVolta, SmoBarline } from './measureModifiers';
 import { SmoInstrumentParams, StaffModifierBase, SmoInstrument, SmoInstrumentMeasure, SmoInstrumentStringParams, SmoInstrumentNumParams, 
   SmoTie, SmoStaffTextBracket, SmoStaffTextBracketParamsSer, 
   StaffModifierBaseSer, SmoTabStave, SmoStaffHairpin, TieLine,
@@ -851,7 +851,7 @@ export class SmoSystemStaff implements SmoObjectParams {
     this.measures[index].resetTempo();
   }
 
-  addTempo(tempo: SmoTempoTextParams, index: number) {
+  addTempo(tempo: SmoTempoParams, index: number) {
     this.measures[index].setTempo(tempo);
   }
 

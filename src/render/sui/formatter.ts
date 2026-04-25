@@ -16,7 +16,7 @@ import { SmoStaffHairpin, SmoStaffTextBracket, SmoTabStave } from '../../smo/dat
 import { layoutDebug } from './layoutDebug';
 import { ScaledPageLayout, SmoLayoutManager, SmoPageLayout } from '../../smo/data/scoreModifiers';
 import { SmoMeasure, ISmoBeamGroup } from '../../smo/data/measure';
-import { TimeSignature, SmoTempoText } from '../../smo/data//measureModifiers';
+import { SmoTimeSignature, SmoTempo } from '../../smo/data//measureModifiers';
 import { SvgPageMap } from './svgPageMap';
 import { VexFlow, defaultMeasurePadding } from '../../common/vex';
 import { TextFormatter } from '../../common/textformatter';
@@ -831,7 +831,7 @@ export class SuiLayoutFormatter {
    * @param score 
    */
   calculateBeginningSymbols(systemIndex: number, measure: SmoMeasure,
-    clefLast: string, keySigLast: string, timeSigLast: TimeSignature, tempoLast: SmoTempoText) {
+    clefLast: string, keySigLast: string, timeSigLast: SmoTimeSignature, tempoLast: SmoTempo) {
     // The key signature is set based on the transpose index already, i.e. an Eb part in concert C already has 3 sharps.
     const xposeScore = this.score?.preferences?.transposingScore && (this.score?.isPartExposed() === false);
     // const xposeOffset = xposeScore ? measure.transposeIndex : 0;
@@ -850,7 +850,7 @@ export class SuiLayoutFormatter {
       measure.svg.forceTempo = tempo.display && measure.svg.rowInSystem === 0;
     } else if (tempo && tempoLast) {
       // otherwise get tempo from the measure prior.  But only one tempo per system.
-      if (!SmoTempoText.eq(tempo, tempoLast) && measure.svg.rowInSystem === 0) {
+      if (!SmoTempo.eq(tempo, tempoLast) && measure.svg.rowInSystem === 0) {
         measure.svg.forceTempo = tempo.display;
       }
     } else if (tempo) {
