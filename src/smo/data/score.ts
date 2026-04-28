@@ -407,15 +407,28 @@ export class SmoScore {
     });
     const tsKeys = Object.keys(scoreObj.columnAttributeMap.timeSignature);
     tsKeys.forEach((key) => {
-      const ts = scoreObj.columnAttributeMap.timeSignature[key];
-      ts.ctor = 'SmoTimeSignature';
-      // map legacy time signature format to compound time signature format
-      if (ts.actualBeats && ts.beatDuration && !isNaN(ts.actualBeats) && !isNaN(ts.beatDuration)) {        
-        ts.times = [{ actualBeats: ts.actualBeats, beatDuration: ts.beatDuration }];
-      }
-      // Default will have nothing serialized
-      if (!ts.times) {
-        ts.times = [{ actualBeats: 4, beatDuration: 4 }];
+      const val = scoreObj.columnAttributeMap.timeSignature[key];
+      // Very legacy time signature format was just a string like 4/4, 3/8 etc.
+      if (typeof(val) === 'string') {
+        const nums = val.split('/');
+        const num = parseInt(nums[0], 10);
+        const denom = parseInt(nums[1], 10);
+        scoreObj.columnAttributeMap.timeSignature[key] = { times: [{ actualBeats: num, beatDuration: denom }], ctor: 'SmoTimeSignature' };
+      } else {
+        const ts =  val;      
+        ts.ctor = 'SmoTimeSignature';
+        // map legacy time signature format to compound time signature format
+        let beatDuration = 4;
+        if (ts.beatDuration && !isNaN(ts.beatDuration)) {
+          beatDuration = ts.beatDuration;
+        }
+        if (ts.actualBeats && !isNaN(ts.actualBeats)) {        
+          ts.times = [{ actualBeats: ts.actualBeats, beatDuration }];
+        }
+        // Default will have nothing serialized
+        if (!ts.times) {
+          ts.times = [{ actualBeats: 4, beatDuration: 4 }];
+        }
       }
     });
   }
