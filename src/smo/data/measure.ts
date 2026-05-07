@@ -1020,7 +1020,6 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       }
     }
     const voices: SmoVoice[] = [];
-    const tuplets: SmoTuplet[] = [];
     for (var i = 0; i < this.voices.length; ++i) {
       const voice = this.voices[i];
       const newNotes: SmoNote[] = [];

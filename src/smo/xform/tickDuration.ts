@@ -277,8 +277,16 @@ export class SmoStretchNoteActor extends TickIteratorBase {
       stemTicksUsed: number,
       multiplier: number
   ) {
-    const remainingTicks = stemTicksUsed - this.newStemTicks;
-
+    const originalTickCount = this.notes.reduce((a, b) => a + b.tickCount, 0);
+    const measureTicks = this.measure.timeSignature.ticksFromTimeSignature() - 
+      (originalTickCount + (replacingNote.tickCount - originalNote.tickCount));
+    let remainingTicks = stemTicksUsed - this.newStemTicks;
+    // If this is the last note in the measure, and the measure doesn't have the full duration of notes,
+    // allow stretching.  This isn't something that can usually happen, 
+    // except in cases like import from xml, time signature changes, etc.
+    if (remainingTicks < 0 && measureTicks >= 0) {
+        remainingTicks = 0;
+    }
     if (remainingTicks >= 0) {
       this.notesToInsert.push(replacingNote);
 

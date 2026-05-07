@@ -902,6 +902,14 @@ export class SmoTimeSignature extends SmoMeasureModifierBase {
       displayString: '',
     };
   }
+  ticksFromTimeSignature() {
+    let max = 0;
+    for (let i = 0; i < this.times.length; i++) {
+      const bt = 4096 * (4/this.times[i].beatDuration);
+      max = Math.max(max, bt * this.times[i].actualBeats);
+    }
+    return max;
+  }
   static equal(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean {
     // legacy hack, this can be called before the constructor is called, since these classes used to 
     // just be strings.  So create the objects.

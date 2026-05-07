@@ -16,11 +16,12 @@ export const SuiTimeSignatureDialogVue = (parameters: SuiDialogParams) => {
   const measure = parameters.view.tracker.selections[0].measure;
   const backup = new SmoTimeSignature(measure.timeSignature);
   let changed = false;
-  const timeSignature = new SmoTimeSignature(measure.timeSignature);
+  let timeSignature = new SmoTimeSignature(measure.timeSignature);
   const updateTimeSignatureCb = async (mf: SmoTimeSignature):Promise<void> => {
-    if (!SmoTimeSignature.equal(mf, backup)) {
+    if (!SmoTimeSignature.equal(mf, timeSignature)) {
       changed = true;
       await parameters.view.setTimeSignature(mf);
+      timeSignature = mf;
     }
   }
   let applies = 'Selected';

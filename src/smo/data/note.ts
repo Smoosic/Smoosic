@@ -312,7 +312,10 @@ export class SmoNote implements Transposable {
     if ((params as any).tuplet) {
       this.tupletId = (params as any).tuplet.id;
     }
-
+    // For imported notes, stem ticks is only different for tuplets
+    if (!this.isTuplet) {
+      this.stemTicks = this.tickCount;
+    }
     this.attrs = {
       id: getId().toString(),
       type: 'SmoNote'

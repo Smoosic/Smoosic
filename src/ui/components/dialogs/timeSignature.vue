@@ -100,15 +100,25 @@ const displayString: Ref<string> = ref(props.timeSignature.displayString);
 const storedTimeSignature = new SmoTimeSignature(props.timeSignature);
 if (storedTimeSignature.times.length > 1) {
   isCompound.value = true;
+  altBeat.value = storedTimeSignature.times[1].actualBeats;
+  altDuration.value = storedTimeSignature.times[1].beatDuration;
 }
+mainBeat.value = storedTimeSignature.times[0].actualBeats;
+mainDuration.value = storedTimeSignature.times[0].beatDuration;
 const updateMainBeat = async (newVal: number) => {
   mainBeat.value = newVal;
+  storedTimeSignature.times[0].actualBeats = newVal;
+  await props.updateTimeSignatureCb(storedTimeSignature);
 }
 const updateMainDurationString = async (newVal: string) => {
   mainDurationString.value = newVal;
+  storedTimeSignature.times[0].beatDuration = durationFromString(newVal);
+  await props.updateTimeSignatureCb(storedTimeSignature);
 }
 const updateAltDurationString = async (newVal: string) => {
   altDurationString.value = newVal;
+  storedTimeSignature.times[1].beatDuration = durationFromString(newVal);
+  await props.updateTimeSignatureCb(storedTimeSignature);
 }
 const updateAltBeat = async (newVal: number) => {
   if (storedTimeSignature.times.length > 1 && storedTimeSignature.times[1].actualBeats === newVal) {
@@ -122,7 +132,7 @@ const updateAltBeat = async (newVal: number) => {
   } else {
     storedTimeSignature.times[1].actualBeats = newVal;
   }
-  props.updateTimeSignatureCb(storedTimeSignature);
+  await props.updateTimeSignatureCb(storedTimeSignature);
 }
 watch(isCompound, async (newVal: boolean, oldVal: boolean) => {
   if (newVal === oldVal) {
