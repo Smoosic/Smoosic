@@ -203,7 +203,10 @@ export class NoteEntryCaret {
 		}
 
 		const staveNote = vexNote as StaveNote;
-		const noteHeads = staveNote.noteHeads;
+    if (!staveNote.noteHeads) {
+      return;
+    }
+		const noteHeads = staveNote.noteHeads;    
 
 		this.vexNoteLeftDisplacedHeadPx = staveNote.getMetrics().leftDisplacedHeadPx;
 		this.vexNoteRightDisplacedHeadPx = staveNote.getMetrics().rightDisplacedHeadPx;

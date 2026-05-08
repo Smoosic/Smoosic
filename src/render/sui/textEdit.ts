@@ -850,7 +850,9 @@ export class SuiChordEditor extends SuiTextEditor {
     if (this.svgText !== null && this.svgText.blocks.length > this.textPos && this.textPos >= 0) {
       this.textType = this.svgText.blocks[this.textPos].textType;
     }
-    evdata.preventDefault(); // prevent browser scroll
+    if (typeof(evdata.preventDefault) === 'function') {
+      evdata.preventDefault(); // prevent browser scroll
+    }
 
     return edited;
   }
