@@ -1196,6 +1196,10 @@ button.translate-submit-button {
 #render-progress[value]::-webkit-progress-value {
   background: #F70;
 }
+body.progress-modal.printing #render-progress,
+body.progress-modal.printing .navbar-expand {
+  display: none;
+}
 body.progress-modal #render-progress {
   display: block;
 }
