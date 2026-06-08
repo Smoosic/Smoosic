@@ -9,6 +9,8 @@ import { SmoMeasure, SmoMeasureParamsSer } from '../data/measure';
 import { smoSerialize } from '../../common/serializationHelpers';
 import { SmoTextGroup, SmoTextGroupContainer } from '../data/scoreText';
 import { SmoSelector } from './selections';
+import { SmoScorePreferences, SmoScorePreferencesParams, FontPurpose, SmoScoreInfo, SmoAudioPlayerSettings, SmoAudioPlayerParameters } 
+  from '../data/scoreModifiers';
 /**
  * @category SmoTransform
  */
@@ -384,7 +386,22 @@ export class UndoBuffer {
           }
         }
       } else if (buf.type === UndoBuffer.bufferTypes.SCORE_ATTRIBUTES) {
-        smoSerialize.serializedMerge(SmoScore.preferences, buf.json, score);
+        if (buf.json['preferences']) {
+          score.preferences = new SmoScorePreferences(buf.json.preferences as SmoScorePreferencesParams);
+        }
+        if (buf.json['fonts'] && Array.isArray(buf.json['fonts'])) {
+          score.fonts = [];
+          buf.json.fonts.forEach((font: FontPurpose) => {
+            score.fonts.push(JSON.parse(JSON.stringify(font)) as FontPurpose);
+          });
+        }
+        if (buf.json['scoreInfo']) {
+          score.scoreInfo = JSON.parse(JSON.stringify(buf.json['scoreInfo'])) as SmoScoreInfo;
+        }
+        if (buf.json['audioSettings']) {
+          score.audioSettings = new SmoAudioPlayerSettings(buf.json.audioSettings as SmoAudioPlayerParameters);
+        }
+        // smoSerialize.serializedMerge(SmoScore.preferences, buf.json, score);
       } else if (buf.type === UndoBuffer.bufferTypes.COLUMN) {
         for (let j = 0; j < score.staves.length; ++j) {
           // convert to concert key, which is how measures are serialized.
