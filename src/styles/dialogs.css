@@ -272,11 +272,12 @@ body.showVueDialog .modal{
   min-width: 120px;
   max-height: 50px;
 }
-.dialog-button-group button.btn .icon-bravura {
+.dialog-button-group .btn .icon-bravura {
   font-size: 2.3rem;
   top:0;
   left: 0;
-  position: relative
+  position: relative;
+  font-family: 'Bravura' !important;
 }
 .ghost {
   opacity: 0.4;

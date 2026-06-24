@@ -643,6 +643,9 @@ export abstract class SuiScoreView implements layoutProvider {
         const tga: SmoTextGroup[] = [];
         replacedText = true;
         staff.partInfo.textGroups.forEach((tg) => {
+          if (tg.attachToSelector && tg.selector) {
+            tg.selector.staff = staff.staffId;
+          }
           tga.push(tg);
         });
         this.score.textGroups = tga;

@@ -740,9 +740,9 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
       return;
     }
     this.modifierSuggestion = artifact;
-    if (artifact.modifier instanceof SmoGraceNote) {
-      return;
-    }
+    //if (artifact.modifier instanceof SmoGraceNote) {
+      //return;
+    //}
     this._drawRect(artifact.box, 'suggestion');
   }
 
@@ -784,9 +784,9 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     }
     this.removeModifierSelectionBox();
     this.modifierSelections.forEach((artifact) => {
-      if (artifact.modifier instanceof SmoGraceNote) {
-        return;
-      }
+      //if (artifact.modifier instanceof SmoGraceNote) {
+       // return;
+     // }
       if (box === null) {
         box = artifact.modifier.logicalBox ?? null;
       } else {
