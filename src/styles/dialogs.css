@@ -1204,3 +1204,6 @@ body.progress-modal.printing .navbar-expand {
 body.progress-modal #render-progress {
   display: block;
 }
+body.printing .note-entry-caret {
+  display: none;
+}

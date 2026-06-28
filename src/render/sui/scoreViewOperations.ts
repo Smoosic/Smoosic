@@ -1896,19 +1896,23 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this.renderer.setRefresh();
     return this.renderer.updatePromise();
   }
+  /**
+   * Add a new staff to an existing score, with default instrument for the staff part.
+   * We base the staff parameters on a stave that currently exists in the score.
+   * @param instrument 
+   * @returns 
+   */
   async addStaff(instrument: SmoSystemStaffParams): Promise<void> {
     this._undoScore('Add Instrument');
     // if we are looking at a subset of the score, we won't see the new staff.  So
     // revert to the full view
+    const entry = instrument.measureInstrumentMap[0];
+    entry.startSelector.measure = 0;
+    entry.endSelector.measure = this.storeScore.staves[0].measures.length - 1;
     const staff = SmoOperation.addStaff(this.storeScore, instrument);
-    const instKeys = Object.keys(staff.measureInstrumentMap);
-    // update the key signatures for the new part
-    instKeys.forEach((key) => {
-      const numKey = parseInt(key, 10);
-      const inst = staff.measureInstrumentMap[numKey];
-      const selections = SmoSelection.innerSelections(this.storeScore, inst.startSelector, inst.endSelector);
-      SmoOperation.changeInstrument(inst, this.storeScore, selections);
-    })
+    staff.updateInstrumentOffsets();
+    this.storeScore.setNoteInstrumentProperties();
+
     if (instrument.staffId > 0) {
       const selection = SmoSelection.measureSelection(this.storeScore, instrument.staffId - 1, 0);
       const sel = SmoSelector.default;
