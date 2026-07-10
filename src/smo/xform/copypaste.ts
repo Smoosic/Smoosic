@@ -221,11 +221,11 @@ export class PasteBuffer {
 
     let currentDuration = tickmapForFirstMeasure.durationMap[selector.tick];
     const measureTotalDuration = tickmapForFirstMeasure.totalDuration;
-    
+    // Go through all the notes we are pasting into this measure.
     for (let i: number = 0; i < notes.length; i++) {
       const selection: PasteNote = notes[i];
+      // Pasting the first note of a tuplet, make sure it will fit in the measure
       if (selection.tupletStart) {
-        // const tupletTree: SmoTupletTree | null = SmoTupletTree.getTupletTreeForNoteIndex(this.tupletNoteMap, selection.selector.voice, selection.selector.tick);
         if (currentDuration + selection.tupletStart.totalTicks > measureTotalDuration && 
           currentDuration + selection.note.tickCount < measureTotalDuration &&
           measureSelection !== null) {
@@ -238,6 +238,7 @@ export class PasteBuffer {
           }
         }
       }
+      // If the pasted note would exceed the length of the measure, close out the existing measure
       if (currentDuration + selection.note.tickCount > measureTotalDuration && measureSelection !== null) {
         // If this note will overlap the measure boundary, the note will be split in 2 with the
         // remainder going to the next measure.  If they line up exactly, the remainder is 0.
@@ -255,9 +256,11 @@ export class PasteBuffer {
           // firstMeasureTickmap = measureSelection.measure.tickmapForVoice(selector.voice);
         }
       } else if (measureSelection != null) {
+        // the note fits in the measure, keep track of the note duration.
         currentDuration += selection.note.tickCount;
       }
     }
+    // Get the last full measure after we've added all the pastes
     const lastMeasure = this.measures[this.measures.length - 1];
 
     //adjust the beginning of the paste
@@ -269,6 +272,8 @@ export class PasteBuffer {
       this.destination.tick = firstTupletTree.startIndex;//use this as a new selector.tick
     }
 
+    // If we are pasting tuplets, remove any tuplets that occupy the same beat first and convert them into a non-tuplet.
+    // We don't support pasting into tuplets.
     if (this.measures.length > 1) {
       this._removeOverlappingTuplets(firstMeasure, 
         selector.tick, firstMeasure.voices[selector.voice].notes.length - 1, selector.voice);
@@ -459,7 +464,10 @@ export class PasteBuffer {
           const tupletTree: SmoTupletTree = SmoTupletTree.clone(selection.tupletStart);
           const startIndex: number = voice.notes.length;
           const diff: number = startIndex - tupletTree.startIndex;
+          // Adjust indices in the tuplet for where it's pasted
           SmoTupletTree.adjustTupletIndexes([tupletTree], selection.selector.voice,-1, diff);
+          // Adjust indices for tuplets in the rest of the measure.
+          SmoTupletTree.adjustMeasureTupletIndices([tupletTree], selection.selector.voice, measure);
           measure.tupletTrees.push(tupletTree);
         }
 
@@ -531,9 +539,6 @@ export class PasteBuffer {
       diffToAdjustRemainingTuplets += lmap.length;
       existingIndex++;
     }
-    SmoTupletTree.adjustTupletIndexes(
-      measure.tupletTrees, voiceIndex, startIndexToAdjustRemainingTuplets, diffToAdjustRemainingTuplets);
-
     for (let i = existingIndex + 1; i < measure.voices[voiceIndex].notes.length; i++) {
       voice.notes.push(SmoNote.clone(measure.voices[voiceIndex].notes[i]));
     }

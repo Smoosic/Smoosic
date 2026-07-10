@@ -73,13 +73,14 @@ export class SmoTupletTree {
         parentTuplet.endIndex += diff;
         if(parentTuplet.startIndex > startTick) {
           parentTuplet.startIndex += diff;
+          parentTuplet.endIndex = parentTuplet.startIndex + parentTuplet.numNotes - 1;
         }
       }
       for (let i = 0; i < parentTuplet.childrenTuplets.length; i++) {
         const tuplet = parentTuplet.childrenTuplets[i];
         traverseTupletTree(tuplet);
       } 
-    }
+    }    
 
     //traverse tuplet tree
     for (let i = 0; i < tupletTrees.length; i++) {
@@ -88,6 +89,27 @@ export class SmoTupletTree {
         traverseTupletTree(tupletTree.tuplet);
       }
     }
+  }
+  /**
+   * When pasting a tuplet into am measure, adjust the tuplet indices for tuplets that come after.
+   * @param tupletTrees
+   * @param voice 
+   * @param measure 
+   */
+  static adjustMeasureTupletIndices(tupletTrees: SmoTupletTree[], voice: number, measure: SmoMeasure) {
+    let startIndex = -1;
+    let endIndex = 0;
+    for (let i = 0; i < tupletTrees.length; ++i) {
+      const tree = tupletTrees[i];
+      if (startIndex < 0 || startIndex > tree.startIndex) {
+        startIndex = tree.startIndex;
+      }
+      if (startIndex >= 0 && tree.endIndex > endIndex) {
+        endIndex = tree.endIndex;
+      }
+    }
+    const mtrees = measure.tupletTrees.filter((x) => x.startIndex >= startIndex);
+    SmoTupletTree.adjustTupletIndexes(mtrees, voice, startIndex, endIndex - startIndex);
   }
 
   static getTupletForNoteIndex(tupletTrees: SmoTupletTree[], voiceIx: number, noteIx: number): SmoTuplet | null {
