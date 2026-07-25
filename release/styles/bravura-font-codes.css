@@ -1,10 +1,14 @@
 
 button .icon-bravura,.icon-bravura, 
 button.icon-bravura,
+.font-bravura .icon-bravura,
 li.dropdown-item span.icon-bravura {
   font-family: 'Bravura'!important;
   position:absolute;
   pointer-events: none;
+}
+.font-bravura .icon-bravura {
+  font-size: 2.3rem;
 }
 .oversize .icon-bravura {
   font-size: 16px;  
