@@ -401,7 +401,7 @@ export class MidiToSmo {
         ticksSoFar += ev.durationTicks;
         continue;
       }
-      const ticksPerMeasure = SmoMusic.timeSignatureToTicks(ev.timeSignature.timeSignature);
+      const ticksPerMeasure = SmoMusic.timeSignatureToTicks(ev.timeSignature.actualBeats, ev.timeSignature.beatDuration);
       const nevent = MidiToSmo.copyEvent(ev);
       if (ticksSoFar + ev.durationTicks > ticksPerMeasure) {
         nevent.durationTicks = ticksPerMeasure - ticksSoFar;

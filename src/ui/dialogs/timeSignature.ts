@@ -9,31 +9,39 @@ import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { replaceVueRoot, modalContainerId } from '../common';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
 import { PromiseHelpers } from '../../common/promiseHelpers';
-declare var $: any;
+import { ref } from 'vue';
 declare var $: any;
 export const SuiTimeSignatureDialogVue = (parameters: SuiDialogParams) => {
   const rootId = replaceVueRoot(modalContainerId);
   const measure = parameters.view.tracker.selections[0].measure;
   const backup = new SmoTimeSignature(measure.timeSignature);
   let changed = false;
-  let timeSignature = new SmoTimeSignature(measure.timeSignature);
+  let timeSignatureVal = new SmoTimeSignature(measure.timeSignature);
+  let timeSignature = ref(timeSignatureVal);
   const updateTimeSignatureCb = async (mf: SmoTimeSignature):Promise<void> => {
-    if (!SmoTimeSignature.equal(mf, timeSignature)) {
+    if (!SmoTimeSignature.equalIncludeAttributes(mf, timeSignature.value)) {
       changed = true;
       await parameters.view.setTimeSignature(mf);
-      timeSignature = mf;
+      timeSignature.value.times = mf.times;
+      timeSignature.value.display=mf.display;
+      timeSignature.value.displayString = mf.displayString;
+      timeSignature.value.useSymbol = mf.useSymbol;
     }
   }
   let applies = 'Selected';
   const updateApplyTo = async (value: string) => {
-      applies = value;
-      if (value === 'Score') {
-        parameters.view.tracker.selections = SmoSelection.selectionsToEnd(parameters.view.score, parameters.view.tracker.selections[0].selector.staff, 0);
-      } else if (applies === 'Remaining') {
-        parameters.view.tracker.selections = SmoSelection.selectionsToEnd(parameters.view.score, parameters.view.tracker.selections[0].selector.staff, parameters.view.tracker.selections[0].selector.measure);
-      } else {
-        parameters.view.tracker.selections = parameters.view.tracker.selections;
-      }
+    if (applies === value) {
+      return;
+    }
+    applies = value;
+    if (value === 'Score') {
+      parameters.view.tracker.selections = SmoSelection.selectionsToEnd(parameters.view.score, parameters.view.tracker.selections[0].selector.staff, 0);
+    } else if (applies === 'Remaining') {
+      parameters.view.tracker.selections = SmoSelection.selectionsToEnd(parameters.view.score, parameters.view.tracker.selections[0].selector.staff, parameters.view.tracker.selections[0].selector.measure);
+    } else {
+      parameters.view.tracker.selections = parameters.view.tracker.selections;
+    }
+    await parameters.view.setTimeSignature(timeSignature.value);
   }
   const commitCb = async () => {
   }

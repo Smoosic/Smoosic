@@ -837,7 +837,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
   }
   static timeSignatureNotes(timeSignature: SmoTimeSignature, clef: Clef) {
     const pitch = SmoMeasure.defaultPitchForClef[clef];
-    const maxTicks = SmoMusic.timeSignatureToTicks(timeSignature.timeSignature);
+    const maxTicks = SmoMusic.timeSignatureToTicks(timeSignature.actualBeats, timeSignature.beatDuration);
     const noteTick = 8192 / (timeSignature.beatDuration / 2);
     let ticks = 0;
     const pnotes: SmoNote[] = [];
@@ -995,7 +995,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
    * match the new length
    */
   alignNotesWithTimeSignature() {
-    const tsTicks = SmoMusic.timeSignatureToTicks(this.timeSignature.timeSignature);
+    const tsTicks = SmoMusic.timeSignatureToTicks(this.timeSignature.actualBeats, this.timeSignature.beatDuration);
     let aligned = true;
     for (let i = 0; i < this.voices.length; ++i) {
       const voice = this.voices[i];
@@ -1381,7 +1381,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
 
   isPickup(): boolean {
     const ticks = this.getTicksFromVoice(0);
-    const goal = SmoMusic.timeSignatureToTicks(this.timeSignature.timeSignature);
+    const goal = SmoMusic.timeSignatureToTicks(this.timeSignature.actualBeats, this.timeSignature.beatDuration);
     return (ticks < goal);
   }
 

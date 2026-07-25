@@ -152,6 +152,11 @@ export class SmoOperation {
     selectors.forEach((selector: SmoSelector) => {
       const rowSelection: SmoSelection = (SmoSelection.measureSelection(score, selector.staff, selector.measure) as SmoSelection);
       rowSelection.measure.timeSignature = new SmoTimeSignature(timeSignature);
+    });
+    // Update for compound time signature before aligning measure lengths.
+    score.updateCompoundTimeSignature();
+    selectors.forEach((selector: SmoSelector) => {
+      const rowSelection: SmoSelection = (SmoSelection.measureSelection(score, selector.staff, selector.measure) as SmoSelection);
       rowSelection.measure.alignNotesWithTimeSignature();
     });
   }
