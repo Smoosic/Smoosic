@@ -1,4 +1,4 @@
-import { SmoBarline, SmoMeasureModifierBase, SmoRepeatSymbol, SmoTempoText, SmoMeasureFormat, SmoVolta, SmoRehearsalMarkParams, SmoTempoTextParams, TimeSignature, TimeSignatureParametersSer, SmoTempoTextParamsSer } from './measureModifiers';
+import { SmoBarline, SmoMeasureModifierBase, SmoRepeatSymbol, SmoTempo, SmoMeasureFormat, SmoVolta, SmoRehearsalMarkParams, SmoTempoParams, SmoTimeSignature, TimeSignatureParametersSer, SmoTempoParamsSer } from './measureModifiers';
 import { SmoNote, NoteType, SmoNoteParamsSer } from './note';
 import { SmoTuplet, SmoTupletTreeParamsSer, SmoTupletTree } from './tuplet';
 import { TickMap } from '../xform/tickMap';
@@ -117,7 +117,7 @@ export declare const SmoMeasureStringParams: SmoMeasureStringParam[];
  * @category SmoObject
  */
 export interface SmoMeasureParams {
-    timeSignature: TimeSignature;
+    timeSignature: SmoTimeSignature;
     keySignature: string;
     tupletTrees: SmoTupletTree[];
     transposeIndex: number;
@@ -126,7 +126,7 @@ export interface SmoMeasureParams {
     clef: Clef;
     voices: SmoVoice[];
     activeVoice: number;
-    tempo: SmoTempoText;
+    tempo: SmoTempo;
     format: SmoMeasureFormat | null;
     modifiers: SmoMeasureModifierBase[];
     repeatSymbol: boolean;
@@ -183,7 +183,7 @@ export interface SmoMeasureParamsSer {
     /**
      * tempo at this point
      */
-    tempo: SmoTempoTextParamsSer;
+    tempo: SmoTempoParamsSer;
 }
 /**
  * Data for a measure of music.  Many rules of musical engraving are
@@ -194,7 +194,7 @@ export interface SmoMeasureParamsSer {
  * @category SmoObject
  */
 export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
-    static get timeSignatureDefault(): TimeSignature;
+    static get timeSignatureDefault(): SmoTimeSignature;
     static defaultDupleDuration: number;
     static defaultTripleDuration: number;
     static readonly _defaults: SmoMeasureParams;
@@ -204,8 +204,8 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
      * @returns constructor params for a new measure
      */
     static get defaults(): SmoMeasureParams;
-    static convertLegacyTimeSignature(ts: string): TimeSignature;
-    timeSignature: TimeSignature;
+    static convertLegacyTimeSignature(ts: string): SmoTimeSignature;
+    timeSignature: SmoTimeSignature;
     /**
      * Overrides display of actual time signature, in the case of
      * pick-up notes where the actual and displayed durations are different
@@ -231,7 +231,7 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
      * the active voice in the editor, if there are multiple voices
      *  */
     activeVoice: number;
-    tempo: SmoTempoText;
+    tempo: SmoTempo;
     beamGroups: ISmoBeamGroup[];
     lines: number;
     /**
@@ -260,7 +260,7 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
     // Return true if the time signatures are the same, for display purposes (e.g. if a time sig change
     // is required)
     */
-    static timeSigEqual(o1: TimeSignature, o2: TimeSignature): boolean;
+    static timeSigEqual(o1: SmoTimeSignature, o2: SmoTimeSignature): boolean;
     /**
      * If there is a clef change mid-measure, update the actual clefs of the notes
      * so they display correctly.
@@ -304,7 +304,7 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
     static _emptyMeasureNoteType: NoteType;
     static set emptyMeasureNoteType(tt: NoteType);
     static get emptyMeasureNoteType(): NoteType;
-    static timeSignatureNotes(timeSignature: TimeSignature, clef: Clef): SmoNote[];
+    static timeSignatureNotes(timeSignature: SmoTimeSignature, clef: Clef): SmoNote[];
     /**
      * Get a measure full of default notes for a given timeSignature/clef.
      * returns 8th notes for triple-time meters, etc.
@@ -474,12 +474,12 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
     removeRehearsalMark(): void;
     getRehearsalMark(): SmoMeasureModifierBase | undefined;
     getModifiersByType(type: string): SmoMeasureModifierBase[];
-    setTempo(params: SmoTempoTextParams): void;
+    setTempo(params: SmoTempoParams): void;
     /**
-     * Set measure tempo to the default {@link SmoTempoText}
+     * Set measure tempo to the default {@link SmoTempo}
      */
     resetTempo(): void;
-    getTempo(): SmoTempoText;
+    getTempo(): SmoTempo;
     /**
      * Measure text is deprecated, and may not be supported in the future.
      * Better to use SmoTextGroup and attach to the measure.

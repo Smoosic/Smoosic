@@ -5,7 +5,7 @@
  * **/
 import { SmoObjectParams, SmoAttrs, Pitch, ElementLike } from './common';
 import { SmoMeasure, SmoMeasureParamsSer } from './measure';
-import { SmoRehearsalMarkParams, SmoTempoTextParams, SmoVolta } from './measureModifiers';
+import { SmoRehearsalMarkParams, SmoTempoParams, SmoVolta } from './measureModifiers';
 import { SmoInstrumentParams, StaffModifierBase, SmoInstrument, SmoInstrumentMeasure, SmoTie, SmoStaffTextBracket, SmoStaffTextBracketParamsSer, StaffModifierBaseSer, SmoTabStave, SmoStaffHairpin } from './staffModifiers';
 import { SmoPartInfo, SmoPartInfoParamsSer } from './partInfo';
 import { SmoSelector } from '../xform/selections';
@@ -220,7 +220,7 @@ export declare class SmoSystemStaff implements SmoObjectParams {
     applyBeams(): void;
     addRehearsalMark(index: number, parameters: SmoRehearsalMarkParams): void;
     removeTempo(index: number): void;
-    addTempo(tempo: SmoTempoTextParams, index: number): void;
+    addTempo(tempo: SmoTempoParams, index: number): void;
     removeRehearsalMark(index: number): void;
     /**
      * Sync the staff modifier indices between the full score and the score view, which may

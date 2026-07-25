@@ -53,9 +53,3 @@ export declare class SuiTextBlockDialog extends SuiDialogBase {
     _removeText(): void;
     bindElements(): void;
 }
-/**
- * @category SuiDialog
- */
-export declare class helpModal {
-    static createAndDisplay(): Promise<void>;
-}

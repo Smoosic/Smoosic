@@ -279,7 +279,7 @@ export interface SmoGlobalLayout {
     maxMeasureSystem: number;
     displayMode: displayMode;
 }
-export declare function isSmoGlobalLayout(params: Partial<SmoGlobalLayout>): params is SmoGlobalLayout;
+export declare function isSmoGlobalLayout(params: any): params is SmoGlobalLayout;
 /**
  * Used to create {@link SmoLayoutManagerParams}
  * @category SmoObject
@@ -298,6 +298,7 @@ export interface ScaledPageLayout {
     intraGap: number;
     pages: number;
     maxMeasureSystem: number;
+    displayMode: displayMode;
 }
 /**
  * Constructor parameters for {@link SmoLayoutManager}

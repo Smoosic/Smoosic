@@ -5,6 +5,7 @@
  */
 import { SmoAttrs, Ticks, Pitch, SmoObjectParams, Transposable, SvgBox, SmoModifierBase, Clef, ElementLike } from './common';
 import { FontInfo } from '../../common/vex';
+import { GraceNote } from "vexflow_smoosic";
 /**
  * A note modifier is anything that is mapped to the note, but not part of the
  * pitch itself.  This includes grace notes, and note-text like lyrics.
@@ -121,6 +122,7 @@ export declare class SmoGraceNote extends SmoNoteModifierBase implements Transpo
     clef: string;
     noteType: string;
     renderId: string | null;
+    vexGraceNote: GraceNote | null;
     hasTabNote: boolean;
     tickCount(): number;
     toVexGraceNote(): {

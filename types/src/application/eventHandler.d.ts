@@ -11,6 +11,8 @@ import { KeyBinding, ModalEventHandler } from './common';
 import { ModifierTab } from '../smo/xform/selections';
 import { SuiMenuManager } from '../ui/menus/manager';
 import { SmoConfiguration } from './configuration';
+import { NoteEntryCaret } from '../render/sui/NoteEntryCaret';
+import { NoteEntryMediator } from "../render/sui/NoteEntryMediator";
 import { SuiNavigation } from '../render/sui/configuration';
 /**
  * Handle keyboard/mouse events, and pass them to the renderer and other UI elements.
@@ -59,6 +61,8 @@ export declare class SuiEventHandler implements ModalEventHandler {
     piano: SuiPiano | null;
     exhandler: SuiExceptionHandler;
     navigation: SuiNavigation;
+    noteEntryCaret: NoteEntryCaret;
+    noteEntryMediator: NoteEntryMediator;
     constructor(params: EventHandlerParams);
     private handleScrollEventDefer;
     handleScrollEvent(): void;
@@ -77,5 +81,7 @@ export declare class SuiEventHandler implements ModalEventHandler {
     evKey(evdata: any): Promise<void>;
     mouseMove(ev: any): void;
     mouseClick(ev: any): Promise<void>;
+    mouseUp(ev: any): void;
+    mouseDown(ev: any): Promise<void>;
     bindEvents(): void;
 }

@@ -10,7 +10,7 @@ import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SuiScroller } from './scroller';
 import { layoutProvider } from './mapper';
 import { SuiTracker } from './tracker';
-import { SmoRenderConfiguration } from './configuration';
+import { SmoRenderConfiguration, SuiNavigation } from './configuration';
 import { SuiRenderState } from './renderState';
 import { SuiAudioAnimationParams } from '../audio/musicCursor';
 import { Ref } from 'vue';
@@ -47,6 +47,7 @@ export declare abstract class SuiScoreView implements layoutProvider {
     config: SmoRenderConfiguration;
     audioAnimation: SuiAudioAnimationParams;
     debug: layoutDebug;
+    navigation: SuiNavigation;
     constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer);
     getLayout(): SmoGlobalLayout | undefined;
     isLayoutHorizontal(): boolean;

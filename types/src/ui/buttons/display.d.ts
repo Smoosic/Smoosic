@@ -10,6 +10,7 @@ export declare class DisplaySettings extends SuiButton {
     handleKeyDown(ev: KeyEvent): void;
     enablePartSelection(): void;
     handleScoreChange(ev: any): void;
+    setView(): void;
     refresh(): void;
     zoomout(): void;
     zoomin(): void;

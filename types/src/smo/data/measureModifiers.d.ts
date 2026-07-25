@@ -365,10 +365,10 @@ export type SmoTempoStringAttribute = 'tempoMode' | 'tempoText' | 'customText';
 export type SmoTempoBooleanAttribute = 'display';
 export type SmoTempoMode = 'duration' | 'text' | 'custom';
 /**
- * constructor parameters for {@link SmoTempoText}
+ * constructor parameters for {@link SmoTempo}
  * @category SmoObject
  */
-export interface SmoTempoTextParams {
+export interface SmoTempoParams {
     /**
      * text (e.g. Allegro) or bpm
      */
@@ -402,7 +402,7 @@ export interface SmoTempoTextParams {
  * serialized tempo parameters
  * @category serialization
  */
-export interface SmoTempoTextParamsSer extends SmoTempoTextParams {
+export interface SmoTempoParamsSer extends SmoTempoParams {
     ctor: string;
 }
 /**
@@ -418,13 +418,13 @@ export interface VexTempoTextParams {
  * Information about both playback tempo and how the tempo is notated.
  * @category SmoObject
  */
-export declare class SmoTempoText extends SmoMeasureModifierBase implements SmoTempoTextParams {
+export declare class SmoTempo extends SmoMeasureModifierBase implements SmoTempoParams {
     static get tempoModes(): Record<string, SmoTempoMode>;
     static get tempoTexts(): Record<string, string>;
     /**
      * create defaults for tempo initialization
      */
-    static get defaults(): SmoTempoTextParams;
+    static get defaults(): SmoTempoParams;
     static get attributes(): string[];
     tempoMode: SmoTempoMode;
     bpm: number;
@@ -441,12 +441,16 @@ export declare class SmoTempoText extends SmoMeasureModifierBase implements SmoT
      * @param t2
      * @returns
      */
-    static eq(t1: SmoTempoText, t2: SmoTempoText): boolean;
+    static eq(t1: SmoTempo, t2: SmoTempo): boolean;
     static get bpmFromText(): Record<string, number>;
     _toVexDurationTempo(): VexTempoTextParams;
     toVexTempo(): VexTempoTextParams;
-    serialize(): SmoTempoTextParamsSer;
-    constructor(parameters: SmoTempoTextParams | null);
+    serialize(): SmoTempoParamsSer;
+    constructor(parameters: SmoTempoParams | null);
+}
+export interface TimeSignatureTime {
+    actualBeats: number;
+    beatDuration: number;
 }
 /**
  * Constructor parameters for a time signature
@@ -456,14 +460,7 @@ export interface TimeSignatureParameters {
     /**
      * numerator
      */
-    actualBeats: number;
-    /**
-     * denominator, always power of 2
-     */
-    beatDuration: number;
-    /**
-     * indicates cut time/common time
-     */
+    times: TimeSignatureTime[];
     useSymbol: boolean;
     /**
      * display, else just affects measure lengths.
@@ -489,15 +486,19 @@ export interface TimeSignatureParametersSer extends TimeSignatureParameters {
  * about the display of the time signature.
  * @category SmoObject
  */
-export declare class TimeSignature extends SmoMeasureModifierBase {
+export declare class SmoTimeSignature extends SmoMeasureModifierBase {
     static get defaults(): TimeSignatureParameters;
-    static equal(ts1: TimeSignature, ts2: TimeSignature): boolean;
-    static createFromPartial(value: Partial<TimeSignatureParameters>): TimeSignature;
-    actualBeats: number;
-    beatDuration: number;
+    ticksFromTimeSignature(): number;
+    static equal(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean;
+    static equalIncludeAttributes(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean;
+    static createFromPartial(value: Partial<TimeSignatureParameters>): SmoTimeSignature;
+    times: TimeSignatureTime[];
     useSymbol: boolean;
     display: boolean;
     displayString: string;
+    index: number;
+    get beatDuration(): number;
+    get actualBeats(): number;
     get timeSignature(): string;
     static get parameters(): string[];
     static get boolParameters(): never[];

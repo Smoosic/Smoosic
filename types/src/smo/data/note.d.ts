@@ -1,6 +1,7 @@
 import { SmoNoteModifierBase, SmoArticulation, SmoLyric, SmoGraceNote, SmoMicrotone, SmoOrnament, SmoDynamicText, SmoArpeggio, SmoArticulationParametersSer, GraceNoteParamsSer, SmoOrnamentParamsSer, SmoMicrotoneParamsSer, SmoClefChangeParamsSer, SmoClefChange, SmoLyricParamsSer, SmoDynamicTextSer, SmoTabNote, SmoTabNoteParamsSer, SmoTabNoteParams } from './noteModifiers';
 import { Ticks, Pitch, SmoAttrs, Transposable, SvgBox } from './common';
 import { FontInfo } from '../../common/vex';
+import { Note } from "vexflow_smoosic";
 export interface PlayedNote {
     pitches: Pitch[];
     duration: number;
@@ -278,6 +279,7 @@ export declare class SmoNote implements Transposable {
     renderId: string | null;
     keySignature: string;
     logicalBox: SvgBox | null;
+    vexNote: Note | null;
     audioData: SmoAudioData;
     isCue: boolean;
     hasTabNote: boolean;

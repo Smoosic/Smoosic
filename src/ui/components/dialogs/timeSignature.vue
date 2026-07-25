@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRef, Ref, watch, reactive, computed } from 'vue';
+import { ref, toRef, Ref, watch, reactive, computed, toDisplayString } from 'vue';
 import numberInputApp from './numberInput.vue';
 import { default as tsComponent } from './tsComponent.vue';
 import {
@@ -19,6 +19,8 @@ interface Props {
   cancelCb: () => Promise<void>
 }
 const props = defineProps<Props>();
+const { domId, label, commitCb, cancelCb, } = { ...props };
+
 const timeSignature = props.timeSignature;
 watch(timeSignature, () => {
   console.log('changed!');
@@ -59,9 +61,28 @@ const applyToOptions: SelectOption[] = [{
 const applyTo: Ref<string> = ref('Selected');
 
 
-const { domId, label, commitCb, cancelCb, } = { ...props };
-const display = computed(() => timeSignature.value.display);
-const displayString = computed(() => timeSignature.value.displayString);
+const display: Ref<boolean> = ref(false);
+display.value = timeSignature.value.display;
+watch(display, async (newValue: boolean  , oldValue: boolean) => {
+  if (newValue === oldValue) {
+    return;
+  }
+  const ts = new SmoTimeSignature(timeSignature.value);
+  ts.display = newValue;
+  await props.updateTimeSignatureCb(ts);
+});
+
+const displayString: Ref<string> = ref('');
+displayString.value = timeSignature.value.displayString;
+watch(displayString, async (newValue: string, oldValue: string) => {
+  if (newValue === oldValue) {
+    return;
+  }
+  const ts = new SmoTimeSignature(timeSignature.value);
+  ts.displayString = newValue;
+  await props.updateTimeSignatureCb(ts);
+});
+
 const getTsLabel = (ix: number) => {
   return ix === 0 ? 'Time' : 'Compound';
 }

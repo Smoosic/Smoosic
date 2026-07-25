@@ -50,15 +50,17 @@ export interface CrashDialog {
 }
 export interface DomDialogNotifiers {
     showSplash: Ref<boolean>;
+    showHelpDialog: Ref<boolean>;
     splashTimer: Ref<number>;
     debugFlags: DomDebugFlag[];
     crashDialog: CrashDialog;
+    showAttributeDialog: Ref<boolean>;
 }
 export interface ExceptionParameters {
     view: SuiScoreView;
     navigation: SuiNavigation;
 }
-export declare const modalContainerId = "#vue-modal-container";
+export declare const modalContainerId = ".vue-modal-container";
 /**
  * Remove and replace an element, so we can reattach Vue to it
  * @param element the ID or element we are replacing

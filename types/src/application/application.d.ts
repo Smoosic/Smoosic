@@ -59,6 +59,7 @@ export declare class SuiApplication {
     instance: SuiInstance | null;
     config: SmoConfiguration;
     score: SmoScore | null;
+    firstTimeUser: boolean;
     navigation?: SuiNavigation;
     view: SuiScoreViewOperations | null;
     createUiDom(): void;

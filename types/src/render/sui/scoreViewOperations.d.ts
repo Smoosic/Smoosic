@@ -1,13 +1,15 @@
 import { SuiScoreView, updateStaffModifierFunc } from './scoreView';
-import { engravingFontType } from '../../smo/data/score';
+import { SmoScore, engravingFontType } from '../../smo/data/score';
 import { SmoSystemStaffParams } from '../../smo/data/systemStaff';
 import { SmoPartInfo } from '../../smo/data/partInfo';
 import { SmoMeasure } from '../../smo/data/measure';
 import { KeyEvent, SvgBox, Pitch, PitchLetter } from '../../smo/data/common';
+import { SmoRenderConfiguration } from './configuration';
 import { SmoSystemGroup, SmoPageLayout, SmoGlobalLayout, SmoAudioPlayerSettings, SmoScorePreferences, SmoScoreInfo } from '../../smo/data/scoreModifiers';
 import { SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoDynamicText, SmoArticulation, SmoOrnament, SmoLyric, SmoArpeggioType, SmoClefChange, SmoTabNote } from '../../smo/data/noteModifiers';
-import { SmoTempoText, SmoVolta, SmoMeasureFormat, TimeSignature } from '../../smo/data/measureModifiers';
+import { SmoTempo, SmoVolta, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
+import { UndoBuffer } from '../../smo/xform/undo';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
 import { BatchSelectionOperation } from '../../smo/xform/operations';
 import { FontInfo } from '../../common/vex';
@@ -26,6 +28,7 @@ import { StaffModifierBase, SmoInstrument, SmoInstrumentParams, SmoStaffTextBrac
  * @category SuiRender
  */
 export declare class SuiScoreViewOperations extends SuiScoreView {
+    constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer);
     /**
      * Add a new text group to the score
      * @param textGroup a new text group
@@ -148,7 +151,7 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * Set the time signature for a selection
      * @param timeSignature actual time signature
      */
-    setTimeSignature(timeSignature: TimeSignature): Promise<void>;
+    setTimeSignature(timeSignature: SmoTimeSignature): Promise<void>;
     /**
      * Move selected staff up or down in the score.
      * @param index direction to move
@@ -171,7 +174,7 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @param scoreMode if true, update whole score.  Else selections
      * @returns
      */
-    updateTempoScore(measure: SmoMeasure, tempo: SmoTempoText, scoreMode: boolean, selectionMode: boolean): Promise<void>;
+    updateTempoScore(measure: SmoMeasure, tempo: SmoTempo, scoreMode: boolean, selectionMode: boolean): Promise<void>;
     updateTabNote(tabNote: SmoTabNote): Promise<void>;
     removeTabNote(): Promise<void>;
     /**
@@ -179,7 +182,7 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * default tempo, or the previously-set tempo.
      * @param scoreMode whether to reset entire score
      */
-    removeTempo(measure: SmoMeasure, tempo: SmoTempoText, scoreMode: boolean, selectionMode: boolean): Promise<void>;
+    removeTempo(measure: SmoMeasure, tempo: SmoTempo, scoreMode: boolean, selectionMode: boolean): Promise<void>;
     /**
      * Add a grace note to the selected real notes.
      */
@@ -296,6 +299,7 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @see setPitch
      */
     setPitchesPromise(pitches: PitchLetter[]): Promise<any>;
+    setPitches(pitches: Pitch[]): Promise<void>;
     /**
      * Add a pitch to the score at the cursor.  This tries to find the best pitch
      * to match the letter key (F vs F# for instance) based on key and surrounding notes
@@ -467,6 +471,12 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @returns
      */
     removeStaff(): Promise<void>;
+    /**
+     * Add a new staff to an existing score, with default instrument for the staff part.
+     * We base the staff parameters on a stave that currently exists in the score.
+     * @param instrument
+     * @returns
+     */
     addStaff(instrument: SmoSystemStaffParams): Promise<void>;
     /**
      * Update part info assumes that the part is currently exposed - that

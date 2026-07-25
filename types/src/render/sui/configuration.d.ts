@@ -31,6 +31,10 @@ export interface SuiNavigation {
     pushScrollHandler: (handler: scrollHandler) => void;
     popScrollHandler: () => scrollHandler | undefined;
     showSplashModal: (timer: number) => void;
+    showProgressModal: (label: string) => void;
+    showHelpModal: () => void;
+    setProgress: (percent: number) => void;
+    hideProgressModal: () => void;
     showDialogModal: () => void;
     hideDialogModal: () => void;
     displayExceptionDialog: (message: string) => void;

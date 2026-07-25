@@ -3,7 +3,7 @@ import { SmoNote } from '../data/note';
 import { SmoScore } from '../data/score';
 import { SmoSystemStaff, SmoSystemStaffParams } from '../data/systemStaff';
 import { SmoGraceNote, SmoDynamicText, SmoTabNote } from '../data/noteModifiers';
-import { SmoRehearsalMark, SmoMeasureText, SmoVolta, SmoMeasureFormat, SmoTempoText, SmoBarline, TimeSignature, SmoRepeatSymbol } from '../data/measureModifiers';
+import { SmoRehearsalMark, SmoMeasureText, SmoVolta, SmoMeasureFormat, SmoTempo, SmoBarline, SmoTimeSignature, SmoRepeatSymbol } from '../data/measureModifiers';
 import { SmoStaffHairpin, SmoSlur, SmoTie, StaffModifierBase, SmoInstrument, SmoSlurParams, SmoStaffTextBracket, SmoTabStave } from '../data/staffModifiers';
 import { SmoSystemGroup } from '../data/scoreModifiers';
 import { SmoTextGroup } from '../data/scoreText';
@@ -42,7 +42,7 @@ export declare class SmoOperation {
     static swapVoice(selections: SmoSelection[], voice1: number, voice2: number): void;
     static setTabStave(score: SmoScore, tabStave: SmoTabStave): void;
     static removeTabStave(score: SmoScore, tabStaves: SmoTabStave[]): void;
-    static setTimeSignature(score: SmoScore, selections: SmoSelection[], timeSignature: TimeSignature): void;
+    static setTimeSignature(score: SmoScore, selections: SmoSelection[], timeSignature: SmoTimeSignature): void;
     static batchSelectionOperation(score: SmoScore, selections: SmoSelection[], operation: BatchSelectionOperation): void;
     static doubleDuration(selection: SmoSelection): boolean;
     static halveDuration(selection: SmoSelection): boolean;
@@ -87,7 +87,7 @@ export declare class SmoOperation {
     static removeMeasureText(score: SmoScore, selection: SmoSelection, mt: SmoMeasureText): void;
     static removeRehearsalMark(score: SmoScore, selection: SmoSelection): void;
     static addRehearsalMark(score: SmoScore, selection: SmoSelection, rehearsalMark: SmoRehearsalMark): void;
-    static addTempo(score: SmoScore, selection: SmoSelection, tempo: SmoTempoText): void;
+    static addTempo(score: SmoScore, selection: SmoSelection, tempo: SmoTempo): void;
     static setMeasureBarline(score: SmoScore, selection: SmoSelection, barline: SmoBarline): void;
     static setRepeatSymbol(score: SmoScore, selection: SmoSelection, sym: SmoRepeatSymbol): void;
     static interval(selection: SmoSelection, interval: number): boolean;

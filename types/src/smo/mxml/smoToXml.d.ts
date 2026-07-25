@@ -3,9 +3,9 @@ import { SmoNote } from '../data/note';
 import { SmoMeasure, SmoVoice } from '../data/measure';
 import { SmoSystemStaff } from '../data/systemStaff';
 import { SmoScore } from '../data/score';
-import { TimeSignature } from '../data/measureModifiers';
+import { SmoTimeSignature } from '../data/measureModifiers';
 import { SmoSelector } from '../xform/selections';
-import { SmoTempoText } from '../data/measureModifiers';
+import { SmoTempo } from '../data/measureModifiers';
 /**
  * @category serialization
  */
@@ -38,8 +38,8 @@ export interface SmoState {
     note?: SmoNote;
     beamState: number;
     beamTicks: number;
-    timeSignature?: TimeSignature;
-    tempo?: SmoTempoText;
+    timeSignature?: SmoTimeSignature;
+    tempo?: SmoTempo;
     currentTupletLevel: number;
 }
 /**

@@ -1,4 +1,4 @@
-import { SmoTempoText, SmoTempoNumberAttribute, SmoTempoStringAttribute, SmoTempoBooleanAttribute } from '../../smo/data/measureModifiers';
+import { SmoTempo, SmoTempoNumberAttribute, SmoTempoStringAttribute, SmoTempoBooleanAttribute } from '../../smo/data/measureModifiers';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { DialogDefinition, SuiDialogParams } from './dialog';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
@@ -8,8 +8,8 @@ import { SmoMeasure } from '../../smo/data/measure';
  * @category SuiDialog
  */
 export declare class SuiTempoAdapter extends SuiComponentAdapter {
-    smoTempoText: SmoTempoText;
-    backup: SmoTempoText;
+    SmoTempo: SmoTempo;
+    backup: SmoTempo;
     applyToAllVal: boolean;
     applyToSelection: boolean;
     edited: boolean;

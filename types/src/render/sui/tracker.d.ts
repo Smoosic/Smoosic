@@ -4,8 +4,8 @@ import { SmoSelection, SmoSelector, ModifierTab } from '../../smo/xform/selectio
 import { SmoScore } from '../../smo/data/score';
 import { SvgBox, KeyEvent, keyHandler } from '../../smo/data/common';
 import { SuiScroller } from './scroller';
-import { SmoNote } from '../../smo/data/note';
 import { SmoMeasure } from '../../smo/data/measure';
+import { TrackerDelegate } from "./NoteEntryMediator";
 export interface TrackerKeyHandler {
     moveHome: keyHandler;
     moveEnd: keyHandler;
@@ -31,6 +31,7 @@ export declare class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     idleTimer: number;
     musicCursorGlyph: SVGSVGElement | null;
     deferPlayAdvance: boolean;
+    delegate: TrackerDelegate | null;
     static get strokes(): Record<string, StrokeInfo>;
     constructor(renderer: SuiRendererBase, scroller: SuiScroller);
     get renderElement(): Element;
@@ -60,7 +61,13 @@ export declare class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     moveSelectionRightMeasure(): void;
     _moveSelectionMeasure(offset: number): void;
     _moveStaffOffset(offset: number): void;
-    removePitchSelection(): void;
+    /**
+     * Set a specific pitch index (called by caret for mouse clicks)
+     * This updates the visual pitch selection without modifying data
+     */
+    setPitchIndex(index: number): void;
+    getPitchIndex(): number;
+    clearPitchIndex(): void;
     _moveSelectionPitch(index: number): void;
     moveSelectionPitchUp(): void;
     moveSelectionPitchDown(): void;
@@ -72,11 +79,10 @@ export declare class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     getSelectedMeasures(): SmoSelection[];
     _addSelection(selection: SmoSelection): void;
     _selectBetweenSelections(s1o: SmoSelection, s2o: SmoSelection): void;
-    selectSuggestion(ev: KeyEvent): void;
+    selectSuggestion(ev: KeyEvent, deferHighlightSelection?: boolean): void;
     _setModifierAsSuggestion(artifact: ModifierTab): void;
     _setArtifactAsSuggestion(artifact: SmoSelection): void;
     _highlightModifier(): void;
-    _highlightPitchSelection(note: SmoNote, index: number): void;
     _highlightActiveVoice(selection: SmoSelection): void;
     selectActiveVoice(): void;
     highlightSelection(): void;

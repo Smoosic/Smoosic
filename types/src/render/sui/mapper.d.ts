@@ -9,6 +9,7 @@ import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { SmoGlobalLayout } from '../../smo/data/scoreModifiers';
 import { SmoScore } from '../../smo/data/score';
 import { SvgPageMap } from './svgPageMap';
+import { SuiScoreRender } from "./scoreRender";
 /**
  * Decide if this layout is horizontal or vertical
  * @param layout
@@ -45,6 +46,7 @@ export interface SuiRendererBase {
     addToReplaceQueue(mm: SmoSelection[]): void;
     renderElement: Element;
     debug: layoutDebug;
+    renderer: SuiScoreRender;
 }
 /**
  * used to perform highlights in the backgroundd
@@ -130,6 +132,7 @@ export declare abstract class SuiMapper {
      * @returns
      */
     intersectingArtifact(bb: SvgBox): void;
+    getIntersectingArtifact(bb: SvgBox): SmoSelection | null;
     _getRectangleChain(selection: SmoSelection): number[];
     _updateMeasureNoteMap(artifact: SmoSelection, printing: boolean): void;
 }

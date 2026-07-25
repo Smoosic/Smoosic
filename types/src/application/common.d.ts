@@ -48,6 +48,8 @@ export declare abstract class ModalEventHandler {
     abstract mouseClick(ev: any): Promise<void>;
     abstract evKey(evdata: any): Promise<void>;
     abstract keyUp(evdata: any): void;
+    abstract mouseUp(ev: any): void;
+    abstract mouseDown(ev: any): void;
 }
 export type handler = (ev: any) => void;
 /**
@@ -63,12 +65,16 @@ export declare class ModalEventHandlerProxy {
     keyupHandler: EventHandler | null;
     mouseMoveHandler: EventHandler | null;
     mouseClickHandler: EventHandler | null;
+    mouseUpHandler: EventHandler | null;
+    mouseDownHandler: EventHandler | null;
     constructor(evSource: BrowserEventSource);
     set handler(value: ModalEventHandler);
     evKey(ev: any): Promise<void>;
     keyUp(ev: any): void;
     mouseMove(ev: any): void;
     mouseClick(ev: any): Promise<void>;
+    mouseUp(ev: any): void;
+    mouseDown(ev: any): void;
     bindEvents(): void;
     unbindKeyboardForModal(dialog: ModalComponent): void;
 }

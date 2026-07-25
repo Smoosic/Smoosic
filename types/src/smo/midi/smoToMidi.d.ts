@@ -1,4 +1,4 @@
-import { TimeSignature, SmoTempoText } from '../data/measureModifiers';
+import { SmoTimeSignature, SmoTempo } from '../data/measureModifiers';
 import { SmoScore } from '../data/score';
 /**
  * @category serialization
@@ -6,8 +6,8 @@ import { SmoScore } from '../data/score';
 export interface MidiTrackHash {
     track: any;
     lastMeasure: number;
-    timeSignature?: TimeSignature;
-    tempo?: SmoTempoText;
+    timeSignature?: SmoTimeSignature;
+    tempo?: SmoTempo;
     keySignature?: string;
 }
 /**

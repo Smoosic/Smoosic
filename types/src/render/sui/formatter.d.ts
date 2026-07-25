@@ -4,7 +4,7 @@ import { SmoScore } from '../../smo/data/score';
 import { layoutDebug } from './layoutDebug';
 import { ScaledPageLayout } from '../../smo/data/scoreModifiers';
 import { SmoMeasure, ISmoBeamGroup } from '../../smo/data/measure';
-import { TimeSignature, SmoTempoText } from '../../smo/data//measureModifiers';
+import { SmoTimeSignature, SmoTempo } from '../../smo/data//measureModifiers';
 import { SvgPageMap } from './svgPageMap';
 import { TextFormatter } from '../../common/textformatter';
 export interface SuiFormatterParameters {
@@ -57,6 +57,7 @@ export declare class SuiLayoutFormatter {
     svg: SvgPageMap;
     renderedPages: Record<number, RenderedPage | null>;
     lines: number[];
+    horizontalGaps: Record<number, number>;
     debug: layoutDebug;
     measuresRenderedThisPage: number;
     constructor(params: SuiFormatterParameters);
@@ -120,8 +121,9 @@ export declare class SuiLayoutFormatter {
      * @param currentLine
      * @param columnCount
      * @param lastSystem
+     * @param pageLeftMargin - if horizontal layout, the start x of the page
      */
-    justifyY(scoreLayout: ScaledPageLayout, rowCount: number, currentLine: SmoMeasure[], lastSystem: boolean): void;
+    justifyY(scoreLayout: ScaledPageLayout, rowCount: number, currentLine: SmoMeasure[], lastSystem: boolean, pageLeftMargin: number): void;
     /**
      * highest value is actually the one lowest on the page
      * @param measure
@@ -144,7 +146,7 @@ export declare class SuiLayoutFormatter {
      * @param tempoLast
      * @param score
      */
-    calculateBeginningSymbols(systemIndex: number, measure: SmoMeasure, clefLast: string, keySigLast: string, timeSigLast: TimeSignature, tempoLast: SmoTempoText): void;
+    calculateBeginningSymbols(systemIndex: number, measure: SmoMeasure, clefLast: string, keySigLast: string, timeSigLast: SmoTimeSignature, tempoLast: SmoTempo): void;
     /**
      * The baseline is the top line of the staff.  aboveBaseline is a negative number
      * that indicates how high above the baseline the measure goes.  belowBaseline

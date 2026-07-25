@@ -31,6 +31,13 @@ export declare class SmoTupletTree {
     constructor(params: SmoTupletTreeParams);
     static syncTupletIds(tupletTrees: SmoTupletTree[], voices: SmoVoice[]): void;
     static adjustTupletIndexes(tupletTrees: SmoTupletTree[], voice: number, startTick: number, diff: number): void;
+    /**
+     * When pasting a tuplet into am measure, adjust the tuplet indices for tuplets that come after.
+     * @param tupletTrees
+     * @param voice
+     * @param measure
+     */
+    static adjustMeasureTupletIndices(tupletTrees: SmoTupletTree[], voice: number, measure: SmoMeasure): void;
     static getTupletForNoteIndex(tupletTrees: SmoTupletTree[], voiceIx: number, noteIx: number): SmoTuplet | null;
     static getTupletTreeForNoteIndex(tupletTrees: SmoTupletTree[], voiceIx: number, noteIx: number): SmoTupletTree | null;
     static getTupletHierarchyForNoteIndex(tupletTrees: SmoTupletTree[], voiceIx: number, noteIx: number): SmoTuplet[];

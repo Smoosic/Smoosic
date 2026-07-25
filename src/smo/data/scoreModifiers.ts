@@ -443,11 +443,11 @@ export interface SmoGlobalLayout {
   displayMode: displayMode
 }
 
-export function isSmoGlobalLayout(params: Partial<SmoGlobalLayout>): params is SmoGlobalLayout {
+export function isSmoGlobalLayout(params: any): params is SmoGlobalLayout {
   const requiredAttributes: GlobalLayoutAttributes[] = ['svgScale', 'zoomScale', 'noteSpacing', 'pageWidth', 'pageHeight', 'proportionality', 'maxMeasureSystem', 'displayMode'];
   let rv = true;
   for (const attr  in requiredAttributes) {  
-    if (typeof(params[attr]) === 'undefined') {
+    if (typeof(params[attr as any]) === 'undefined') {
       rv = false;
       break;
     } else {

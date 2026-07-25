@@ -119,6 +119,7 @@ export declare class SmoMusic {
      * @returns number where 0 is the first ledger line below
      */
     static pitchToStaffLine(clef: string, smoPitch: Pitch): number;
+    static staffLineToPitch(clef: string, line: number): Pitch;
     /**
      * return above if the first pitch is above line 3, else below
      * @param note
@@ -390,7 +391,7 @@ export declare class SmoMusic {
     static closestSimpleDurationFromTicks(ticks: number): number;
     static _ticksToDuration: Record<string, string>;
     static get ticksToDuration(): Record<string, string>;
-    static timeSignatureToTicks(timeSignature: string): number;
+    static timeSignatureToTicks(num: number, den: number): number;
     static smoTicksToVexDots(ticks: number): number;
     static midiTicksForQuantizeTo(ticks: number): number[];
     static get midiTicksForQuantizeMap(): Record<number, number[]>;

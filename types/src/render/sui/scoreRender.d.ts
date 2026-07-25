@@ -9,7 +9,7 @@ import { SuiMapper } from './mapper';
 import { VxSystem } from '../vex/vxSystem';
 import { SuiLayoutFormatter, RenderedPage } from './formatter';
 import { layoutDebug } from './layoutDebug';
-import { SmoRenderConfiguration } from './configuration';
+import { SmoRenderConfiguration, SuiNavigation } from './configuration';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { SvgPageMap, SvgPage } from './svgPageMap';
 /**
@@ -46,6 +46,7 @@ export declare class SuiScoreRender {
     formatter: SuiLayoutFormatter | null;
     vexContainers: SvgPageMap;
     score: SmoScore | null;
+    navigation: SuiNavigation;
     measureMapper: SuiMapper | null;
     measuresToMap: MapParameters[];
     viewportChanged: boolean;

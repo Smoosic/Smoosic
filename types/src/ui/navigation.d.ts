@@ -14,9 +14,16 @@ export declare class SuiNavigationDom implements SuiNavigation {
     initialized: boolean;
     showSplash: Ref<boolean>;
     splashTimer: Ref<number>;
+    showHelpDialog: Ref<boolean>;
+    progressPercentValue: Ref<number>;
+    showAttributeDialog: Ref<boolean>;
     crashReport: Ref<string>;
     showCrashReport: Ref<boolean>;
     displayExceptionDialog(message: string): void;
+    showProgressModal(label: string): void;
+    hideProgressModal(): void;
+    setProgress(percent: number): void;
+    showHelpModal(): void;
     isInitialized(): boolean;
     createDebugFlags(): void;
     get displayMode(): string;

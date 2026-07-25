@@ -52,5 +52,5 @@ export declare class SuiSampleMedia {
     * Load samples so we can play the music
     * @returns - promise, resolved when loaded
     */
-    static samplePromise(audio: AudioContext): Promise<any>;
+    static samplePromise(audio: AudioContext, setProgress: (percent: number) => void): Promise<any>;
 }

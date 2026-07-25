@@ -1,7 +1,7 @@
 import { SvgDimensions } from './common';
 import { SmoMeasure, SmoMeasureParams, ColumnMappedParams } from './measure';
 import { SmoNoteModifierBase } from './noteModifiers';
-import { SmoTempoText, SmoMeasureModifierBase, TimeSignature, SmoMeasureFormatParamsSer } from './measureModifiers';
+import { SmoTempo, SmoMeasureModifierBase, SmoTimeSignature, SmoMeasureFormatParamsSer } from './measureModifiers';
 import { StaffModifierBase, SmoInstrument } from './staffModifiers';
 import { SmoSystemGroup, SmoSystemGroupParamsSer, SmoScoreModifierBase, SmoFormattingManager, SmoAudioPlayerSettings, SmoAudioPlayerParameters, SmoLayoutManagerParamsSer, SmoLayoutManager, FontPurpose, SmoScoreInfo, ScoreMetadataSer, SmoScorePreferences } from './scoreModifiers';
 import { SmoTextGroup, SmoTextGroupParamsSer } from './scoreText';
@@ -118,8 +118,8 @@ export declare function isEmptyTextBlock(params: Partial<SmoTextGroupParamsSer>)
  */
 export interface ColumnParamsMapType {
     keySignature: Record<number, string>;
-    tempo: Record<number, SmoTempoText>;
-    timeSignature: Record<number, TimeSignature>;
+    tempo: Record<number, SmoTempo>;
+    timeSignature: Record<number, SmoTimeSignature>;
     renumberingMap: Record<number, number>;
 }
 export declare function isSmoScoreParemsSer(params: Partial<SmoScoreParamsSer>): params is SmoScoreParamsSer;
@@ -227,10 +227,11 @@ export declare class SmoScore {
      */
     serializeColumnMapped(func: (measure: SmoMeasure) => ColumnMappedParams): {
         keySignature: Record<number, string>;
-        tempo: Record<number, SmoTempoText>;
-        timeSignature: Record<number, TimeSignature>;
+        tempo: Record<number, SmoTempo>;
+        timeSignature: Record<number, SmoTimeSignature>;
         renumberingMap: Record<number, number>;
     };
+    static fixLegacyColumnMappedCtor(scoreObj: any): void;
     /**
      * Column-mapped attributes stay the same in each measure until
      * changed, like key-signatures.  We don't store each measure value to
@@ -373,6 +374,7 @@ export declare class SmoScore {
     setNonTransposing(): void;
     setNoteInstrumentProperties(): void;
     addStaff(parameters: SmoSystemStaffParams): SmoSystemStaff;
+    updateCompoundTimeSignature(): void;
     /**
      * delete any system groups that apply to deleted staves
      */

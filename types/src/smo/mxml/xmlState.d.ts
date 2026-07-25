@@ -3,7 +3,7 @@ import { SmoScore } from '../data/score';
 import { SmoFormattingManager, SmoSystemGroup } from '../data/scoreModifiers';
 import { SmoSystemStaff } from '../data/systemStaff';
 import { SmoInstrument, SmoInstrumentParams, SmoSlurParams } from '../data/staffModifiers';
-import { SmoTempoText } from '../data/measureModifiers';
+import { SmoTempo } from '../data/measureModifiers';
 import { SmoPartInfo } from '../data/partInfo';
 import { SmoMeasure } from '../data/measure';
 import { SmoNote } from '../data/note';
@@ -154,7 +154,7 @@ export interface XmlPartGroup {
 export declare class XmlState {
     static get defaults(): {
         divisions: number;
-        tempo: SmoTempoText;
+        tempo: SmoTempo;
         timeSignature: string;
         keySignature: string;
         clefInfo: never[];
@@ -186,7 +186,7 @@ export declare class XmlState {
     completedTupletStates: XmlCompletedTupletState[];
     tupletStatesInProgress: Record<number, XmlTupletState>;
     tickCursor: number;
-    tempo: SmoTempoText;
+    tempo: SmoTempo;
     staffArray: XmlStaffInfo[];
     staffIndex: number;
     graceNotes: SmoGraceNote[];

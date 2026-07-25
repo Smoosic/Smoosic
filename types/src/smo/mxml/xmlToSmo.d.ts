@@ -1,6 +1,6 @@
 import { XmlState } from './xmlState';
 import { SmoLayoutManager } from '../data/scoreModifiers';
-import { SmoTempoText } from '../data/measureModifiers';
+import { SmoTempo } from '../data/measureModifiers';
 import { SmoScore } from '../data/score';
 /**
  * A class that takes a music XML file and outputs a {@link SmoScore}
@@ -68,7 +68,7 @@ export declare class XmlToSmo {
      */
     static tempo(element: Element): {
         staffId: number;
-        tempo: SmoTempoText;
+        tempo: SmoTempo;
     }[];
     /**
      * /score-partwise/measure/direction/dynamics

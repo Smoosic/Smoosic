@@ -1,10 +1,10 @@
 import { Clef, Pitch } from "../data/common";
 import { SmoMeasure } from "../data/measure";
-import { SmoTempoText, TimeSignature } from "../data/measureModifiers";
+import { SmoTempo, SmoTimeSignature } from "../data/measureModifiers";
 import { SmoNote } from "../data/note";
 import { SmoScore } from "../data/score";
 import { SmoTuplet } from "../data/tuplet";
-export type MidiEventType = 'text' | 'copyrightNotice' | 'trackName' | 'instrumentName' | 'lyrics' | 'marker' | 'cuePoint' | 'channelPrefix' | 'portPrefix' | 'endOfTrack' | 'setTempo' | 'smpteOffset' | 'timeSignature' | 'keySignature' | 'sequencerSpecific' | 'unknownMeta' | 'noteOff' | 'noteOn' | 'noteAftertouch' | 'controller' | 'programChange' | 'channelAftertouch' | 'pitchBend';
+export type MidiEventType = 'text' | 'copyrightNotice' | 'trackName' | 'instrumentName' | 'lyrics' | 'marker' | 'cuePoint' | 'channelPrefix' | 'portPrefix' | 'endOfTrack' | 'setTempo' | 'smpteOffset' | 'SmoTimeSignature' | 'keySignature' | 'sequencerSpecific' | 'unknownMeta' | 'noteOff' | 'noteOn' | 'noteAftertouch' | 'controller' | 'programChange' | 'channelAftertouch' | 'pitchBend';
 /**
  * These are the midi events as defined by the parser.
  * @category serialization
@@ -29,8 +29,8 @@ export interface MidiTrackEvent {
  */
 export interface RunningMetadata {
     keySignature: string;
-    timeSignature: TimeSignature;
-    tempo: SmoTempoText;
+    timeSignature: SmoTimeSignature;
+    tempo: SmoTempo;
 }
 /**
  * @category serialization
@@ -58,8 +58,8 @@ export interface EventSmoData {
     tupletInfo: MidiTupletInfo | null;
     isRest: boolean;
     isTied: boolean;
-    timeSignature: TimeSignature;
-    tempo: SmoTempoText;
+    timeSignature: SmoTimeSignature;
+    tempo: SmoTempo;
     keySignature: string;
     measure: number;
     tick: number;
@@ -70,8 +70,8 @@ export declare function getValueForTick<T>(arg: Record<number, T>, tick: number)
  * @category serialization
  */
 export declare class MidiToSmo {
-    timeSignatureMap: Record<number, TimeSignature>;
-    tempoMap: Record<number, SmoTempoText>;
+    SmoTimeSignatureMap: Record<number, SmoTimeSignature>;
+    tempoMap: Record<number, SmoTempo>;
     keySignatureMap: Record<number, string>;
     tieMap: Record<number, number[]>;
     timeDivision: number;
@@ -102,13 +102,13 @@ export declare class MidiToSmo {
      * @param ticks
      * @returns
      */
-    getTempo(ticks: number): SmoTempoText;
+    getTempo(ticks: number): SmoTempo;
     /**
      * @internal
      * @param ticks
      * @returns
      */
-    getTimeSignature(ticks: number): TimeSignature;
+    getSmoTimeSignature(ticks: number): SmoTimeSignature;
     /**
      * @internal
      * @param ticks
@@ -121,8 +121,8 @@ export declare class MidiToSmo {
      * @returns
      */
     getMetadata(ticks: number): {
-        tempo: SmoTempoText;
-        timeSignature: TimeSignature;
+        tempo: SmoTempo;
+        timeSignature: SmoTimeSignature;
         keySignature: string;
     };
     /**

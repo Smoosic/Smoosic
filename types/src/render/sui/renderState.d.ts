@@ -7,6 +7,7 @@ import { UndoBuffer } from '../../smo/xform/undo';
 import { SmoSelection } from '../../smo/xform/selections';
 import { SmoScore } from '../../smo/data/score';
 import { SmoTextGroup } from '../../smo/data/scoreText';
+import { displayMode } from '../../smo/data/scoreModifiers';
 import { SuiMapper, SuiRendererBase } from './mapper';
 import { SuiScoreRender, ScoreRenderParams } from './scoreRender';
 import { layoutDebug } from './layoutDebug';
@@ -30,6 +31,7 @@ export declare class SuiRenderState implements SuiRendererBase {
     passState: number;
     _score: SmoScore | null;
     _backupZoomScale: number;
+    backupDisplayMode: displayMode;
     renderer: SuiScoreRender;
     idleRedrawTime: number;
     idleLayoutTimer: number;
