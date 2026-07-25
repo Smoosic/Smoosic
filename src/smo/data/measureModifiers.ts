@@ -926,6 +926,12 @@ export class SmoTimeSignature extends SmoMeasureModifierBase {
     }
     return true;
   }
+  static equalIncludeAttributes(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean {
+    if (!SmoTimeSignature.equal(ts1, ts2)) {
+      return false;
+    }
+    return (ts1.useSymbol === ts2.useSymbol && ts1.displayString === ts2.displayString && ts1.display === ts2.display);
+  }
   static createFromPartial(value: Partial<TimeSignatureParameters>) {
     const params = SmoTimeSignature.defaults;
     smoSerialize.serializedMerge(SmoTimeSignature.parameters, value, params);

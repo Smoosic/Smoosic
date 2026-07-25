@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, Ref, watch, reactive } from 'vue';
+import { ref, toRef, Ref, watch, reactive, computed } from 'vue';
 import numberInputApp from './numberInput.vue';
+import { default as tsComponent } from './tsComponent.vue';
 import {
   TimeSignatureTime, SmoTimeSignature
 } from '../../../smo/data/measureModifiers';
@@ -11,23 +12,39 @@ import selectComp from './select.vue';
 interface Props {
   domId: string,
   label: string,
-  timeSignature: SmoTimeSignature,
+  timeSignature: Ref<SmoTimeSignature>,
   updateTimeSignatureCb: (mf: SmoTimeSignature) => Promise<void>,
   updateApplyTo: (value: string) => Promise<void>,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>
 }
 const props = defineProps<Props>();
-const durationSelection: SelectOption[] = [{
-  value: '2',
-  label: '2'
-}, {
-  value: '4',
-  label: '4'
-}, {
-  value: '8',
-  label: '8'
-}];
+const timeSignature = props.timeSignature;
+watch(timeSignature, () => {
+  console.log('changed!');
+})
+const isCompound: Ref<boolean> = ref(false);
+isCompound.value = timeSignature.value.times.length > 1;
+watch(isCompound, async (newValue, oldValue) => {
+  if (newValue === oldValue) {
+    return;
+  }
+  if (newValue) {
+    const ts = new SmoTimeSignature(timeSignature.value);
+    ts.times.push({ actualBeats: 4, beatDuration: 4})
+    await props.updateTimeSignatureCb(ts);
+  } else {
+    const ts = new SmoTimeSignature(timeSignature.value);
+    ts.times = [ts.times[0]];
+    await props.updateTimeSignatureCb(ts);
+  }
+});
+const updateTime = async (time: TimeSignatureTime, index: number): Promise<void> => {
+  const ts = new SmoTimeSignature(timeSignature.value);
+  ts.times[index] = time;
+  await props.updateTimeSignatureCb(ts);
+}
+
 
 const applyToOptions: SelectOption[] = [{
   value: "Score",
@@ -40,111 +57,37 @@ const applyToOptions: SelectOption[] = [{
   label: 'Remaining Measures'
 }];
 const applyTo: Ref<string> = ref('Selected');
-const mainBeat = ref(4);
-const mainDuration = ref(4);
-const altDuration = ref(4);
-const altDurationString = ref('4');
-const mainDurationString = ref('4');
-const altBeat = ref(0);
-const isCompound = ref(false);
-const durationFromString = (str: string): number => {
-  const val = parseInt(str);
-  if (str === '2' || str === '4' || str === '8') {
-    return val;
-  }
-  return 4;
-}
-watch(mainDuration, async (newVal) => {
-  if (mainDuration.value === storedTimeSignature.times[0].beatDuration) {
-    return;
-  }
-  storedTimeSignature.times[0].beatDuration = newVal;
-  await props.updateTimeSignatureCb(storedTimeSignature);
-});
-watch(altDuration, async (newVal) => {
-  if (storedTimeSignature.times.length === 1) {
-    storedTimeSignature.times.push({ actualBeats: altBeat.value, beatDuration: altDuration.value });
-  }
-  else if (newVal === storedTimeSignature.times[1].beatDuration) {
-    return;
-  }
-  storedTimeSignature.times[1].beatDuration = newVal;
-  await props.updateTimeSignatureCb(storedTimeSignature);
-});
-watch(altBeat, async (newVal) => {
-  if (storedTimeSignature.times.length === 1 && newVal > 0) {
-    storedTimeSignature.times.push({ actualBeats: newVal, beatDuration: storedTimeSignature.times[0].beatDuration });
-  }
-  else if (newVal < 1) {
-    if (storedTimeSignature.times.length > 1) {
-      storedTimeSignature.times.pop();
-    }
-  }
-  else if (storedTimeSignature.times.length > 1 && newVal === storedTimeSignature.times[1].actualBeats) {
-    return;
-  }
-  storedTimeSignature.times[1].actualBeats = newVal;
-  await props.updateTimeSignatureCb(storedTimeSignature);
-});
-watch(mainDurationString, (newVal) => {
-  mainDuration.value = durationFromString(newVal);
-});
-watch(altDurationString, (newVal) => {
-  altDuration.value = durationFromString(newVal);
-});
+
 
 const { domId, label, commitCb, cancelCb, } = { ...props };
-const useSymbol: Ref<boolean> = ref(props.timeSignature.useSymbol);
-const display: Ref<boolean> = ref(props.timeSignature.display);
-const displayString: Ref<string> = ref(props.timeSignature.displayString);
-const storedTimeSignature = new SmoTimeSignature(props.timeSignature);
-if (storedTimeSignature.times.length > 1) {
-  isCompound.value = true;
-  altBeat.value = storedTimeSignature.times[1].actualBeats;
-  altDuration.value = storedTimeSignature.times[1].beatDuration;
+const display = computed(() => timeSignature.value.display);
+const displayString = computed(() => timeSignature.value.displayString);
+const getTsLabel = (ix: number) => {
+  return ix === 0 ? 'Time' : 'Compound';
 }
-mainBeat.value = storedTimeSignature.times[0].actualBeats;
-mainDuration.value = storedTimeSignature.times[0].beatDuration;
-const updateMainBeat = async (newVal: number) => {
-  mainBeat.value = newVal;
-  storedTimeSignature.times[0].actualBeats = newVal;
-  await props.updateTimeSignatureCb(storedTimeSignature);
-}
-const updateMainDurationString = async (newVal: string) => {
-  mainDurationString.value = newVal;
-  storedTimeSignature.times[0].beatDuration = durationFromString(newVal);
-  await props.updateTimeSignatureCb(storedTimeSignature);
-}
-const updateAltDurationString = async (newVal: string) => {
-  altDurationString.value = newVal;
-  storedTimeSignature.times[1].beatDuration = durationFromString(newVal);
-  await props.updateTimeSignatureCb(storedTimeSignature);
-}
-const updateAltBeat = async (newVal: number) => {
-  if (storedTimeSignature.times.length > 1 && storedTimeSignature.times[1].actualBeats === newVal) {
+const useSymbol: Ref<boolean> = ref(false);
+useSymbol.value = timeSignature.value.useSymbol;
+watch(useSymbol, async (newValue: boolean, oldValue: boolean) => {
+  if (newValue === oldValue) {
     return;
   }
-  if (newVal <= 1) {
-    return;
-  }
-  if (storedTimeSignature.times.length === 1) {
-    storedTimeSignature.times.push({ actualBeats: newVal, beatDuration: storedTimeSignature.times[0].beatDuration });
-  } else {
-    storedTimeSignature.times[1].actualBeats = newVal;
-  }
-  await props.updateTimeSignatureCb(storedTimeSignature);
-}
-watch(isCompound, async (newVal: boolean, oldVal: boolean) => {
-  if (newVal === oldVal) {
-    return;
-  }
-  if (newVal) {
-    altBeat.value = 4;
-  } else {
-    altBeat.value = 0;
-  }
-  await props.updateTimeSignatureCb(storedTimeSignature);
+  const ts = new SmoTimeSignature(timeSignature.value);
+  ts.useSymbol = newValue;
+  await props.updateTimeSignatureCb(ts);
 });
+
+const supportsSymbol = computed(() => {
+  if (timeSignature.value.times.length > 1) {
+    return false;
+  }
+  if (timeSignature.value.actualBeats === 4 && timeSignature.value.beatDuration === 4) {
+    return true;
+  }
+  if (timeSignature.value.actualBeats === 2 && timeSignature.value.beatDuration === 2) {
+    return true;
+  }
+  return false;
+})
 const getId = (str: string) => {
   return `${props.domId}-${str}`;
 }
@@ -153,9 +96,11 @@ const getId = (str: string) => {
 <template>
   <dialogContainer :domId="domId" :label="label" :cancelCb="cancelCb" :commitCb="commitCb"
     :classes="'text-center mw-40 nw-40'">
-    <div class="row align-items-center">
+    <div class="row justify-content-start">
       <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="useSymbol" :id="getId('use-symbol')">
+        <input class="form-check-input" type="checkbox" 
+        :disabled="!supportsSymbol"
+          v-model="useSymbol" :id="getId('use-symbol')">
         </input>
       </div>
       <div class="checkbox-input-label-div">
@@ -169,42 +114,21 @@ const getId = (str: string) => {
         <span class="form-check-label" :for="getId('display-cs')">Display Time Signature</span>
       </div>
     </div>
-    <div class="row align-items-center"> 
+    <div class="row justify-content-start mb-2">
       <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="isCompound" :id="getId('is-compound')">
-        </input>
+        <input class="form-check-input" type="checkbox" :id="getId('display-compound')" v-model="isCompound">
       </div>
       <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('system-break')">Compound Time</span>
+        <span class="form-check-label" :for="getId('display-compound')">Compound Time Signature</span>
       </div>
     </div>
-    <div class="row align-items-center">
-      <div class="col col-4">
-        <numberInputApp :domId="getId('num-main')" :initialValue="mainBeat" :changeCb="updateMainBeat" :precision="0"
-          :width="25" :minValue="1" :maxValue="16" />
-      </div>
-      <div class="number-input-label-div col col-4">
-        <span class="form-check-label">Beats/Measure</span>
-      </div>
-      <div class="col col-6">
-        <selectComp :domId="getId('main-duration')" :label="'Beat Duration'" :selections="durationSelection"
-          :initialValue="mainDurationString" :changeCb="updateMainDurationString" />
+    <div class="row justify-content-center">
+      <div class="col col-4" v-for="(time, index) in timeSignature.times">
+        <tsComponent :domId="getId(`tscomp-${index}`)" :index="index" :label="getTsLabel(index)"
+          :timeSignature="time" :updateTimeSignatureCb="updateTime"></tsComponent>
       </div>
     </div>
-    <div class="row align-items-center" :class="{ hide: !isCompound }">
-      <div class="col col-4">
-        <numberInputApp :domId="getId('num-alt')" :initialValue="altBeat" :changeCb="updateAltBeat" :precision="0"
-          :width="25" :minValue="0" :maxValue="16" />
-      </div>
-      <div class="number-input-label-div col col-4">
-        <span class="form-check-label">Compound Beats/Measure</span>
-      </div>
-      <div class="col col-6">
-        <selectComp :domId="getId('alt-duration')" :label="'Beat Duration'" :selections="durationSelection"
-          :initialValue="altDurationString" :changeCb="updateAltDurationString" />
-      </div>
-    </div>
-    <div class="row align-items-center">
+    <div class="row justify-content-center">
       <div class="col col-4">
         <input type="text" class="form-control form-control-sm" v-model="displayString" :id="getId('display-string')" />
       </div>

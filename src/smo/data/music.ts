@@ -1647,10 +1647,7 @@ export class SmoMusic {
   // static closestSmoDuration(ticks: number): SmoDuration {
   //   if ()
   // }
-  static timeSignatureToTicks(timeSignature: string): number {
-    const nd = timeSignature.split('/');
-    const num = parseInt(nd[0], 10);
-    const den = parseInt(nd[1], 10);
+  static timeSignatureToTicks(num: number, den: number): number {
     const base = 2048 * (8 / den);
     return base * num;
   }

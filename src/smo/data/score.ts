@@ -775,6 +775,7 @@ export class SmoScore {
     score.textGroups = textGroups;
     score.systemGroups = systemGroups;
     score.scoreInfo.version += 1;
+    score.updateCompoundTimeSignature();  // update index for alternating time signatures.
     return score;
   }
   /**
@@ -1244,6 +1245,26 @@ export class SmoScore {
     this.activeStaff = this.staves.length - 1;
     this.numberStaves();
     return staff;
+  }
+  updateCompoundTimeSignature() {
+    let existingTs = this.staves[0].measures[0].timeSignature;
+    this.staves.forEach((stave: SmoSystemStaff) => {
+      let index = 0;
+      for (let i = 0; i < stave.measures.length; ++i) {
+        const measure = stave.measures[i];
+        if (!SmoTimeSignature.equal(existingTs, measure.timeSignature)) {
+          index = 0;
+          existingTs = measure.timeSignature;
+        }
+        measure.timeSignature.index = 
+          Math.max(0, Math.min(measure.timeSignature.times.length - 1, index));
+        if (measure.timeSignature.times.length > 1) {
+          index = (index + 1) % measure.timeSignature.times.length;
+        } else {
+          index = 0;
+        }
+      }
+    });
   }
   /**
    * delete any system groups that apply to deleted staves
