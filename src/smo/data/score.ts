@@ -1247,6 +1247,9 @@ export class SmoScore {
     return staff;
   }
   updateCompoundTimeSignature() {
+    if (this.staves.length <= 0 || this.staves[0].measures.length <= 0) {
+      return;
+    }
     let existingTs = this.staves[0].measures[0].timeSignature;
     this.staves.forEach((stave: SmoSystemStaff) => {
       let index = 0;
