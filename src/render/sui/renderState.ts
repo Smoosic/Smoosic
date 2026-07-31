@@ -274,11 +274,23 @@ export class SuiRenderState implements SuiRendererBase {
       this.handlingRedraw = false;
     }
   }
+  delay2 = async () => {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, this.demonPollTime);
+    });
+  }
+  async pollRedrawTask() {
+    while (true) {
+      await this.handleRedrawTimer();
+      await this.delay2();
+    }
+  }
   pollRedraw() {
     setTimeout(async () => {
-      await this.handleRedrawTimer();
-      this.pollRedraw();
-    }, this.demonPollTime);
+      this.pollRedrawTask();
+    }, 1);
   }
 
   startDemon() {

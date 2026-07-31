@@ -9,8 +9,10 @@ import { computed, ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
   label: string,
+  staffLength: number,
   getInstrument: () => SmoInstrument,
   addStaveCb: () => Promise<void>,
+  setStaffId: (staffId: number) => void,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>
 };
@@ -18,6 +20,9 @@ const props = defineProps<Props>();
 
 const { domId, getInstrument } = { ...props };
 
+const updateInsertLocation = async (loc: number) => {
+  props.setStaffId(loc);
+}
 const instrumentChoices: SelectOption[] = [{
   value: 'piano',
   label: 'Grand Piano'
@@ -128,6 +133,7 @@ const updateClefCb = async (value: string) => {
 const getId = (str: string) => {
   return `${domId}-${str}`;
 }
+
 </script>
 <template>
   <dialogContainer :domId="domId" :label="label" :commitCb="props.commitCb" :cancelCb="props.cancelCb">
@@ -157,6 +163,13 @@ const getId = (str: string) => {
           <input class="form-check-input me-2" type="checkbox" v-model="usePercussionSymbols"
             :id="getId('font-weight')"></input>
           <label class="form-check-label" :for="getId('font-weight')">Use Percussion Symbols</label>
+        </div>
+      </div>
+      <div class="row mb-2 ms-2 align-items-center">
+        <div class="col col-8 ps-0">
+          <numberInputApp :domId="getId('staffId')" :initialValue="props.staffLength - 1" :precision="0"
+             :maxValue="props.staffLength" :minValue="1"
+            :changeCb="updateInsertLocation"></numberInputApp>
         </div>
       </div>
       <div class="row mb-2">

@@ -1230,7 +1230,7 @@ export class SmoScore {
       newMeasure.transposeIndex = 0;
       // Consider key change if the proto measure is non-concert pitch
       newMeasure.keySignature =
-        SmoMusic.vexKeySigWithOffset(newMeasure.keySignature,
+        SmoMusic.vexKeySigWithOffset(measure.keySignature,
           newMeasure.transposeIndex - measure.transposeIndex);
       newMeasure.voices = [{ notes: SmoMeasure.getDefaultNotes(newMeasure) }];
       measure.modifiers.forEach((modifier) => {
@@ -1242,6 +1242,14 @@ export class SmoScore {
     parameters.measures = measures;
     const staff = new SmoSystemStaff(parameters);
     this.staves.push(staff);
+    let newPos = parameters.staffId;
+    let curPos = this.staves.length - 1;
+    while (curPos > newPos) {
+      const lastStaff = this.staves[curPos];
+      this.staves[curPos] = this.staves[curPos - 1];
+      this.staves[curPos - 1] = lastStaff;
+      curPos -= 1;
+    }
     this.activeStaff = this.staves.length - 1;
     this.numberStaves();
     return staff;

@@ -60,17 +60,24 @@ export const SuiCreatePartVue = (parameters: SuiDialogParams) => {
   const selection = parameters.view.tracker.selections[0];
   const instrument = new SmoInstrument(parameters.view.score.getStaffInstrument(selection.selector));
   let addStave = false;
+  const staffLocation = ref(parameters.view.storeScore.staves.length - 1);
   const addStaveCb = () => {
     addStave = !addStave;
+  }
+  const setStaffId = (staffId: number) => {
+    if (staffId < parameters.view.storeScore.staves.length && staffId >= 0) {
+      staffLocation.value = staffId;
+    }
   }
   const commitCb = async () => {
     const staffParams: SmoSystemStaffParams = SmoSystemStaff.defaults;
     staffParams.staffId = parameters.view.storeScore.staves.length;
     staffParams.measureInstrumentMap[0] = instrument;
+    staffParams.staffId = staffLocation.value;
     await parameters.view.addStaff(staffParams);
     if (addStave) {
       const staffParams2: SmoSystemStaffParams = SmoSystemStaff.defaults;
-      staffParams2.staffId = parameters.view.storeScore.staves.length;
+      staffParams2.staffId = staffParams.staffId + 1;
       const instParams: SmoInstrumentParams = SmoInstrument.defaults;
       instParams.instrument = instrument.instrument;
       instParams.clef = instrument.clef === 'treble' ? 'bass' : 'treble';
@@ -79,7 +86,7 @@ export const SuiCreatePartVue = (parameters: SuiDialogParams) => {
       await parameters.view.addStaff(staffParams2);
       const partInfo = parameters.view.score.staves[staffParams.staffId].partInfo;
       partInfo.stavesAfter = 1;
-    }    
+    }
   }
   const cancelCb = async () => {    
   }
@@ -88,8 +95,10 @@ export const SuiCreatePartVue = (parameters: SuiDialogParams) => {
   const appParams = {
     domId: replaceVueRoot(modalContainerId),
     label: 'Instrument Properties',
+    staffLength: parameters.view.storeScore.staves.length,
     getInstrument,
-    addStaveCb
+    addStaveCb,
+    setStaffId
   }
   const rootId = replaceVueRoot(modalContainerId);
   InstallDialog({
