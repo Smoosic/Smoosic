@@ -62,12 +62,12 @@ export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
       const measure = selections[i].measure;
       const startBarline = measure.getStartBarline();
       const endBarline = measure.getEndBarline();
-      if (startBarline.barline === SmoBarline.barlines.StartRepeat) {
+      if (startBarline.barline === SmoBarline.barlines.startRepeat) {
         if (startBarline.repeatBracket !== SmoBarline.repeatBrackets.none) {
           startValue = startBarline.repeatBracket;
         }
       }
-      if (endBarline.barline === SmoBarline.barlines.EndRepeat) {
+      if (endBarline.barline === SmoBarline.barlines.endRepeat) {
         if (startBarline.repeatBracket !== SmoBarline.repeatBrackets.none) {
           endValue = startBarline.repeatBracket;
         }
