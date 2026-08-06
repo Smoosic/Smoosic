@@ -1,18 +1,13 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
-import { DialogDefinition, SuiDialogParams, InstallDialog } from './dialog';
+import { SuiDialogParams, InstallDialog } from './dialog';
 import { SmoBarline, SmoRepeatSymbol } from '../../smo/data/measureModifiers';
 import { SmoMeasure } from '../../smo/data/measure';
-import { reverseStaticMap } from '../../smo/data/common';
 import { SmoSelection } from '../../smo/xform/selections';
-import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { getButtonsFcn, SuiButtonArrayComponent, SuiButtonArrayParameters } from './components/buttonArray';
-import { SuiDialogNotifier, SuiBaseComponentParams } from './components/baseComponent';
 import { DialogButtonDefinition, DialogButtonState } from '../buttons/button';
-import { replaceVueRoot, modalContainerId } from '../common';
+import { replaceVueRoot, modalContainerId, SelectOption, SelectDefinition } from '../common';
 import measureEndingsApp from '../components/dialogs/measureEndings.vue';
-import { reactive } from 'vue';
+import { reactive, ref, watch } from 'vue';
 
 export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
   parameters.view.groupUndo(true);
@@ -31,7 +26,7 @@ export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
       return true;
     }
     return false;
-  }
+  }  
   const testBarlineState = (func: (measure: SmoMeasure, barline: number) => boolean, barline: number): DialogButtonState => {    
     const selections = SmoSelection.getMeasureList(parameters.view.tracker.selections);
     let anySelected = false;
@@ -52,6 +47,80 @@ export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
     }
     return 'unselected';
   }
+  const repeatBracketOptions: SelectOption[] = [
+    { value: '0', label: 'None' },
+    { value: '1', label: 'Straight' },
+    { value: '2', label: 'Curved' }
+  ];
+  const endBracketValue = ref(0);
+  const startBracketValue = ref(0);
+  const updateBracketValues = () => {
+    let endValue: number = 0;
+    let startValue: number = 0;
+    const selections = SmoSelection.getMeasureList(parameters.view.tracker.selections);
+    for (let i = 0; i < selections.length; ++i) {
+      const measure = selections[i].measure;
+      const startBarline = measure.getStartBarline();
+      const endBarline = measure.getEndBarline();
+      if (startBarline.barline === SmoBarline.barlines.StartRepeat) {
+        if (startBarline.repeatBracket !== SmoBarline.repeatBrackets.none) {
+          startValue = startBarline.repeatBracket;
+        }
+      }
+      if (endBarline.barline === SmoBarline.barlines.EndRepeat) {
+        if (startBarline.repeatBracket !== SmoBarline.repeatBrackets.none) {
+          endValue = startBarline.repeatBracket;
+        }
+      }
+    }
+    if (startValue !== startBracketValue.value) {
+      startBracketValue.value = startValue;
+    }
+    if (endValue !== endBracketValue.value) {
+      endBracketValue.value = endValue;
+    }
+  }
+  updateBracketValues();
+  const startBrackets:SelectDefinition = {
+    domId: `$%{modalContainerId}-ending-bracket`,
+    label: 'Start Bracket',
+    initialValue: startBracketValue.value.toString(),
+    selections: JSON.parse(JSON.stringify(repeatBracketOptions)),
+    changeCb: (value: string) => { 
+      startBracketValue.value = parseInt(value);
+    }, 
+  }
+  const endBrackets:SelectDefinition = {
+    domId: `$%{modalContainerId}-ending-bracket`,
+    label: 'End Bracket',
+    initialValue: endBracketValue.value.toString(),
+    selections: JSON.parse(JSON.stringify(repeatBracketOptions)),
+    changeCb: (value: string) => { 
+      endBracketValue.value = parseInt(value);
+    }, 
+  }
+  watch(startBracketValue, async (oldValue: number, newValue: number) => {
+    if (oldValue === newValue) {
+      return;
+    }
+    for (let i = 0; i < startEndings.length; ++i) {
+      const btn = startEndings[i];
+      if (btn.state === 'selected') {
+        await parameters.view.setBarline(SmoBarline.positions.start, SmoBarline.barlines[btn.id], startBracketValue.value);
+      }
+    }
+  });
+  watch(endBracketValue, async (oldValue: number, newValue: number) => {
+    if (oldValue === newValue) {
+      return;
+    }
+    for (let i = 0; i < endEndings.length; ++i) {
+      const btn = endEndings[i];
+      if (btn.state === 'selected') {
+        await parameters.view.setBarline(SmoBarline.positions.end, SmoBarline.barlines[btn.id], endBracketValue.value);
+      }
+    }
+  });
   const startBarlineState = (barline: number) =>  testBarlineState(startRestStateTest, barline);
   const endBarlineState = (barline: number) =>  testBarlineState(endRestStateTest, barline);
   const repeatSymbolState = (symbol: number) =>  testBarlineState(repeatRestStateTest, symbol);
@@ -66,7 +135,7 @@ export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
         btn.state = 'unselected';
       } else {
         btn.state = 'selected';
-        await parameters.view.setBarline(SmoBarline.positions.start, SmoBarline.barlines[btn.id]);
+        await parameters.view.setBarline(SmoBarline.positions.start, SmoBarline.barlines[btn.id], startBracketValue.value);
       }
     }
   }
@@ -81,7 +150,7 @@ export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
         btn.state = 'unselected';
       } else {
         btn.state = 'selected';
-        await parameters.view.setBarline(SmoBarline.positions.end, SmoBarline.barlines[btn.id]);
+        await parameters.view.setBarline(SmoBarline.positions.end, SmoBarline.barlines[btn.id], endBracketValue.value);
       }
     }
   }
@@ -272,6 +341,8 @@ export const SuiEndingsDialogVue = (parameters: SuiDialogParams) => {
       endEndings,
       repeatSymbols,
       repeatLandmarks,
+      startBrackets,
+      endBrackets,
       repeatText,
     }
     InstallDialog({

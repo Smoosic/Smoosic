@@ -61,6 +61,15 @@ export function toVexBarlineType(athis: SmoBarline): number {
 export function toVexBarlinePosition(athis: SmoBarline): number {
   return vexBarlinePosition[athis.position];
 }
+export function toVexRepeatBracket(at: number) {
+  if (at === SmoBarline.repeatBrackets.straight) {
+    return 1;
+  }
+  if (at === SmoBarline.repeatBrackets.curved) {
+    return 2;
+  }
+  return 0;
+}
 
 export const vexSymbol = [VF.Repetition.type.NONE, VF.Repetition.type.CODA_LEFT, VF.Repetition.type.SEGNO_LEFT, VF.Repetition.type.DC,
   VF.Repetition.type.DC_AL_CODA, VF.Repetition.type.DC_AL_FINE, VF.Repetition.type.DS,

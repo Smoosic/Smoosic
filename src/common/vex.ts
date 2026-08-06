@@ -10,7 +10,7 @@ ClefNote as VexClefNote,
  Music as VexMusic, ChordSymbol as VexChordSymbol, ChordSymbolBlock as VexChordSymbolBlock,
 TabStave as VexTabStave, TabNote as VexTabNote, TabSlide as VexTabSlide, TabNotePosition as VexTabNotePosition, 
 TabNoteStruct as VexTabNoteStruct, PedalMarking as VexPedalMarking, Stem as VexStem,
-Renderer as VexRenderer, RenderContext as VexRenderContext, SVGContext as VexSVGContext
+Renderer as VexRenderer, RenderContext as VexRenderContext, SVGContext as VexSVGContext, RepeatBracketType
   } from "vexflow_smoosic";
 
  /**
@@ -92,6 +92,8 @@ export type Renderer = VexRenderer;
 export type RenderContext = VexRenderContext;
 // @internal
 export type SVGContext = VexSVGContext;
+// @internal
+
 
 const lineDefaults = [4, 2, 0, 1, 3];    // lines to turn off if there are less than 5
 
@@ -210,6 +212,7 @@ export function getSlashGlyph() {
         // vexNote = new VF.GlyphNote('\uE504', { duration });
        return new VF.GlyphNote(new VF.Glyph('repeatBarSlash', 38), { duration: 'w' }, { line: 2 });
 }
+
 export function getRepeatBar() {
   return new VF.GlyphNote(new VF.Glyph('repeat1Bar', 38), { duration: 'w' }, { line: 2 });
 }

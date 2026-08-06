@@ -217,7 +217,8 @@ export class SmoMeasureFormat extends SmoMeasureModifierBase implements SmoMeasu
  */
 export interface SmoBarlineParams {
   position: number | null,
-  barline: number | null
+  barline: number | null,
+  repeatBracket?: number
 }
 /**
  * @category serialization
@@ -225,7 +226,8 @@ export interface SmoBarlineParams {
 export interface SmoBarlineParamsSer extends SmoBarlineParams {
   ctor: string,
   position: number | null,
-  barline: number | null
+  barline: number | null,
+  repeatBracket?: number
 }
 /**
  * Barline is just that, there is a start and end in each measure, which defaults to 'single'.
@@ -245,6 +247,11 @@ export class SmoBarline extends SmoMeasureModifierBase {
     endRepeat: 4,
     noBar: 5
   }
+  static readonly repeatBrackets: Record<string, number> = {
+    none: 0,
+    straight: 1,
+    curved: 2
+  }
 
   static get _barlineToString() {
     return ['singleBar', 'doubleBar', 'endBar', 'startRepeat', 'endRepeat', 'noBar'];
@@ -256,12 +263,13 @@ export class SmoBarline extends SmoMeasureModifierBase {
   static get defaults(): SmoBarlineParams {
     return JSON.parse(JSON.stringify({
       position: SmoBarline.positions.end,
-      barline: SmoBarline.barlines.singleBar
+      barline: SmoBarline.barlines.singleBar,
+      repeatBracket: SmoBarline.repeatBrackets.none
     }));
   }
 
   static get attributes() {
-    return ['position', 'barline'];
+    return ['position', 'barline', 'repeatBracket'];
   }
   serialize(): SmoBarlineParamsSer {
     const params: any = {};
@@ -280,6 +288,7 @@ export class SmoBarline extends SmoMeasureModifierBase {
   }
   barline: number = SmoBarline.barlines.singleBar;
   position: number = SmoBarline.positions.start;
+  repeatBracket: number = SmoBarline.repeatBrackets.none;
 }
 
 /**

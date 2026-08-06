@@ -1443,9 +1443,9 @@ export class SuiScoreViewOperations extends SuiScoreView {
    * @param barline barline type
    * @returns 
    */
-  async setBarline(position: number, barline: number): Promise<void> {
-    const obj = new SmoBarline({ position, barline });
-    const altObj = new SmoBarline({ position, barline });
+  async setBarline(position: number, barline: number, bracket: number): Promise<void> {
+    const obj = new SmoBarline({ position, barline, repeatBracket: bracket });
+    const altObj = new SmoBarline({ position, barline, repeatBracket: bracket });
     const selection = this.tracker.selections[0];
     this._undoColumn('set barline', selection.selector.measure);
     SmoOperation.setMeasureBarline(this.score, selection, obj);

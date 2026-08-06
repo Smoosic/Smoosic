@@ -2,6 +2,7 @@ import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { BrowserEventSource } from '../eventSource';
 import { SuiMenuManager } from '../menus/manager';
 import { CompleteNotifier } from '../common';
+import { SelectOption } from '../common';
 
 /**
  * Button actions are one of the following.  
@@ -57,6 +58,7 @@ export interface DialogButtonDefinition {
     state: DialogButtonState
 }
 export type DialogButtonCallback = (button: DialogButtonDefinition) => Promise<void>;
+
 /**
  * @category SuiButton
  */

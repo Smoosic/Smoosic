@@ -20,7 +20,7 @@ import { SvgPage } from '../sui/svgPageMap';
 import { SmoTabStave } from '../../smo/data/staffModifiers';
 import { toVexBarlineType, vexBarlineType, vexBarlinePosition, toVexBarlinePosition, toVexSymbol,
   toVexTextJustification, toVexTextPosition, getVexChordBlocks, toVexStemDirection,
-  VexTabNotePositions } from './smoAdapter';
+  VexTabNotePositions, toVexRepeatBracket } from './smoAdapter';
 import { VexFlow, Stave,StemmableNote, Note, Beam, Tuplet, Voice,
   Formatter, Accidental, Annotation, StaveNoteStruct, StaveText, StaveModifier,
   createStaveText, renderDynamics, applyStemDirection,
@@ -449,12 +449,12 @@ export class VxMeasure implements VxMeasureIf {
       && this.smoMeasure.format.padLeft === 0) {
       this.stave.setBegBarType(VF.Barline.type.NONE);
     } else {
-      this.stave.setBegBarType(toVexBarlineType(sb));
+      this.stave.setBegBarType(toVexBarlineType(sb), toVexRepeatBracket(sb.repeatBracket));
     }
     if (this.smoMeasure.svg.multimeasureLength > 0 && !this.smoMeasure.svg.hideMultimeasure) {
-      this.stave.setEndBarType(vexBarlineType[this.smoMeasure.svg.multimeasureEndBarline]);
+      this.stave.setEndBarType(vexBarlineType[this.smoMeasure.svg.multimeasureEndBarline], toVexRepeatBracket(sb.repeatBracket));
     } else if (eb.barline !== SmoBarline.barlines.singleBar) {
-      this.stave.setEndBarType(toVexBarlineType(eb));
+      this.stave.setEndBarType(toVexBarlineType(eb), toVexRepeatBracket(eb.repeatBracket));
     }
     if (sym && sym.symbol !== SmoRepeatSymbol.symbols.None && this.firstInColumn) {
       let yOff = sym.yOffset;
