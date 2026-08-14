@@ -6,6 +6,7 @@ import { SmoDynamicText } from '../../smo/data/noteModifiers';
 import { SuiChordChangeDialog } from '../dialogs/chordChange';
 import { SuiLyricDialog } from '../dialogs/lyric';
 import { SuiDynamicModifierDialog } from '../dialogs/dynamics';
+import { SuiTextBlockDialogVue } from '../dialogs/textBlockVue';
 
 declare var $: any;
 /**
@@ -35,7 +36,7 @@ const rehearsalLetterDialogMenuOption: SuiConfiguredMenuOption = {
  */
 const textBlockDialogMenuOption: SuiConfiguredMenuOption = {
   handler: async (menu: SuiMenuBase) => {
-    createAndDisplayDialog(SuiTextBlockDialog, {
+    SuiTextBlockDialogVue({
       completeNotifier: menu.completeNotifier!,
       view: menu.view,
       eventSource: menu.eventSource,

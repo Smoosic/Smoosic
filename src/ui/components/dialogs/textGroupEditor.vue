@@ -8,14 +8,10 @@ import Subscript from '@tiptap/extension-subscript';
 import { TextStyle, FontFamily, FontSize } from '@tiptap/extension-text-style';
 import { SmoTextGroup } from '../../../smo/data/scoreText';
 import { textGroupToHtml, htmlToTextGroup } from './textGroupHtml';
-import dialogContainer from './dialogContainer.vue';
 
 interface Props {
   domId: string,
-  label: string,
-  textGroup: SmoTextGroup,
-  onSave: (textGroup: SmoTextGroup) => void,
-  onCancel?: () => void
+  textGroup: SmoTextGroup
 }
 const props = defineProps<Props>();
 const getId = (str: string) => `${props.domId}-${str}`;
@@ -75,20 +71,20 @@ const setFontSize = (event: Event) => {
   editor.value?.chain().focus().setFontSize(`${size}px`).run();
 };
 
-const commitCb = async () => {
+const getTextGroup = (): SmoTextGroup => {
   if (!editor.value) {
-    return;
+    return props.textGroup;
   }
-  const result = htmlToTextGroup(editor.value.getJSON(), props.textGroup);
-  props.onSave(result);
+  return htmlToTextGroup(editor.value.getJSON(), props.textGroup);
 };
-const cancelCb = async () => {
-  props.onCancel?.();
+const insertAtCursor = (token: string) => {
+  editor.value?.chain().focus().insertContent(token).run();
 };
+defineExpose({ getTextGroup, insertAtCursor });
 </script>
 <template>
-  <dialogContainer :domId="domId" :label="label" :commitCb="commitCb" :cancelCb="cancelCb">
-    <div v-if="editor" class="row mb-2 ms-2 align-items-center">
+  <div v-if="editor" class="text-group-editor">
+    <div class="row mb-2 ms-2 align-items-center">
       <div class="col-auto btn-group" role="group">
         <button type="button" class="btn btn-sm" :class="editor.isActive('bold') ? 'btn-primary' : 'btn-outline-secondary'"
           :id="getId('bold-button')" @click.prevent="toggleBold"><b>B</b></button>
@@ -133,5 +129,5 @@ const cancelCb = async () => {
           style="min-height: 150px; overflow-y: auto;" />
       </div>
     </div>
-  </dialogContainer>
+  </div>
 </template>
