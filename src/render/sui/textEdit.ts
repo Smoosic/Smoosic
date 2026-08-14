@@ -5,7 +5,7 @@ import { SuiRenderState } from './renderState';
 import { SuiScroller } from './scroller';
 import { layoutDebug } from './layoutDebug';
 import { PromiseHelpers } from '../../common/promiseHelpers';
-import { OutlineInfo, StrokeInfo, SvgHelpers } from './svgHelpers';
+import { OutlineInfo, SuiTextStrokes, SvgHelpers, SuiTextStrokeName } from './svgHelpers';
 import { SmoScoreText, SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SmoSelector } from '../../smo/xform/selections';
@@ -69,7 +69,7 @@ export interface SuiLyricSessionParams {
   verse: number;
   selector: SmoSelector;
 }
-export type SuiTextStrokeName = 'text-suggestion' | 'text-selection' | 'text-highlight' | 'text-drag' | 'inactive-text';
+
 /**
  * The heirarchy of text editing objects goes:
  * 
@@ -146,55 +146,10 @@ export class SuiTextEditor {
     this.debug = params.scroller.debug;
   }
 
-  static get strokes(): Record<SuiTextStrokeName, StrokeInfo> {
-    return {
-      'text-suggestion': {
-        strokeName: 'text-suggestion',
-        stroke: '#cce',
-        strokeWidth: 1,
-        strokeDasharray: '4,1',
-        fill: 'none',
-        opacity: 1.0
-      },
-      'text-selection': {
-        strokeName: 'text-selection',
-        stroke: '#99d',
-        strokeWidth: 1,
-        fill: 'none',
-        strokeDasharray: '',
-        opacity: 1.0
-      }, 
-      'text-highlight': {
-        strokeName: 'text-highlight',
-        stroke: '#dd9',
-        strokeWidth: 1,
-        strokeDasharray: '4,1',
-        fill: 'none',
-        opacity: 1.0
-      }, 
-      'text-drag': {
-        strokeName: 'text-drag',
-        stroke: '#d99',
-        strokeWidth: 1,
-        strokeDasharray: '2,1',
-        fill: '#eee',
-        opacity: 0.3
-      },
-      'inactive-text': {
-        strokeName: 'inactive-text',
-        stroke: '#fff',
-        strokeWidth: 1,
-        strokeDasharray: '',
-        fill: '#ddd',
-        opacity: 0.3
-      }
-    };
-  }
-
   // ### _suggestionParameters
   // Create the svg text outline parameters
   _suggestionParameters(box: SvgBox, strokeName: SuiTextStrokeName): OutlineInfo {
-    const outlineStroke = SuiTextEditor.strokes[strokeName];
+    const outlineStroke = SuiTextStrokes[strokeName];
     if (!this.suggestionRect) {
       this.suggestionRect = {
         context: this.context, box, classes: '',
@@ -573,7 +528,7 @@ export class SuiTextBlockEditor extends SuiTextEditor {
       return;
     }
     const bbox = this.svgText.getLogicalBox();
-    const outlineStroke = SuiTextEditor.strokes['text-highlight'];
+    const outlineStroke = SuiTextStrokes['text-highlight'];
     if (this.outlineInfo && this.outlineInfo.element) {
       this.outlineInfo.element.remove();
     }
@@ -913,7 +868,7 @@ export class SuiDragSession {
   }
 
   _outlineBox() {
-    const outlineStroke = SuiTextEditor.strokes['text-drag'];
+    const outlineStroke = SuiTextStrokes['text-drag'];
     const x = this.outlineBox.x - this.page.box.x;
     const y = this.outlineBox.y - this.page.box.y;
     if (!this.outlineRect) {
@@ -1070,16 +1025,6 @@ export class SuiTextSession {
     this.text = this.scoreText.text;
   }
 
-  // ### _isRefreshed
-  // renderer has partially rendered text(promise condition)
-  get _isRefreshed(): boolean {
-    return this.renderer.dirty === false;
-  }
-
-  get isStopped(): boolean {
-    return this.state === SuiTextEditor.States.STOPPED;
-  }
-
   get isRunning(): boolean {
     return this.state === SuiTextEditor.States.RUNNING;
   }
@@ -1116,13 +1061,13 @@ export class SuiTextSession {
 
   // ### _startSessionForNote
   // Stop the lyric session, return promise for done
-  stopSession(): Promise<void> {
+  async stopSession() {
     if (this.editor) {
       this.scoreText.text = this.editor.getText();
       this.scoreText.tryParseUnicode(); // convert unicode chars
       this.editor.stopEditor();
     }
-    return PromiseHelpers.makePromise(()=> this._isRendered,() => this._markStopped(), null, 100);
+    await PromiseHelpers.makePromise(()=> this._isRendered,() => this._markStopped(), null, 100);
   }
 
   // ### evKey

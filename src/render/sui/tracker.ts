@@ -406,7 +406,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     if (mselect) {
       mselect.measure.setActiveVoice(nselect.voice);
     }
-    this._replaceSelection(nselect, skipPlay);
+    this.replaceSelection(nselect, skipPlay);
   }
 
   moveSelectionLeft() {
@@ -422,7 +422,7 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     if (mselect) {
       mselect.measure.setActiveVoice(nselect.voice);
     }    
-    this._replaceSelection(nselect, false);
+    this.replaceSelection(nselect, false);
   }
   moveSelectionLeftMeasure() {
     this._moveSelectionMeasure(-1);
@@ -535,7 +535,13 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     return this.selections.length > 0;
   }
 
-  _replaceSelection(nselector: SmoSelector, skipPlay: boolean) {
+  /**
+   * Set absolute location of selection
+   * @param nselector 
+   * @param skipPlay 
+   * @returns 
+   */
+  replaceSelection(nselector: SmoSelector, skipPlay: boolean) {
     if (this.score === null) {
       return;
     }

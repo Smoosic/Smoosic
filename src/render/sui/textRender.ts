@@ -1,6 +1,6 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SvgHelpers, OutlineInfo } from './svgHelpers';
+import { SvgHelpers, OutlineInfo, SuiTextStrokes } from './svgHelpers';
 import { SmoTextGroup, SmoScoreText } from '../../smo/data/scoreText';
 import { SuiTextEditor } from './textEdit';
 import { SuiScroller } from './scroller';
@@ -659,7 +659,7 @@ export class SuiTextBlock {
     });
   }
   _outlineBox(context: any, box: SvgBox) {
-    const outlineStroke = SuiTextEditor.strokes['text-highlight'];
+    const outlineStroke = SuiTextStrokes['text-highlight'];
     if (!this.outlineRect) {
       this.outlineRect = {
         context, box, classes: 'text-drag',

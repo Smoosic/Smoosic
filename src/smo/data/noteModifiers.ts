@@ -855,7 +855,7 @@ export interface SmoLyricParams {
  */
 export class SmoLyric extends SmoNoteModifierBase {
   static readonly parsers: Record<string, number> = {
-    lyric: 0, anaylysis: 1, chord: 2
+    lyric: 0, annotation: 1, chord: 2
   }
   static get defaults(): SmoLyricParams {
     return JSON.parse(JSON.stringify({

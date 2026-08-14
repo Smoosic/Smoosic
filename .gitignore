@@ -5,3 +5,5 @@ build/docs
 build/styles
 types/release/*
 types/tools/*
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

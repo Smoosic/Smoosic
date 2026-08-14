@@ -5,6 +5,7 @@ import { Transposable, SvgBox, SvgPoint, ElementLike } from '../../smo/data/comm
 import { SvgPage } from './svgPageMap';
 
 declare var $: any;
+export type SuiTextStrokeName = 'text-suggestion' | 'text-selection' | 'text-highlight' | 'text-drag' | 'inactive-text';
 /**
  * @internal
  */
@@ -15,6 +16,49 @@ export interface StrokeInfo {
   strokeDasharray: string | number,
   fill: string,
   opacity: number
+}
+
+export const SuiTextStrokes: Record<SuiTextStrokeName, StrokeInfo> = {
+  'text-suggestion': {
+        strokeName: 'text-suggestion',
+        stroke: '#cce',
+        strokeWidth: 1,
+        strokeDasharray: '4,1',
+        fill: 'none',
+        opacity: 1.0
+      },
+      'text-selection': {
+        strokeName: 'text-selection',
+        stroke: '#99d',
+        strokeWidth: 1,
+        fill: 'none',
+        strokeDasharray: '',
+        opacity: 1.0
+      }, 
+      'text-highlight': {
+        strokeName: 'text-highlight',
+        stroke: '#dd9',
+        strokeWidth: 1,
+        strokeDasharray: '4,1',
+        fill: 'none',
+        opacity: 1.0
+      }, 
+      'text-drag': {
+        strokeName: 'text-drag',
+        stroke: '#d99',
+        strokeWidth: 1,
+        strokeDasharray: '2,1',
+        fill: '#eee',
+        opacity: 0.3
+      },
+      'inactive-text': {
+        strokeName: 'inactive-text',
+        stroke: '#fff',
+        strokeWidth: 1,
+        strokeDasharray: '',
+        fill: '#ddd',
+        opacity: 0.3
+      }
 }
 
 /**

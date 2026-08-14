@@ -128,18 +128,18 @@ export abstract class SuiScoreView implements layoutProvider {
    * @returns 
    */
   async renderPromise(): Promise<any> {
-    return this.renderer.renderPromise();
+    await this.renderer.renderPromise();
   }
   /**
    * Await on the partial update of the score in the view
    * @returns 
    */
   async updatePromise(): Promise<any> {
-    return this.renderer.updatePromise();
+    await this.renderer.updatePromise();
   }
   async awaitRender(): Promise<any> {
     this.renderer.rerenderAll();
-    return this.renderer.updatePromise();
+    await this.renderer.updatePromise();
   }
   /**
    * await on the full update of the score, also resetting the viewport (to reflect layout changes)
@@ -718,6 +718,13 @@ export abstract class SuiScoreView implements layoutProvider {
     }
     window.dispatchEvent(new CustomEvent(scoreChangeEvent, { detail: { view: this } }));
     this.renderer.setViewport();
+  }
+  /**
+   * Set the music at the selector to be the only selection.
+   * @param selector 
+   */
+  replaceSelection(selector: SmoSelector) {
+    this.tracker.replaceSelection(selector, true);
   }
   /**
    * view all the staffs in score mode.

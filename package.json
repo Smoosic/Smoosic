@@ -10,6 +10,13 @@
   },
   "types": "./types/src/application/exports.ts",
   "dependencies": {
+    "@tiptap/extension-subscript": "^3.30.0",
+    "@tiptap/extension-superscript": "^3.30.0",
+    "@tiptap/extension-text-align": "^3.30.0",
+    "@tiptap/extension-text-style": "^3.30.0",
+    "@tiptap/pm": "^3.30.0",
+    "@tiptap/starter-kit": "^3.30.0",
+    "@tiptap/vue-3": "^3.30.0",
     "@types/qunit": "^2.19.11",
     "express": "^5.1.0",
     "midi-parser-js": "^4.0.4",

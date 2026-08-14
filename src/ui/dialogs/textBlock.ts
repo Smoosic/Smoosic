@@ -6,7 +6,7 @@ import { SmoScoreText, SmoTextGroup } from '../../smo/data/scoreText';
 import { closeDialogPromise } from '../../common/htmlHelpers';
 
 import { layoutDebug } from '../../render/sui/layoutDebug';
-import { SvgHelpers, OutlineInfo } from '../../render/sui/svgHelpers';
+import { SvgHelpers, OutlineInfo, SuiTextStrokes } from '../../render/sui/svgHelpers';
 import { SuiTextEditor } from '../../render/sui/textEdit';
 
 import { DialogDefinition, SuiDialogBase, SuiDialogParams } from './dialog';
@@ -369,7 +369,7 @@ export class SuiTextBlockDialog extends SuiDialogBase {
     const pageContext = this.view.renderer.pageMap.getRendererFromModifier(this.activeScoreText);
     const svg = pageContext.svg;
     if (this.activeScoreText.logicalBox) {
-      const stroke = SuiTextEditor.strokes['text-highlight'];
+      const stroke = SuiTextStrokes['text-highlight'];
       if (!this.outlineRect) {
         this.outlineRect = {
           context: pageContext,
