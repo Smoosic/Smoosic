@@ -33,6 +33,7 @@ import { SuiToggleComponentParams, SuiToggleComponent, SuiToggleCompositeParams,
 import { SuiTreeComponent, SuiTreeComponentParams } from './components/tree';
 import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SuiExceptionHandler } from '../exceptions';
+import { SuiTextBlockDialogVue } from './textBlockVue';
 
 export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 
 'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking';
@@ -67,7 +68,17 @@ export function isModifierWithDialog(modifier: SmoModifier) {
     } else if (ctor === 'SmoVolta') {
       return createAndDisplayDialog(SuiVoltaAttributeDialog, parameters);
     } else if (ctor === 'SmoTextGroup') {      
-      return createAndDisplayDialog(SuiTextBlockDialog, parameters);
+      SuiTextBlockDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'textDialog',
+        ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+      });      
+      return null;
     } else if (ctor === 'SmoStaffTextBracket') {
       return createAndDisplayDialog(SuiTextBracketDialog, parameters);
     } else {

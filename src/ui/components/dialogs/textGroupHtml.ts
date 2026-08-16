@@ -79,13 +79,16 @@ const textAlignToJustification = (textAlign: string | undefined): number => {
   return SmoTextGroup.justifications.LEFT;
 };
 
-const fontInfoToStyle = (fontInfo: FontInfo, textAlign: string): string => {
-  const weight = SmoScoreText.weightString(fontInfo.weight);
-  const style = fontInfo.style ?? 'normal';
+// Only paragraph-level attrs (text-align, via the TextAlign extension) survive
+// on the <p> style itself -- TipTap's schema strips any style property that
+// isn't backed by a node/mark attribute. Font family/size/weight/style are
+// mark attributes (textStyle/bold/italic), so they must be expressed as
+// inline elements wrapping the run: a <span style="font-family...;font-size...">
+// (textStyle's parseHTML only matches a `span` tag) plus <strong>/<em>.
+const fontInfoToRunStyle = (fontInfo: FontInfo): string => {
   const family = SmoScoreText.familyString(fontInfo.family);
   const size = SmoScoreText.fontPointSize(fontInfo.size);
-  return `text-align: ${textAlign}; font-family: ${family}; font-size: ${size}px; `
-    + `font-weight: ${weight}; font-style: ${style};`;
+  return `font-family: ${family}; font-size: ${size}px;`;
 };
 
 /**
@@ -100,9 +103,20 @@ export function textGroupToHtml(textGroup: SmoTextGroup): string {
   }
   return textGroup.textBlocks.map((block: SmoTextBlock) => {
     const scoreText = block.text;
-    const style = fontInfoToStyle(scoreText.fontInfo, textAlign);
+    const fontInfo = scoreText.fontInfo;
     const inner = markupToInlineHtml(scoreText.text);
-    return `<p style="${style}">${inner.length > 0 ? inner : '<br>'}</p>`;
+    if (inner.length === 0) {
+      return `<p style="text-align: ${textAlign};"><br></p>`;
+    }
+    let content = inner;
+    if (SmoScoreText.weightString(fontInfo.weight) === 'bold') {
+      content = `<strong>${content}</strong>`;
+    }
+    if ((fontInfo.style ?? 'normal') === 'italic') {
+      content = `<em>${content}</em>`;
+    }
+    content = `<span style="${fontInfoToRunStyle(fontInfo)}">${content}</span>`;
+    return `<p style="text-align: ${textAlign};">${content}</p>`;
   }).join('');
 }
 
