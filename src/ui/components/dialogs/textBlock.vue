@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, Ref, nextTick, watch } from 'vue';
+import { ref, Ref, nextTick, watch, computed } from 'vue';
 import { SmoTextGroup } from '../../../smo/data/scoreText';
 import { FontInfo } from '../../../common/vex';
 import { SelectOption } from '../../common';
@@ -29,6 +29,7 @@ const mode: Ref<DialogMode> = ref(props.modifier.value.edited ? 'idle' : 'editin
 if (mode.value === 'editing') {
   props.modifier.value.edited = true;
 }
+const isEditing = computed(() => mode.value === 'editing')
 
 const xPosition = ref(0);
 const yPosition = ref(0);
@@ -59,12 +60,13 @@ const insertOptions: SelectOption[] = [
 ];
 const syncEditorIfActive = () => {
   if (mode.value === 'editing' && editorRef.value) {
+    // getTextGroup() already carries the correct activeText flags (whichever
+    // block the user last navigated to inside the editor) -- unlike the old
+    // per-run editor, there is no need to re-pick an active block here.
     const updated = editorRef.value.getTextGroup();
     props.modifier.value.textBlocks = updated.textBlocks;
     props.modifier.value.justification = updated.justification;
-    props.modifier.value.setActiveBlock(
-      props.modifier.value.textBlocks.length > 0 ? props.modifier.value.textBlocks[0].text : null
-    );
+    props.modifier.value.relativePosition = updated.relativePosition;
   }
 };
 const enterEditing = () => {
@@ -116,7 +118,16 @@ const onFontChange = async (font: FontInfo) => {
   activeText.fontInfo.size = font.size;
   activeText.fontInfo.weight = font.weight;
   activeText.fontInfo.style = font.style;
+  if (mode.value === 'editing') {
+    editorRef.value?.refreshActiveFont();
+  }
   await rerender();
+};
+// The active block can change while the text editor is open (add/remove/
+// previous/next controls inside textGroupEditorComp); keep this dialog's
+// font picker in sync with whichever block just became active.
+const onActiveBlockChanged = (font: FontInfo) => {
+  fontInfo.value = { ...font };
 };
 
 // --- Page behavior & attach-to-selection (User Story 4) ---
@@ -187,7 +198,8 @@ const handleCommit = async () => {
     </div>
     <template v-else>
       <div v-if="mode === 'editing'">
-        <textGroupEditorComp ref="editorRef" :domId="getId('editor')" :textGroup="modifier.value" />
+        <textGroupEditorComp ref="editorRef" :domId="getId('editor')" :textGroup="modifier.value"
+          @active-block-changed="onActiveBlockChanged" />
         <div class="row mb-2 ms-2 align-items-center">
           <div class="col col-4">
             <selectComp :domId="getId('insert-special')" label="Insert Special" :selections="insertOptions"
@@ -203,11 +215,11 @@ const handleCommit = async () => {
         <div class="row mb-2 ms-2">
           <div class="col col-4">
             <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('edit-text')"
-              @click.prevent="enterEditing">Edit Text</button>
+              @click.prevent="enterEditing"><span class="icon icon-pencil"></span></button>
           </div>
           <div class="col col-4">
             <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('move-text')"
-              @click.prevent="enterMoving">Move Text</button>
+              @click.prevent="enterMoving"><span class="icon icon-move"></span></button>
           </div>
         </div>
         <div class="row mb-2 ms-2 align-items-center">
@@ -220,6 +232,8 @@ const handleCommit = async () => {
           </div>
           <div class="col col-4">Y Position (Px)</div>
         </div>
+      </template>
+      <template v-if="mode !== 'editing'">
         <fontPickerComp :domId="getId('font')" label="Font Information" :font="fontInfo" :changeCb="onFontChange" />
         <div class="row mb-2 ms-2 align-items-center">
           <div class="col col-3">Page Behavior</div>

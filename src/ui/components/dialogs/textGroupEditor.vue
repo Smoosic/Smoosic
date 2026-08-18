@@ -1,35 +1,62 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, Ref, watch } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
+import { createStyleTag } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import TextAlign from '@tiptap/extension-text-align';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
-import { TextStyle, FontFamily, FontSize } from '@tiptap/extension-text-style';
-import { SmoTextGroup } from '../../../smo/data/scoreText';
+import { SmoTextGroup, SmoScoreText } from '../../../smo/data/scoreText';
+import { FontInfo } from '../../../common/vex';
+import { SelectOption } from '../../common';
 import { textGroupToHtml, htmlToTextGroup } from './textGroupHtml';
+import { TextBlockAtomNode } from './textBlockAtomNode';
+import selectComp from './select.vue';
+
+// No css-loader is wired into this project's webpack build (no other .vue
+// component here has a <style> block), so inject the small amount of CSS
+// this editor needs via TipTap's own createStyleTag utility instead.
+createStyleTag(
+  '.text-group-editor-content .ProseMirror p { margin: 0 0 0.25rem 0; }'
+  + '.text-group-editor-content .text-block-atom { cursor: default; margin: 0 0.15em; }',
+  undefined,
+  'text-group-editor'
+);
 
 interface Props {
   domId: string,
   textGroup: SmoTextGroup
 }
 const props = defineProps<Props>();
+const emit = defineEmits<{ 'active-block-changed': [font: FontInfo] }>();
 const getId = (str: string) => `${props.domId}-${str}`;
 
-const fontFamilies = ['Arial', 'Merriweather', 'Roboto,sans-serif', 'Times New Roman', 'monospace'];
-const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32];
+// SmoTextGroup.getActiveBlock() assumes at least one block exists; a
+// brand-new text item can start with zero, so materialize one empty block
+// on the live model up front (spec edge case: "brand-new text item").
+const ensureActiveBlock = (group: SmoTextGroup) => {
+  if (group.textBlocks.length === 0) {
+    const defaultBlock = new SmoScoreText(SmoScoreText.defaults);
+    group.addScoreText(defaultBlock, group.relativePosition);
+    group.setActiveBlock(defaultBlock);
+  }
+};
+ensureActiveBlock(props.textGroup);
+
+// Which block is editable right now -- everything else in the document is
+// rendered as a read-only textBlockAtom node (see textGroupHtml.ts).
+const activeBlockId: Ref<string> = ref(props.textGroup.getActiveBlock().attrs.id);
 
 const editor = useEditor({
-  content: textGroupToHtml(props.textGroup),
+  content: textGroupToHtml(props.textGroup, activeBlockId.value),
   extensions: [
     StarterKit.configure({
       blockquote: false,
+      bold: false,
       bulletList: false,
       code: false,
       codeBlock: false,
       hardBreak: false,
       heading: false,
       horizontalRule: false,
+      italic: false,
       link: false,
       listItem: false,
       listKeymap: false,
@@ -37,38 +64,106 @@ const editor = useEditor({
       strike: false,
       underline: false
     }),
-    TextStyle,
-    FontFamily,
-    FontSize,
-    TextAlign.configure({ types: ['paragraph'], defaultAlignment: 'left' }),
-    Superscript,
-    Subscript
+    TextBlockAtomNode
   ]
 });
 
+const rebuildContent = () => {
+  editor.value?.commands.setContent(textGroupToHtml(props.textGroup, activeBlockId.value));
+};
+
+const computeFontStyle = () => {
+  const fontInfo = props.textGroup.getActiveBlock().fontInfo;
+  return {
+    fontFamily: SmoScoreText.familyString(fontInfo.family),
+    fontSize: `${SmoScoreText.fontPointSize(fontInfo.size)}pt`,
+    fontWeight: SmoScoreText.weightString(fontInfo.weight),
+    fontStyle: fontInfo.style ?? 'normal'
+  };
+};
+// Local (not computed-from-props) so it stays correct even when the active
+// block's fontInfo is mutated in place by a sibling control (the dialog's
+// font picker) outside this component's own reactivity graph.
+const activeFontStyle: Ref<Record<string, string>> = ref(computeFontStyle());
+const refreshActiveFont = () => {
+  activeFontStyle.value = computeFontStyle();
+};
+
 // re-initialize the document if a different text group is passed in
 watch(() => props.textGroup, (next) => {
-  editor.value?.commands.setContent(textGroupToHtml(next));
+  ensureActiveBlock(next);
+  activeBlockId.value = next.getActiveBlock().attrs.id;
+  rebuildContent();
+  refreshActiveFont();
 });
 
-const currentFontFamily = computed(() => editor.value?.getAttributes('textStyle').fontFamily ?? '');
-const currentFontSize = computed(() => {
-  const size = editor.value?.getAttributes('textStyle').fontSize as string | undefined;
-  return size ? parseInt(size, 10) : '';
+const activeIndex = computed(() => {
+  const id = activeBlockId.value;
+  return props.textGroup.textBlocks.findIndex((block) => block.text.attrs.id === id);
 });
+const canGoPrevious = computed(() => activeIndex.value > 0);
+const canGoNext = computed(() => activeIndex.value >= 0 && activeIndex.value < props.textGroup.textBlocks.length - 1);
+const canRemove = computed(() => activeBlockId.value.length > 0 && props.textGroup.textBlocks.length > 1);
 
-const toggleBold = () => editor.value?.chain().focus().toggleBold().run();
-const toggleItalic = () => editor.value?.chain().focus().toggleItalic().run();
-const toggleSuperscript = () => editor.value?.chain().focus().toggleSuperscript().run();
-const toggleSubscript = () => editor.value?.chain().focus().toggleSubscript().run();
-const setAlign = (align: 'left' | 'center' | 'right') => editor.value?.chain().focus().setTextAlign(align).run();
-const setFontFamily = (event: Event) => {
-  const family = (event.target as HTMLSelectElement).value;
-  editor.value?.chain().focus().setFontFamily(family).run();
+const relativePositionOptions: SelectOption[] = [
+  { value: SmoTextGroup.relativePositions.ABOVE.toString(), label: 'Above' },
+  { value: SmoTextGroup.relativePositions.BELOW.toString(), label: 'Below' },
+  { value: SmoTextGroup.relativePositions.LEFT.toString(), label: 'Left' },
+  { value: SmoTextGroup.relativePositions.RIGHT.toString(), label: 'Right' }
+];
+const onRelativePositionSelect = (value: string) => {
+  props.textGroup.setRelativePosition(parseInt(value, 10));
+  rebuildContent();
 };
-const setFontSize = (event: Event) => {
-  const size = (event.target as HTMLSelectElement).value;
-  editor.value?.chain().focus().setFontSize(`${size}px`).run();
+
+const activateBlock = (scoreText: SmoScoreText) => {
+  props.textGroup.setActiveBlock(scoreText);
+  activeBlockId.value = scoreText.attrs.id;
+  rebuildContent();
+  refreshActiveFont();
+  // Best-effort: land keyboard focus back in the editor after the document
+  // was rebuilt (setContent resets ProseMirror's selection). Exact caret
+  // placement within the new active block isn't guaranteed, but this avoids
+  // forcing an extra click before the user can type.
+  editor.value?.commands.focus();
+  emit('active-block-changed', { ...scoreText.fontInfo });
+};
+
+const addBlock = () => {
+  const currentFont = props.textGroup.getActiveBlock().fontInfo;
+  const newBlock = new SmoScoreText({
+    ...SmoScoreText.defaults,
+    text: '',
+    fontInfo: { ...currentFont }
+  });
+  props.textGroup.addScoreText(newBlock, props.textGroup.relativePosition);
+  activateBlock(newBlock);
+};
+
+const removeBlock = () => {
+  if (!canRemove.value) {
+    return;
+  }
+  const blocks = props.textGroup.textBlocks;
+  const ix = activeIndex.value;
+  const toRemove = props.textGroup.getActiveBlock();
+  const neighborIx = ix < blocks.length - 1 ? ix + 1 : ix - 1;
+  const neighbor = blocks[neighborIx].text;
+  props.textGroup.removeBlock(toRemove);
+  activateBlock(neighbor);
+};
+
+const goPrevious = () => {
+  if (!canGoPrevious.value) {
+    return;
+  }
+  activateBlock(props.textGroup.textBlocks[activeIndex.value - 1].text);
+};
+const goNext = () => {
+  if (!canGoNext.value) {
+    return;
+  }
+  activateBlock(props.textGroup.textBlocks[activeIndex.value + 1].text);
 };
 
 const getTextGroup = (): SmoTextGroup => {
@@ -80,53 +175,30 @@ const getTextGroup = (): SmoTextGroup => {
 const insertAtCursor = (token: string) => {
   editor.value?.chain().focus().insertContent(token).run();
 };
-defineExpose({ getTextGroup, insertAtCursor });
+defineExpose({ getTextGroup, insertAtCursor, refreshActiveFont });
 </script>
 <template>
   <div v-if="editor" class="text-group-editor">
     <div class="row mb-2 ms-2 align-items-center">
       <div class="col-auto btn-group" role="group">
-        <button type="button" class="btn btn-sm" :class="editor.isActive('bold') ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('bold-button')" @click.prevent="toggleBold"><b>B</b></button>
-        <button type="button" class="btn btn-sm" :class="editor.isActive('italic') ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('italic-button')" @click.prevent="toggleItalic"><i>I</i></button>
-        <button type="button" class="btn btn-sm"
-          :class="editor.isActive('superscript') ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('superscript-button')" @click.prevent="toggleSuperscript">x&sup2;</button>
-        <button type="button" class="btn btn-sm"
-          :class="editor.isActive('subscript') ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('subscript-button')" @click.prevent="toggleSubscript">x&#8322;</button>
-      </div>
-      <div class="col-auto btn-group ms-2" role="group">
-        <button type="button" class="btn btn-sm"
-          :class="editor.isActive({ textAlign: 'left' }) ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('align-left-button')" @click.prevent="setAlign('left')">L</button>
-        <button type="button" class="btn btn-sm"
-          :class="editor.isActive({ textAlign: 'center' }) ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('align-center-button')" @click.prevent="setAlign('center')">C</button>
-        <button type="button" class="btn btn-sm"
-          :class="editor.isActive({ textAlign: 'right' }) ? 'btn-primary' : 'btn-outline-secondary'"
-          :id="getId('align-right-button')" @click.prevent="setAlign('right')">R</button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('add-block-button')"
+          title="Add Block" @click.prevent="addBlock"><span class="icon-plus"></span></button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('remove-block-button')"
+          title="Remove Block" :disabled="!canRemove" @click.prevent="removeBlock"><span class="icon-cancel-circle"></span></button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('previous-block-button')"
+          title="Previous Block" :disabled="!canGoPrevious" @click.prevent="goPrevious"><span class="icon-arrow-left"></span></button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('next-block-button')"
+          title="Next Block" :disabled="!canGoNext" @click.prevent="goNext"><span class="icon-arrow-right"></span></button>
       </div>
       <div class="col-auto ms-2">
-        <select class="form-select form-select-sm" :id="getId('font-family-select')" :value="currentFontFamily"
-          @change="setFontFamily">
-          <option value="" disabled>Font</option>
-          <option v-for="family in fontFamilies" :key="family" :value="family">{{ family }}</option>
-        </select>
-      </div>
-      <div class="col-auto">
-        <select class="form-select form-select-sm" :id="getId('font-size-select')" :value="currentFontSize"
-          @change="setFontSize">
-          <option value="" disabled>Size</option>
-          <option v-for="size in fontSizes" :key="size" :value="size">{{ size }}</option>
-        </select>
+        <selectComp :domId="getId('relative-position')" label="Layout" :selections="relativePositionOptions"
+          :initialValue="props.textGroup.relativePosition.toString()" :changeCb="onRelativePositionSelect" />
       </div>
     </div>
     <div class="row mb-2 ms-2">
       <div class="col">
-        <EditorContent :editor="editor" :id="getId('editor-content')" class="form-control"
-          style="min-height: 150px; overflow-y: auto;" />
+        <EditorContent :editor="editor" :id="getId('editor-content')" class="form-control text-group-editor-content"
+          style="overflow-y: auto;" :style="activeFontStyle" />
       </div>
     </div>
   </div>
