@@ -518,6 +518,7 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     // Create new scoreText object for the text blocks
     jObj.textBlocks.forEach((st: any) => {
       const tx = SmoScoreText.deserialize(st.text);
+      // Note activeText is not serialized.
       textBlocks.push({ text: tx, position: st.position, activeText: false });
     });
     // fill in the textBlock configuration
@@ -529,6 +530,14 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     const rv = SmoTextGroup.deserialize(jObj);
     if (jObj.attrs.id) {
       rv.attrs.id = jObj.attrs.id;
+    }
+    // If we are deserializing from a saved score, text element attributes won't 
+    // exists.  If we are deserializing a text group that has already been rendered, 
+    // preserve the text block IDs.
+    for (let i = 0; i < jObj.textBlocks.length; ++i) {
+      if (jObj.textBlocks[i].text.attrs) {
+        rv.textBlocks[i].text.attrs.id = jObj.textBlocks[i].text.attrs.id;
+      }
     }
     return rv;
   }
@@ -617,6 +626,21 @@ export class SmoTextGroup extends SmoScoreModifierBase {
       block.text.x *= scale;
       block.text.y *= scale;
     });
+  }
+  /**
+   * Remove empty text blocks introduced when editing
+   */
+  trimEmptyBlocks() {
+    const blocks: SmoTextBlock[] = [];
+    this.textBlocks.forEach((tb: SmoTextBlock) => {
+      if (tb.text.text.trim().length > 0) {
+        blocks.push(tb);
+      }
+    });
+    if (blocks.length < 1) {
+      return;
+    }
+    this.textBlocks = blocks;
   }
   // ### tryParseUnicode
   // Try to parse unicode strings.

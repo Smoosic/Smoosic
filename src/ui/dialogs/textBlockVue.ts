@@ -50,6 +50,9 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
     view.groupUndo(true);
     view.addTextGroup(workingGroup);
   } else {
+    const og = (parameters.modifier as SmoTextGroup);
+    og.elements.forEach((el: ElementLike) => RemoveElementLike(el));
+    og.elements = [];
     workingGroup = SmoTextGroup.deserializePreserveId(parameters.modifier);
     workingGroup.setActiveBlock(workingGroup.textBlocks[0].text);
     view.groupUndo(true);
@@ -71,6 +74,9 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
   };
 
   const commitCb = async () => {
+    modifier.value.elements.forEach((el:ElementLike) => RemoveElementLike(el));
+    modifier.value.elements = [];
+    modifier.value.trimEmptyBlocks();
     await view.updateTextGroup(modifier.value);
     view.groupUndo(false);
     finish();

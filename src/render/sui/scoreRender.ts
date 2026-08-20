@@ -142,9 +142,9 @@ export class SuiScoreRender {
       if (container) {
         const block = SuiTextBlock.fromTextGroup(newGroup, container, this.vexContainers, this.measureMapper!.scroller);
         block.render();
-        if (block.currentBlock?.text.element) {
-          gg.elements.push(block.currentBlock?.text.element);
-        }
+        block.inlineBlocks.forEach((ib) => {
+          gg.elements.push(ib.text.element);
+        });
         // For the first one we render, use that as the bounding box for all the text, for
         // purposes of mapper/tracker
         if (ix === 0) {

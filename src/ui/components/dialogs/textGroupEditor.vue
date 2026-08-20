@@ -5,6 +5,7 @@ import { createStyleTag } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { SmoTextGroup, SmoScoreText } from '../../../smo/data/scoreText';
 import { FontInfo } from '../../../common/vex';
+import { RemoveElementLike, ElementLike } from '../../../smo/data/common';
 import { SelectOption } from '../../common';
 import { textGroupToHtml, htmlToTextGroup } from './textGroupHtml';
 import { TextBlockAtomNode } from './textBlockAtomNode';
@@ -22,7 +23,8 @@ createStyleTag(
 
 interface Props {
   domId: string,
-  textGroup: SmoTextGroup
+  textGroup: SmoTextGroup,
+  rerender: () => Promise<void>
 }
 const props = defineProps<Props>();
 const emit = defineEmits<{ 'active-block-changed': [font: FontInfo] }>();
@@ -106,10 +108,8 @@ const canGoNext = computed(() => activeIndex.value >= 0 && activeIndex.value < p
 const canRemove = computed(() => activeBlockId.value.length > 0 && props.textGroup.textBlocks.length > 1);
 
 const relativePositionOptions: SelectOption[] = [
-  { value: SmoTextGroup.relativePositions.ABOVE.toString(), label: 'Above' },
-  { value: SmoTextGroup.relativePositions.BELOW.toString(), label: 'Below' },
-  { value: SmoTextGroup.relativePositions.LEFT.toString(), label: 'Left' },
-  { value: SmoTextGroup.relativePositions.RIGHT.toString(), label: 'Right' }
+  { value: SmoTextGroup.relativePositions.BELOW.toString(), label: 'Vertical' },
+  { value: SmoTextGroup.relativePositions.RIGHT.toString(), label: 'Horizontal' }
 ];
 const onRelativePositionSelect = (value: string) => {
   props.textGroup.setRelativePosition(parseInt(value, 10));
@@ -144,6 +144,8 @@ const removeBlock = () => {
   if (!canRemove.value) {
     return;
   }
+  props.textGroup.elements.forEach((tg:ElementLike) => RemoveElementLike(tg))
+  props.textGroup.elements = [];
   const blocks = props.textGroup.textBlocks;
   const ix = activeIndex.value;
   const toRemove = props.textGroup.getActiveBlock();
@@ -151,6 +153,7 @@ const removeBlock = () => {
   const neighbor = blocks[neighborIx].text;
   props.textGroup.removeBlock(toRemove);
   activateBlock(neighbor);
+  props.rerender();
 };
 
 const goPrevious = () => {
@@ -197,7 +200,8 @@ defineExpose({ getTextGroup, insertAtCursor, refreshActiveFont });
     </div>
     <div class="row mb-2 ms-2">
       <div class="col">
-        <EditorContent :editor="editor" :id="getId('editor-content')" class="form-control text-group-editor-content"
+        <EditorContent :editor="editor" :id="getId('editor-content')" 
+          class="form-control text-group-editor-content tiptap-editor"
           style="overflow-y: auto;" :style="activeFontStyle" />
       </div>
     </div>

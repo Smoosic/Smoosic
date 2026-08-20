@@ -63,6 +63,13 @@ export function textGroupToHtml(textGroup: SmoTextGroup, activeBlockId: string):
  */
 export function htmlToTextGroup(editorJson: JSONContent, original: SmoTextGroup): SmoTextGroup {
   const result = SmoTextGroup.deserializePreserveId(original.serialize());
+  // activeText is ephemeral and not serialized so...recreate it
+  const activeIndex = original.textBlocks.findIndex((x) => x.activeText);
+  if (result.textBlocks.length > activeIndex && activeIndex >= 0) {
+    result.textBlocks[activeIndex].activeText = true;
+  } else {
+    result.textBlocks[0].activeText = true;
+  }
   const activeBlock = result.getActiveBlock();
 
   let activeText = '';

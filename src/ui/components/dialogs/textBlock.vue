@@ -199,13 +199,13 @@ const handleCommit = async () => {
     <template v-else>
       <div v-if="mode === 'editing'">
         <textGroupEditorComp ref="editorRef" :domId="getId('editor')" :textGroup="modifier.value"
-          @active-block-changed="onActiveBlockChanged" />
+          @active-block-changed="onActiveBlockChanged" :rerender="rerender"/>
         <div class="row mb-2 ms-2 align-items-center">
-          <div class="col col-4">
+          <div class="col col-6">
             <selectComp :domId="getId('insert-special')" label="Insert Special" :selections="insertOptions"
               :initialValue="''" :changeCb="insertSpecial" />
           </div>
-          <div class="col col-4">
+          <div class="col col-6">
             <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('done-editing')"
               @click.prevent="exitEditing">Done Editing Text</button>
           </div>
@@ -213,24 +213,24 @@ const handleCommit = async () => {
       </div>
       <template v-else>
         <div class="row mb-2 ms-2">
-          <div class="col col-4">
+          <div class="col col-6">
             <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('edit-text')"
               @click.prevent="enterEditing"><span class="icon icon-pencil"></span></button>
           </div>
-          <div class="col col-4">
+          <div class="col col-6">
             <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('move-text')"
               @click.prevent="enterMoving"><span class="icon icon-move"></span></button>
           </div>
         </div>
         <div class="row mb-2 ms-2 align-items-center">
-          <div class="col col-4">
+          <div class="col col-6">
             <numberInputApp :domId="getId('x-position')" :precision="0" :initialValue="xPosition" :changeCb="onXChange" />
+            <span class="d-inline-block">X Position (Px)</span>
           </div>
-          <div class="col col-4">X Position (Px)</div>
-          <div class="col col-4">
+          <div class="col col-6">
             <numberInputApp :domId="getId('y-position')" :precision="0" :initialValue="yPosition" :changeCb="onYChange" />
+          <span class="d-inline-block">Y Position (Px)</span>
           </div>
-          <div class="col col-4">Y Position (Px)</div>
         </div>
       </template>
       <template v-if="mode !== 'editing'">

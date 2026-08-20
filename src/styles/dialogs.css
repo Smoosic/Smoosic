@@ -144,6 +144,7 @@
   display: none;
 }
 button.dropdown-toggle {
+  padding-left: 2rem;
   position: relative;
 }
 button.number-click {
@@ -224,7 +225,11 @@ button.collapsable-button[data-bs-toggle] span.smo-icon {
 .draganime.hide,.textEdit.hide {
 	display:none;
 }
-
+.tiptap-editor [contenteditable=false] {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  opacity: 0.4;
+}
 .draganime {
 	display: block;
 	border: blue 2px solid;
