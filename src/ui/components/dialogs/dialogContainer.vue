@@ -25,7 +25,7 @@ const getId = (str: string) => {
 const draggable = draggableSession(getDomId());
 </script>
 <template>
-  <div class="attributeModal" :id="getDomId()" :style="draggable.getLocString()">
+  <div class="dlg attributeModal" :id="getDomId()" :style="draggable.getLocString()">
     <div :class="classes" :id="getId('modal-content')">
       <draggableComp :draggableSession="draggable" />
       <div class="row mb-2">

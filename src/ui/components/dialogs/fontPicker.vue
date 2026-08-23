@@ -91,18 +91,13 @@ watch(() => props.font, (next) => {
       <selectComp :domId="getId('font-family-select')" :label="''" :selections="fontFamilies"
         :initialValue="fontCopy.family" :changeCb="changeFamilyCb" />
     </div>
-    <div class="col col-3">
-      <label class="form-label" :for="getId('family-label')">Font Family</label>
-    </div>
-  </div>
-  <div class="row mb-2 ms-2">
     <div class="col col-4 pe-0">
+      <span class="small">Size</span>
       <numberInputApp :domId="getId('page-width-input')" :initialValue="fontSize" :precision="1"
         :changeCb="changeSizeCb" :disabled="false" />
     </div>
-    <div class="col col-2 text-start ps-0 pe-0">
-      <label class="form-label" :for="getId('size-label')">Size</label>
-    </div>
+  </div>
+  <div class="row mb-2 ms-2">
     <div class="col col-3 ps-0">
       <input class="form-check-input me-2" type="checkbox" v-model="isBold" :id="getId('font-weight')"></input>
       <label class="form-check-label" :for="getId('font-weight')">Bold</label>

@@ -150,6 +150,7 @@ button.dropdown-toggle {
 button.number-click {
   line-height: 1rem;
   background: #ddd;
+  font-size: 0.75rem;
 }
 button.number-click:disabled {
   background: #e5e5e5;
@@ -157,25 +158,25 @@ button.number-click:disabled {
 input.number-click {
   line-height: 1rem;
 }
-button.collapsable-button[data-bs-toggle] {
+.collapsable-button[data-bs-toggle] {
   width: 2rem;
   height: 2rem;
   position: absolute;
   border-color: #6664;
 }
 button.dropdown-toggle[data-bs-toggle][aria-expanded="true"] span.smo-icon,
-button.collapsable-button[data-bs-toggle][aria-expanded="true"] span.smo-icon {
+.collapsable-button[data-bs-toggle][aria-expanded="true"] span.smo-icon {
   transform: rotate(180deg);
   transition: transform 0.3s ease-in-out;
 }
 button.dropdown-toggle[data-bs-toggle] span.smo-icon{
   top:0.25rem;
 }
-button.collapsable-button[data-bs-toggle] span.smo-icon {
+.collapsable-button[data-bs-toggle] span.smo-icon {
   top:0.5rem;
 }
 button.dropdown-toggle[data-bs-toggle] span.smo-icon,
-button.collapsable-button[data-bs-toggle] span.smo-icon {
+.collapsable-button[data-bs-toggle] span.smo-icon {
   position:absolute;
   left:0.5rem;
   transform: rotate(0deg);

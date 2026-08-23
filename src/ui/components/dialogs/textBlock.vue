@@ -190,7 +190,7 @@ const handleCommit = async () => {
 </script>
 
 <template>
-  <dialogContainer :domId="domId" :label="label" :commitCb="handleCommit" :cancelCb="cancelCb" :removeCb="removeCb">
+  <dialogContainer :domId="domId" :label="label" :commitCb="handleCommit" :cancelCb="cancelCb" :removeCb="removeCb" classes="text-left">
     <div v-if="mode === 'moving'">
       <textDraggerComp ref="draggerRef" :domId="getId('dragger')" altLabel="Done Dragging Text"
         :textGroup="modifier.value" :pageMap="view.renderer.pageMap" :scroller="view.tracker.scroller" :debug="view.debug"
@@ -225,16 +225,16 @@ const handleCommit = async () => {
         <div class="row mb-2 ms-2 align-items-center">
           <div class="col col-6">
             <numberInputApp :domId="getId('x-position')" :precision="0" :initialValue="xPosition" :changeCb="onXChange" />
-            <span class="d-inline-block">X Position (Px)</span>
+            <span class="d-inline-block ps-1">X Pos</span>
           </div>
           <div class="col col-6">
             <numberInputApp :domId="getId('y-position')" :precision="0" :initialValue="yPosition" :changeCb="onYChange" />
-          <span class="d-inline-block">Y Position (Px)</span>
+          <span class="d-inline-block ps-1">Y Pos</span>
           </div>
         </div>
       </template>
       <template v-if="mode !== 'editing'">
-        <fontPickerComp :domId="getId('font')" label="Font Information" :font="fontInfo" :changeCb="onFontChange" />
+        <fontPickerComp :domId="getId('font')" label="Font" :font="fontInfo" :changeCb="onFontChange" />
         <div class="row mb-2 ms-2 align-items-center">
           <div class="col col-3">Page Behavior</div>
           <div class="col col-5">

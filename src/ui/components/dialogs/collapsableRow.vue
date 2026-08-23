@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { onMounted, ref, Ref } from 'vue';
 interface Props {
-  domId: string, 
+  domId: string,
   initialState: boolean,
-  containerClasses?:string
+  containerClasses?: string,
+  label?: string,
+  hint?: string
 }
 
 const props = defineProps<Props>();
 const { domId, initialState } = { ...props };
-const containerClasses = props.containerClasses ??'';
+const containerClasses = props.containerClasses ?? '';
 const isCollapsed = ref(props.initialState);
+const hint = props.hint ?? '';
+const label = props.label ?? '';
 const collapsing = ref(false);
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
@@ -26,13 +30,16 @@ const getId = (str: string) => {
 }
 </script>
 <template>
-  <div class="row pt-4 collapsable-container ms-2" :class="containerClasses">
-    <button class="btn btn-sm collapsable-button position-absolute left-3 top-n4 border-0" data-bs-toggle="collapse" role="button"
-      :aria-expanded="!isCollapsed" :aria-controls="getId('collapsable')" @click.prevent="toggleCollapse">
-      <span class="smo-icon icon-circle-down fs-6"></span>
-    </button>
-    <div class="collapse collapsable-row row" :id="getId('collapse')" :class="{ show: !isCollapsed, collapsing: collapsing }">
-    <slot></slot>
+  <div class="sect" :class="{ 'is-open': !isCollapsed }">
+    <div class="sect-head" @click.prevent="toggleCollapse" role="button" :aria-expanded="!isCollapsed">
+      <span :class="{ hide: label.length === 0 }">{{ label }}</span>
+      <span class="caret" data-bs-toggle="collapse" 
+        :class="{ 'caret-right': isCollapsed, 'caret-open': !isCollapsed }" :aria-controls="getId('collapsable')"
+        ></span>
+      <span :class="{ hide: hint.length === 0 || !isCollapsed }" class="hint"> {{ hint }}</span>
+    </div>
+    <div class="sect-body collapse collapsable-row" :class="{ show: !isCollapsed, collapsing: collapsing }">
+      <slot></slot>
     </div>
   </div>
 </template>

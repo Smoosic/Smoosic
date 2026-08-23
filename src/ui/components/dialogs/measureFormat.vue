@@ -2,6 +2,7 @@
 import { ref, Ref, watch, reactive } from 'vue';
 import numberInputApp from './numberInput.vue';
 import collapsableRow from './collapsableRow.vue';
+import toggle from './toggle.vue';
 import {
   SmoMeasureFormat, SmoMeasureFormatNumberAttributes, SmoMeasureFormatNumberKeys
 } from '../../../smo/data/measureModifiers';
@@ -42,6 +43,24 @@ watch(measureFormat, async () => {
   }
   await props.updateMeasureFormatCb(measureFormat);
 }, { deep: true });
+const updatePadAll = (value: boolean) => {
+  measureFormat.padAllInSystem = value;
+}
+const updateSkipMeasureCount = (value: boolean) => {
+  measureFormat.skipMeasureCount = value;
+}
+const updateAutoJustify = (value: boolean) => {
+  measureFormat.autoJustify = value;
+}
+const updateRestBreak = (value: boolean) => {
+  measureFormat.restBreak = value;
+}
+const updateSystemBreak = (value: boolean) => {
+  measureFormat.systemBreak = value;
+}
+const updatePageBreak = (value: boolean) => {
+  measureFormat.pageBreak = value;
+}
 const getId = (str: string) => {
   return `${domId}-${str}`;
 }
@@ -49,101 +68,39 @@ const getId = (str: string) => {
 
 <template>
   <dialogContainer :domId="domId" :label="label" :cancelCb="cancelCb" :commitCb="commitCb"
-   :classes="'text-center mw-40 nw-40'">
-    <div class="row align-items-center">
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="measureFormat.systemBreak" 
-        :disabled="measureFormat.pageBreak"
-        :id="getId('system-break')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('system-break')">Break system before measure</span>
-      </div>
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="measureFormat.pageBreak" :id="getId('page-break')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('page-break')">Break page before measure</span>
-      </div>
+    :classes="'text-center mw-40'">
+    <div class="toggles">
+      <toggle :changeCb="updateSystemBreak" :disabled="measureFormat.pageBreak" :domId="getId('system-break')"
+        :initialValue="measureFormat.systemBreak" :label="'Break system before measure'" />
+      <toggle :changeCb="updatePageBreak" :domId="getId('system-break')" :initialValue="measureFormat.pageBreak"
+        :label="'Break page before measure'" />
     </div>
-    <div class="row align-items-center">
-      <div class="number-input-column-div">
-        <numberInputApp :domId="getId('measureIndex')" :initialValue="measureIndex"
-          :changeCb="renumberMeasureCb" :precision="0" :width="25" />
-      </div>
-      <div class="number-input-label-div">
-        <span class="form-check-label">Measure Number</span>
-      </div>
-      <div class="col col-6"></div>
+    <div class="group">
+      <div class="group-label">Measure Numbering</div>
+      <numberInputApp :domId="getId('measureIndex')" :initialValue="measureIndex" :changeCb="renumberMeasureCb"
+        :precision="0" :width="25" :label="'Measure Number'" />
     </div>
-    <div class="row align-items-center mb-4">
-      <div class="number-input-column-div">
-        <numberInputApp :domId="getId('pad-left')" :initialValue="measureFormat.padLeft" :minValue="0"
-          :changeCb="numberAttributeMap['padLeft']" :precision="0" :width="25" />
-      </div>
-      <div class="number-input-label-div">
-        <span class="form-check-label">Pad Left</span>
-      </div>
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" :disabled="measureFormat.padLeft < 1"
-          v-model="measureFormat.padAllInSystem" :id="getId('pad-all-in-system')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('pad-all-in-system')">Pad All In System</span>
-      </div>
+    <div class="group">
+      <numberInputApp :domId="getId('pad-left')" :initialValue="measureFormat.padLeft" :minValue="0" label="Pad Left"
+        :changeCb="numberAttributeMap['padLeft']" :precision="0" :width="25" />
+      <toggle :disabled="measureFormat.padLeft < 1" :changeCb="updatePadAll" :label="'Pad All In System'"
+        :initialValue="measureFormat.padAllInSystem" :domId="getId('pad-all-in-system')" />
     </div>
-    <div class="row align-items-center mt-2 border-top" :class="{ hide: !isPart }">
-      <div class="col col-12 text-center">
-        <h2 class="h5">Part Format</h2>
-      </div>
+    <div class="group" :class="{ hide: !isPart }">
+      <div class="group-label">Part Format</div>
+      <toggle :changeCb="updateRestBreak" :domId="getId('rest-break')" :label="'Break Multi-Measure Rest'"
+        :initialValue="measureFormat.restBreak" />
     </div>
-    <div class="row align-items-center mb-4" :class="{ hide: !isPart }">
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="measureFormat.restBreak" :id="getId('rest-break')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('rest-break')">Break Multi-measure rest</span>
-      </div>
-    </div>
-    <div class="row align-items-center mt-2 border-top">
-      <div class="col col-12 text-center">
-        <h2 class="h5">Experimental</h2>
-      </div>
-    </div>
-    <collapsableRow :domId="getId('advanced-options')" :initialState="true">
-      <div class="number-input-column-div">
-        <numberInputApp :domId="getId('stretch-contents')" :initialValue="measureFormat.customStretch"
-          :changeCb="numberAttributeMap['customStretch']" :precision="0" :width="25" />
-      </div>
-      <div class="number-input-label-div">
-        <span class="form-check-label">Stretch Contents</span>
-      </div>
-      <div class="number-input-column-div">
-        <numberInputApp :domId="getId('proportionality')" :initialValue="measureFormat.proportionality"
-          :changeCb="numberAttributeMap['proportionality']" :precision="0" :width="25" />
-      </div>
-      <div class="number-input-label-div">
-        <span class="form-check-label">Proportionality (softmax)</span>
-      </div>
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="measureFormat.autoJustify" :id="getId('auto-justify')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <label class="form-check-label" :for="getId('auto-justify')">Auto-Justify</label>
-      </div>
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="measureFormat.skipMeasureCount"
-          :id="getId('skip-measure-count')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('skip-measure-count')">Skip in max measure count</span>
-      </div>
+    <collapsableRow :domId="getId('advanced-options')" :initialState="true" :label="'Spacing'" hint="4 settings">
+      <numberInputApp :domId="getId('stretch-contents')" :initialValue="measureFormat.customStretch"
+        :changeCb="numberAttributeMap['customStretch']" :precision="0" :width="25" :label="'Stretch Contents'" />
+      <numberInputApp :domId="getId('proportionality')" :initialValue="measureFormat.proportionality"
+        :changeCb="numberAttributeMap['proportionality']" :precision="0" :width="25" :label="'Proportionality'" />
+      <toggle :changeCb="updateAutoJustify" :domId="getId('auto-justify')" :label="'Auto-Justify'"
+        :initialValue="measureFormat.autoJustify" />
+      <toggle :changeCb="updateSkipMeasureCount"
+        :label="'Skip in max measure count'" :domId="getId('skip-measure-count')"
+        :initialValue="measureFormat.skipMeasureCount" />
     </collapsableRow>
   </dialogContainer>
 </template>
