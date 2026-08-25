@@ -108,19 +108,13 @@ const updateNumber = (type: numberTypes) => {
       </div>
     </div>
     <div class="row align-items-baseline mt-3" :id="getId('arp-row')">
-      <div class="col col-3 float-end pe-0">
-        <span :for="getId('duration-select1')" class="form-label">Default Duration (even meter):</span>
-      </div>
-      <div class="col col-3 text-start">
-        <selectComp :domId="getId('duration-select1')" label="Select"
+      <div class="col col-6 text-start">
+        <selectComp :domId="getId('duration-select1')" label="Default Duration(even meter)"
           :initialValue="preferences.defaultDupleDuration.toString()" :selections="defaultDoubleDurations"
           :changeCb="updateNumber('defaultDupleDuration')" />
       </div>
-      <div class="col col-3 float-end pe-0">
-        <span :for="getId('duration-select2')" class="form-label">Default Duration (triple meter):</span>
-      </div>
-      <div class="col col-3 text-start">
-        <selectComp :domId="getId('duration-select2')" label="Select"
+      <div class="col col-6 text-start">
+        <selectComp :domId="getId('duration-select2')" label="Default Duration (triple meter)"
           :initialValue="preferences.defaultTripleDuration.toString()" :selections="defaultTripleDurations"
           :changeCb="updateNumber('defaultTripleDuration')" />
       </div>

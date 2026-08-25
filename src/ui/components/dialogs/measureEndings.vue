@@ -55,9 +55,9 @@ exposeEndings();
       </div>
       <div class="col col-4"
         :class="{ hide: !exposeBrackets }">
-        <div class="row">Start Bracket</div>
         <selectComponent :domId="getId('start-select')" :label="props.startBrackets.label" :selections="props.startBrackets.selections"
-          :initialValue="props.startBrackets.initialValue" :changeCb="props.startBrackets.changeCb" />
+          :initialValue="props.startBrackets.initialValue" :changeCb="props.startBrackets.changeCb"
+           />
       </div>
     </div>
     <div class="row nw-30 ms-2">
@@ -65,12 +65,11 @@ exposeEndings();
       <buttonGroup :label="'End Endings'" :buttonDefs="endEndings" :domId="getId('end-ending-buttons')"
         :commonClasses="'btn btn-sm btn-outline-dark me-2'" />        
       </div>
-    <div class="col col-4"  :class="{ hide: !exposeBrackets }">
-    <div class="row">End Bracket</div>
+      <div class="col col-4"  :class="{ hide: !exposeBrackets }">
       <selectComponent :domId="getId('end-select')" :label="props.endBrackets.label" :selections="props.endBrackets.selections"
         :initialValue="props.endBrackets.initialValue" :changeCb="props.endBrackets.changeCb" /> 
-    </div>
-    </div>
+      </div>
+      </div>
 
     <div class="row nw-30 ms-2">
       <buttonGroup :label="'Repeat Landmarks'" :buttonDefs="repeatLandmarks" :domId="getId('repeat-landmark-buttons')"

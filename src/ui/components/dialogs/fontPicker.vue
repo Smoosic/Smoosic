@@ -83,18 +83,13 @@ watch(() => props.font, (next) => {
 });
 </script>
 <template>
-  <div class="row mb-2 ms-2">
-    <div class="col col-3">
-      <label class="form-label fw-bolder" :for="getId('size-label')">{{ label }}</label>
-    </div>
-    <div class="col col-5 pe-0">
-      <selectComp :domId="getId('font-family-select')" :label="''" :selections="fontFamilies"
-        :initialValue="fontCopy.family" :changeCb="changeFamilyCb" />
-    </div>
-    <div class="col col-4 pe-0">
-      <span class="small">Size</span>
+  <div class="group">
+    <div class="group-label">{{ label }}</div>    
+    <div class="grow-row">
+      <selectComp :domId="getId('font-family-select')" :label="'Family'" :selections="fontFamilies"
+        :initialValue="fontCopy.family" :changeCb="changeFamilyCb" :inline="true" />
       <numberInputApp :domId="getId('page-width-input')" :initialValue="fontSize" :precision="1"
-        :changeCb="changeSizeCb" :disabled="false" />
+        :changeCb="changeSizeCb" :disabled="false" label="Size" :inline="true" />
     </div>
   </div>
   <div class="row mb-2 ms-2">

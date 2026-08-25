@@ -25,10 +25,10 @@ const getId = (str: string) => {
 const draggable = draggableSession(getDomId());
 </script>
 <template>
-  <div class="dlg attributeModal" :id="getDomId()" :style="draggable.getLocString()">
+  <div class="dlg spec attributeModal" :id="getDomId()" :style="draggable.getLocString()">
     <div :class="classes" :id="getId('modal-content')">
       <draggableComp :draggableSession="draggable" />
-      <div class="row mb-2">
+      <div class="row mb-2 dlg-bar">
         <h2 class="dialog-label">{{ label }}</h2>
       </div>
       <slot></slot>

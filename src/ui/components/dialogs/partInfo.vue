@@ -165,58 +165,33 @@ const getId = (str: string) => {
       </div>
     </div>
     <div class="row mb-2">
-      <div class="col col-3 text-end">Page Size</div>
-      <div class="col col-6">
-        <selectComp :domId="getId('page-size-select')" :label="''" :selections="pageSizes" :initialValue="pageSize"
+      <div class="col col-12">
+        <selectComp :domId="getId('page-size-select')" :label="'Page Size'" :selections="pageSizes" :initialValue="pageSize"
           :changeCb="pageSizeCb" />
       </div>
     </div>
-    <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+    <div class="group">
+      <div class="grow-row">
         <numberInputApp :domId="getId('page-width-input')" :initialValue="partInfo.layoutManager.globalLayout.pageWidth" :precision="0"
-          :changeCb="updateLayoutFunc('pageWidth')" :disabled="lockDimensions" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Page Width</span>
-      </div>
-      <div class="col col-4 ms-n4">
+          :changeCb="updateLayoutFunc('pageWidth')" :disabled="lockDimensions" label="Page Width" :inline="true"/>
         <numberInputApp :domId="getId('page-height-input')" :initialValue="partInfo.layoutManager.globalLayout.pageHeight" :precision="0"
-          :changeCb="updateLayoutFunc('pageHeight')" :disabled="lockDimensions" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Page Height</span>
+          :changeCb="updateLayoutFunc('pageHeight')" :disabled="lockDimensions" label="Page Height" :inline="true" />
       </div>
     </div>
-    <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+    <div class="group">
+      <div class="grow-row">
         <numberInputApp :domId="getId('zoom-scale-input')" :initialValue="partInfo.layoutManager.globalLayout.zoomScale" :precision="0"
-          :percent=true :changeCb="updateLayoutFunc('zoomScale')" :minValue="0.25" :maxValue="8" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Zoom Scale (%)</span>
-      </div>
-      <div class="col col-4 ms-n4">
+          :percent=true :changeCb="updateLayoutFunc('zoomScale')" :minValue="0.25" :maxValue="8" label="Zoom %" :inline="true"/>
         <numberInputApp :domId="getId('svg-scale-input')" :initialValue="partInfo.layoutManager.globalLayout.svgScale" :precision="0"
-          :percent="true" :changeCb="updateLayoutFunc('svgScale')" :minValue="0.25" :maxValue="2" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Note Size (%)</span>
+          :percent="true" :changeCb="updateLayoutFunc('svgScale')" :minValue="0.25" :maxValue="2" label="Note Size (%)" :inline="true"/>
       </div>
     </div>
-    <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+    <div class="group">
+      <div class="grow-row">
         <numberInputApp :domId="getId('note-spacing-input')" :initialValue="partInfo.layoutManager.globalLayout.noteSpacing" :precision="2"
-          :changeCb="updateLayoutFunc('noteSpacing')" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Note Spacing</span>
-      </div>
-      <div class="col col-4 ms-n4">
+          :changeCb="updateLayoutFunc('noteSpacing')" label="Note Spacing" :inline="true"/>
         <numberInputApp :domId="getId('max-measure-system-input')" :initialValue="partInfo.layoutManager.globalLayout.maxMeasureSystem"
-          :precision="0" :changeCb="updateLayoutFunc('maxMeasureSystem')" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Measures/System</span>
+          :precision="0" :changeCb="updateLayoutFunc('maxMeasureSystem')" label="Measures/System" :inline="true" />
       </div>
     </div>
   </dialogContainer>

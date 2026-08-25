@@ -52,10 +52,7 @@ watch(clefChange, (newVal) => {
 <template>
   <dialogContainer :domId="domId" :label="'Clef Change'" :commitCb="commitCb" :cancelCb="cancelCb" :enable="enable" :classes="'container text-center'">
       <div class="row align-items-baseline" :id="getId('clef-row')">
-        <div class="col-2 float-end">
-          <label :for="getId('clef-select')" class="form-label">Clef:</label>
-        </div>
-        <div class="col-10 text-start">
+        <div class="col-12 text-start">
           <selectComp :domId="getId('clef-select')" label="Clef" :initialValue="initialValue"
             :selections="clefChanges" :changeCb="handleSelect" />
         </div>

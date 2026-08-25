@@ -81,10 +81,13 @@ const getId = (str: string) => {
         :precision="0" :width="25" :label="'Measure Number'" />
     </div>
     <div class="group">
+      <div class="group-label">Padding</div>
+      <div class="group-body">
       <numberInputApp :domId="getId('pad-left')" :initialValue="measureFormat.padLeft" :minValue="0" label="Pad Left"
         :changeCb="numberAttributeMap['padLeft']" :precision="0" :width="25" />
       <toggle :disabled="measureFormat.padLeft < 1" :changeCb="updatePadAll" :label="'Pad All In System'"
         :initialValue="measureFormat.padAllInSystem" :domId="getId('pad-all-in-system')" />
+      </div>
     </div>
     <div class="group" :class="{ hide: !isPart }">
       <div class="group-label">Part Format</div>

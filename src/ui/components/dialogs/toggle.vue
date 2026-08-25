@@ -21,10 +21,11 @@ const onOff = computed(() => model.value ? 'on' : 'off');
 </script>
 <template>
   <div class="tgl-row">
-    <span class="tgl" :class="{ 'is-on': model, 'disabled' : disabledRef }">
-      <span class="tgl-knob" @click.prevent="flip" role="checkbox" :id="domId"></span>
+    <span class="tgl" :class="{ 'is-on': model, 'disabled':disabledRef }">
+      <input class="tgl-knob" :disabled=disabledRef
+        @click.prevent="flip" type="checkbox" :id="domId"></input>
     </span>
-    <span>{{ label }}</span>
+    <span class="tgl-label" :class="{'disabled':disabledRef }">{{ label }}</span>
     <span class="hint">{{ onOff }}</span>
   </div>
 </template>

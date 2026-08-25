@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, toRef, Ref, watch, reactive, computed, toDisplayString } from 'vue';
-import numberInputApp from './numberInput.vue';
 import { default as tsComponent } from './tsComponent.vue';
 import {
   TimeSignatureTime, SmoTimeSignature

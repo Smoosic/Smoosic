@@ -7,20 +7,16 @@ interface Props {
   maxValue?: number,
   width?: number,
   initialValue: number,
+  inline?: boolean,
   disabled?: boolean,
   percent?: boolean,
-  inputClasses?: string,
-  buttonClasses?: string,
   label?: string,
   changeCb: (value: number) => Promise<void>
 }
 const props = defineProps<Props>();
 const label = props.label ?? '';
-const buttonClasses = props.buttonClasses ?? 'btn btn-sm btn-outline-dark btn-square px-1 mb-1 number-click';
 const value = ref(props.initialValue);
-const width = props.width ?? 50;
-const inputClasses = props.inputClasses ??
-  `d-block text-center p-0 text-align-center number-click`;
+const inline = props.inline ?? false;
 let minValue: number = props.minValue ?? 0;
 let maxValue: number = props.maxValue ?? 99999;
 // If percent is set,  treat values 0-1 as 0-100.  Adjust for callback when local value is changed.
@@ -69,11 +65,11 @@ const handleChange = () => {
 roundValue();
 </script>
 <template>
-  <div class="grow-row">
+  <div :class="{'grow-row': !inline, 'inline-row': inline }">
     <span :class="{ hide: label.length === 0 }" class="axis">{{ label }}</span>
     <div class="num">
       <div class="num-field w-sm">
-        <input :class="inputClasses" :disabled="disabled" v-model="value" @change="handleChange" :id="getId('text')" />
+        <input :disabled="disabled" v-model="value" @change="handleChange" :id="getId('text')" />
       </div>
       <div class="num-spin">
         <div @click.prevent="increment(1)" :id="getId('incButton')" class="num-btn" role="button" :disabled="disabled">
