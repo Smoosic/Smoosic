@@ -624,15 +624,16 @@ h2.sec {
   font-family: var(--font-body);
   color: var(--color-text);
 }
-
 .dlg-bar {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 7px 10px;
+  padding: 0.5rem 0 0 0;
   background: var(--color-bg);
   border-bottom: 1px solid var(--dlg-rule);
   border-radius: var(--dlg-radius) var(--dlg-radius) 0 0;
+  margin-left: -1rem;
+  margin-right: -1rem;
 }
 
 .dlg-bar.is-dragging {
@@ -648,6 +649,7 @@ h2.sec {
   font: 600 11.5px/1 var(--font-heading);
   letter-spacing: .1em;
   text-transform: uppercase;
+  padding-left: 1.5rem;  /* make up for -margin of top bar */
 }
 
 .dlg-meta {

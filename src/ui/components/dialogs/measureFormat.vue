@@ -68,7 +68,7 @@ const getId = (str: string) => {
 
 <template>
   <dialogContainer :domId="domId" :label="label" :cancelCb="cancelCb" :commitCb="commitCb"
-    :classes="'text-center mw-40'">
+    :classes="'mw-40'">
     <div class="toggles">
       <toggle :changeCb="updateSystemBreak" :disabled="measureFormat.pageBreak" :domId="getId('system-break')"
         :initialValue="measureFormat.systemBreak" :label="'Break system before measure'" />

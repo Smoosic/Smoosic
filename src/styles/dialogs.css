@@ -528,11 +528,6 @@ button.nav-link {
 .attributeModal .buttonContainer .button-right {
 	margin-left:5px;
 }
-.attributeModal h2 {
-	text-align:center;
-	font-size:1.2em;
-  user-select: none;
-}
 
 .smoControlContainer .button-array-buttons button.repetext {
   font-size: 0.8em;
