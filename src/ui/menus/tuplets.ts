@@ -1,7 +1,6 @@
 import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShowOption,
     SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
-import {createAndDisplayDialog} from "../dialogs/dialog";
-import {SuiCustomTupletDialog} from "../dialogs/customTuplets";
+import {SuiCustomTupletDialogVue} from "../dialogs/customTupletsVue";
 
 declare var $: any;
 /**
@@ -64,7 +63,7 @@ const sevenTupletMenuOption: SuiConfiguredMenuOption = {
  */
 const customTupletDialogMenuOption: SuiConfiguredMenuOption = {
     handler: async (menu: SuiMenuBase) => {
-        createAndDisplayDialog(SuiCustomTupletDialog, {
+        SuiCustomTupletDialogVue({
             view: menu.view,
             completeNotifier: menu.completeNotifier,
             startPromise: menu.closePromise,

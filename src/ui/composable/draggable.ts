@@ -6,9 +6,9 @@ export interface DraggableSession {
   getCoordsCb: () => { topRef: Ref<number>, leftRef: Ref<number> };
   getLocString: () => string;
 }
-export const draggableSession = (domId: string, cssClass?: string): DraggableSession => {
-  const top = ref(100);
-  const left = ref(100);
+export const draggableSession = (domId: string, cssClass?: string, initialPosition?: { top: number, left: number }): DraggableSession => {
+  const top = ref(initialPosition?.top ?? 100);
+  const left = ref(initialPosition?.left ?? 100);
   cssClass = cssClass ?? 'draggable';
   const getCoordsCb = (): { topRef: Ref<number>, leftRef: Ref<number> } => {
     return { topRef: top, leftRef: left };

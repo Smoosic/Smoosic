@@ -1,5 +1,6 @@
 import { Transposable, SvgBox, SvgPoint, ElementLike } from '../../smo/data/common';
 import { SvgPage } from './svgPageMap';
+export type SuiTextStrokeName = 'text-suggestion' | 'text-selection' | 'text-highlight' | 'text-drag' | 'inactive-text';
 /**
  * @internal
  */
@@ -11,6 +12,7 @@ export interface StrokeInfo {
     fill: string;
     opacity: number;
 }
+export declare const SuiTextStrokes: Record<SuiTextStrokeName, StrokeInfo>;
 /**
  * @internal
  */

@@ -39,6 +39,13 @@ export interface SelectOption {
     icon?: string;
     active?: boolean;
 }
+export interface SelectDefinition {
+    domId: string;
+    label: string;
+    initialValue: string;
+    selections: SelectOption[];
+    changeCb: (value: string) => void;
+}
 export interface DomDebugFlag {
     category: string;
     htmlString: string;

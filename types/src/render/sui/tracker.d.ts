@@ -74,7 +74,13 @@ export declare class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     moveSelectionUp(): void;
     moveSelectionDown(): void;
     containsArtifact(): boolean;
-    _replaceSelection(nselector: SmoSelector, skipPlay: boolean): void;
+    /**
+     * Set absolute location of selection
+     * @param nselector
+     * @param skipPlay
+     * @returns
+     */
+    replaceSelection(nselector: SmoSelector, skipPlay: boolean): void;
     getFirstMeasureOfSelection(): SmoMeasure | null;
     getSelectedMeasures(): SmoSelection[];
     _addSelection(selection: SmoSelection): void;

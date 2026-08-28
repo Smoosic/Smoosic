@@ -14,6 +14,24 @@ import { PromiseHelpers } from '../../common/promiseHelpers';
 declare var $: any;
 
 /**
+ * Compute an initial dialog position near a score modifier, for Vue dialogs that want to
+ * open next to the thing they're editing instead of at the default fixed location.
+ * Mirrors the intent of the legacy `SuiDialogBase.positionFromModifier()`, adjusted for
+ * current scroll position; unlike the legacy version this does not clamp to the viewport
+ * edge or flip side when the dialog would be clipped, since that requires measuring the
+ * dialog element after it mounts.
+ * @category SuiDialog
+ */
+export const getModifierDialogPosition = (view: SuiScoreViewOperations, modifier: any): { top: number, left: number } | undefined => {
+  if (!modifier || !modifier.logicalBox) {
+    return undefined;
+  }
+  const screenBox = view.renderer.pageMap.svgToClient(modifier.logicalBox);
+  const netScroll = view.tracker.scroller.netScroll;
+  return { top: screenBox.y - netScroll.y, left: screenBox.x - netScroll.x };
+};
+
+/**
  * An adapter is the glue logic between UI components and the score view.
  * An adapter consists mostly of accessors (get/set) for the component data.  The 
  * components have their initial values set from the adapter get, and changes to components

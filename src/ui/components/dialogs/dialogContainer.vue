@@ -10,7 +10,9 @@ interface Props {
   cancelCb: () => Promise<void>,
   removeCb?: () => Promise<void>,
   classes?: string,
-  enable?: Boolean
+  enable?: Boolean,
+  enableCancelRemove?: Boolean,
+  initialPosition?: { top: number, left: number }
 };
 const props = defineProps<Props>();
 const enable = props.enable !== undefined ? toRef(props, 'enable') : ref(true);
@@ -22,7 +24,7 @@ const getDomId = () => {
 const getId = (str: string) => {
   return `${domId}-${str}`;
 }
-const draggable = draggableSession(getDomId());
+const draggable = draggableSession(getDomId(), undefined, props.initialPosition);
 </script>
 <template>
   <div class="dlg spec attributeModal" :id="getDomId()" :style="draggable.getLocString()">
@@ -32,8 +34,8 @@ const draggable = draggableSession(getDomId());
         <h2 class="dlg-title">{{ label }}</h2>
       </div>
       <slot></slot>
-      <DialogButtons :enable="enable" :commitCb="props.commitCb" :cancelCb="props.cancelCb"
-       :removeCb="props.removeCb" />
+      <DialogButtons :enable="enable" :enableCancelRemove="props.enableCancelRemove" :commitCb="props.commitCb"
+       :cancelCb="props.cancelCb" :removeCb="props.removeCb" />
     </div>
   </div>
 </template>

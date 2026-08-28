@@ -34,6 +34,12 @@ import { SuiTreeComponent, SuiTreeComponentParams } from './components/tree';
 import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SuiExceptionHandler } from '../exceptions';
 import { SuiTextBlockDialogVue } from './textBlockVue';
+import { SuiVoltaAttributeDialogVue } from './voltaVue';
+import { SuiTextBracketDialogVue } from './textBracketVue';
+import { SuiSlurAttributesDialogVue } from './slurVue';
+import { SuiPedalMarkingDialogVue } from './pedalMarkingVue';
+import { SuiHairpinAttributesDialogVue } from './hairpinVue';
+import { SuiDynamicModifierDialogVue } from './dynamicsVue';
 
 export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 
 'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking';
@@ -56,18 +62,23 @@ export function isModifierWithDialog(modifier: SmoModifier) {
     const ctor = modifier.attrs.type;
     parameters.modifier = modifier;
     if (ctor === 'SmoStaffHairpin') {
-      return createAndDisplayDialog(SuiHairpinAttributesDialog, parameters);
+      SuiHairpinAttributesDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoPedalMarking') {
-      return createAndDisplayDialog(SuiPedalMarkingDialog, parameters);
+      SuiPedalMarkingDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoTie') {
       return createAndDisplayDialog(SuiTieAttributesDialog, parameters);
     } else if (ctor === 'SmoSlur') {
-      return createAndDisplayDialog(SuiSlurAttributesDialog, parameters);
+      SuiSlurAttributesDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoDynamicText') {
-      return createAndDisplayDialog(SuiDynamicModifierDialog, parameters);
+      SuiDynamicModifierDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoVolta') {
-      return createAndDisplayDialog(SuiVoltaAttributeDialog, parameters);
-    } else if (ctor === 'SmoTextGroup') {      
+      SuiVoltaAttributeDialogVue(parameters);
+      return null;
+    } else if (ctor === 'SmoTextGroup') {
       SuiTextBlockDialogVue({
         completeNotifier: parameters.completeNotifier,
         view: parameters.view,
@@ -80,7 +91,8 @@ export function isModifierWithDialog(modifier: SmoModifier) {
       });      
       return null;
     } else if (ctor === 'SmoStaffTextBracket') {
-      return createAndDisplayDialog(SuiTextBracketDialog, parameters);
+      SuiTextBracketDialogVue(parameters);
+      return null;
     } else {
       if (modifier.ctor !== 'SmoLyric') {
          new SuiExceptionHandler({

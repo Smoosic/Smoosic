@@ -128,6 +128,7 @@ export declare class SmoMeasureFormat extends SmoMeasureModifierBase implements 
 export interface SmoBarlineParams {
     position: number | null;
     barline: number | null;
+    repeatBracket?: number;
 }
 /**
  * @category serialization
@@ -136,6 +137,7 @@ export interface SmoBarlineParamsSer extends SmoBarlineParams {
     ctor: string;
     position: number | null;
     barline: number | null;
+    repeatBracket?: number;
 }
 /**
  * Barline is just that, there is a start and end in each measure, which defaults to 'single'.
@@ -144,6 +146,7 @@ export interface SmoBarlineParamsSer extends SmoBarlineParams {
 export declare class SmoBarline extends SmoMeasureModifierBase {
     static readonly positions: Record<string, number>;
     static readonly barlines: Record<string, number>;
+    static readonly repeatBrackets: Record<string, number>;
     static get _barlineToString(): string[];
     static barlineString(inst: SmoBarline): string;
     static get defaults(): SmoBarlineParams;
@@ -152,6 +155,7 @@ export declare class SmoBarline extends SmoMeasureModifierBase {
     constructor(parameters: SmoBarlineParams | null);
     barline: number;
     position: number;
+    repeatBracket: number;
 }
 /**
  * Constructor for SmoRepeatSymbol

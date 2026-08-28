@@ -5,7 +5,7 @@ import { SuiTextBlockDialog } from '../dialogs/textBlock';
 import { SmoDynamicText } from '../../smo/data/noteModifiers';
 import { SuiChordChangeDialog } from '../dialogs/chordChange';
 import { SuiLyricDialog } from '../dialogs/lyric';
-import { SuiDynamicModifierDialog } from '../dialogs/dynamics';
+import { SuiDynamicModifierDialogVue } from '../dialogs/dynamicsVue';
 import { SuiTextBlockDialogVue } from '../dialogs/textBlockVue';
 
 declare var $: any;
@@ -134,7 +134,7 @@ const dynamicsDialogMenuOption: SuiConfiguredMenuOption = {
         }
       }
     }
-    createAndDisplayDialog(SuiDynamicModifierDialog, {
+    SuiDynamicModifierDialogVue({
       completeNotifier: menu.completeNotifier!,
       view: menu.view,
       eventSource: menu.eventSource,

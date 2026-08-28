@@ -28,6 +28,7 @@ export declare const vexBarlineType: import("vexflow_smoosic").BarlineType[];
 export declare const vexBarlinePosition: import("vexflow_smoosic").StaveModifierPosition[];
 export declare function toVexBarlineType(athis: SmoBarline): number;
 export declare function toVexBarlinePosition(athis: SmoBarline): number;
+export declare function toVexRepeatBracket(at: number): 0 | 1 | 2;
 export declare const vexSymbol: number[];
 export declare function toVexSymbol(athis: SmoRepeatSymbol): number;
 export declare function toVexVolta(volta: SmoVolta, measureNumber: number): import("vexflow_smoosic").VoltaType;

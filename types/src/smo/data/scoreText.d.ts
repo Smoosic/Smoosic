@@ -258,6 +258,10 @@ export declare class SmoTextGroup extends SmoScoreModifierBase {
     serialize(): SmoTextGroupParamsSer;
     constructor(params: SmoTextGroupParams);
     scaleText(scale: number): void;
+    /**
+     * Remove empty text blocks introduced when editing
+     */
+    trimEmptyBlocks(): void;
     tryParseUnicode(): void;
     estimateWidth(): number;
     isTextVisible(): boolean;

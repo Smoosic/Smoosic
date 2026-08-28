@@ -345,7 +345,7 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @param barline barline type
      * @returns
      */
-    setBarline(position: number, barline: number): Promise<void>;
+    setBarline(position: number, barline: number, bracket: number): Promise<void>;
     /**
      *
      * @param position start or end

@@ -2,7 +2,7 @@ import { SuiInlineText, SuiTextBlock } from './textRender';
 import { SuiRenderState } from './renderState';
 import { SuiScroller } from './scroller';
 import { layoutDebug } from './layoutDebug';
-import { OutlineInfo, StrokeInfo } from './svgHelpers';
+import { OutlineInfo, SuiTextStrokeName } from './svgHelpers';
 import { SmoScoreText, SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SmoSelector } from '../../smo/xform/selections';
@@ -59,7 +59,6 @@ export interface SuiLyricSessionParams {
     verse: number;
     selector: SmoSelector;
 }
-export type SuiTextStrokeName = 'text-suggestion' | 'text-selection' | 'text-highlight' | 'text-drag' | 'inactive-text';
 /**
  * The heirarchy of text editing objects goes:
  *
@@ -107,7 +106,6 @@ export declare class SuiTextEditor {
     state: number;
     suggestionRect: OutlineInfo | null;
     constructor(params: SuiTextEditorParams);
-    static get strokes(): Record<SuiTextStrokeName, StrokeInfo>;
     _suggestionParameters(box: SvgBox, strokeName: SuiTextStrokeName): OutlineInfo;
     _expandSelectionToSuggestion(): void;
     _setSelectionToSugggestion(): void;
@@ -244,8 +242,6 @@ export declare class SuiTextSession {
     cursorPromise: Promise<any> | null;
     debug: layoutDebug;
     constructor(params: SuiTextSessionParams);
-    get _isRefreshed(): boolean;
-    get isStopped(): boolean;
     get isRunning(): boolean;
     _markStopped(): void;
     get _isRendered(): boolean;
