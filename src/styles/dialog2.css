@@ -479,7 +479,9 @@ h2.sec {
 .tgl-row .hint {
   margin-left: auto;
 }
-
+.row .tgl-row {
+  margin-bottom: 0.25rem;
+}
 .tgl {
   position: relative;
   flex: none;

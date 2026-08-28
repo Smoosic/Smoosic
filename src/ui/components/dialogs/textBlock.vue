@@ -10,6 +10,7 @@ import selectComp from './select.vue';
 import fontPickerComp from './fontPicker.vue';
 import textGroupEditorComp from './textGroupEditor.vue';
 import textDraggerComp from './textDragger.vue';
+import toggle from './toggle.vue';
 
 interface Props {
   domId: string,
@@ -243,12 +244,9 @@ const handleCommit = async () => {
           </div>
         </div>
         <div class="row mb-2 ms-2 align-items-center">
-          <div class="checkbox-input-column-div">
-            <input class="form-check-input" type="checkbox" :checked="attachToSelector"
-              @change="onAttachToggle(($event.target as HTMLInputElement).checked)" :id="getId('attach-to-selector')" />
-          </div>
-          <div class="checkbox-input-label-div">
-            <span class="form-check-label" :for="getId('attach-to-selector')">Attach to Selection</span>
+          <div class="checkbox-input-toggle-div">
+            <toggle :domId="getId('attach-to-selector')" :label="'Attach to Selection'" :initialValue="attachToSelector"
+              :changeCb="onAttachToggle" />
           </div>
         </div>
       </template>

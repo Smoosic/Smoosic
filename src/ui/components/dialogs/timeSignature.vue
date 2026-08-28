@@ -5,6 +5,7 @@ import {
   TimeSignatureTime, SmoTimeSignature
 } from '../../../smo/data/measureModifiers';
 import dialogContainer from './dialogContainer.vue';
+import toggle from './toggle.vue';
 import { SelectOption } from '../../common';
 import selectComp from './select.vue';
 
@@ -117,29 +118,19 @@ const getId = (str: string) => {
   <dialogContainer :domId="domId" :label="label" :cancelCb="cancelCb" :commitCb="commitCb"
     :classes="'text-center mw-40 nw-40'">
     <div class="row justify-content-start">
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" 
-        :disabled="!supportsSymbol"
-          v-model="useSymbol" :id="getId('use-symbol')">
-        </input>
+      <div class="checkbox-input-toggle-div">
+        <toggle :domId="getId('use-symbol')" :label="'Use Symbol'" :disabled="!supportsSymbol" :initialValue="useSymbol"
+          :changeCb="(value: boolean) => { useSymbol = value }" />
       </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('use-symbol')">Use Symbol</span>
-      </div>
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="display" :id="getId('display-ts')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('display-cs')">Display Time Signature</span>
+      <div class="checkbox-input-toggle-div">
+        <toggle :domId="getId('display-ts')" :label="'Display Time Signature'" :initialValue="display"
+          :changeCb="(value: boolean) => { display = value }" />
       </div>
     </div>
     <div class="row justify-content-start mb-2">
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" :id="getId('display-compound')" v-model="isCompound">
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('display-compound')">Compound Time Signature</span>
+      <div class="checkbox-input-toggle-div">
+        <toggle :domId="getId('display-compound')" :label="'Compound Time Signature'" :initialValue="isCompound"
+          :changeCb="(value: boolean) => { isCompound = value }" />
       </div>
     </div>
     <div class="row justify-content-center">

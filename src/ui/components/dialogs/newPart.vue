@@ -5,6 +5,7 @@ import { SmoInstrument, SmoInstrumentNumParamType, SmoInstrumentStringParamType 
 import selectComp from './select.vue';
 import dialogContainer from './dialogContainer.vue';
 import numberInputApp from './numberInput.vue';
+import toggle from './toggle.vue';
 import { computed, ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
@@ -157,9 +158,8 @@ const getId = (str: string) => {
         </div>
       <div class="row mb-2" :class="{ hide: !showPercussionSymbols }">
         <div class="col col-12">
-          <input class="form-check-input me-2" type="checkbox" v-model="usePercussionSymbols"
-            :id="getId('font-weight')"></input>
-          <label class="form-check-label" :for="getId('font-weight')">Use Percussion Symbols</label>
+          <toggle :domId="getId('font-weight')" :label="'Use Percussion Symbols'" :initialValue="usePercussionSymbols"
+            :changeCb="(value: boolean) => { usePercussionSymbols = value }" />
         </div>
       </div>
       <div class="group">
@@ -177,9 +177,8 @@ const getId = (str: string) => {
       </div>
       <div class="row mb-2 mt-2">
         <div class="col col-4">
-        <input class="form-check-input" type="checkbox" v-model="addStave" :id="getId('toggleStems')"
-          @change="addStaveCb"></input>
-        <label class="form-check-label ps-2" :for="getId('toggleStems')"> 2-Stave part </label>
+        <toggle :domId="getId('toggleStems')" :label="'2-Stave part'" :initialValue="addStave"
+          :changeCb="(value: boolean) => { addStave = value; addStaveCb(); }" />
         </div>
       </div>
     </dialogContainer>

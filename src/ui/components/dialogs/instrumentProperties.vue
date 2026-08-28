@@ -5,6 +5,7 @@ import { SmoInstrument, SmoInstrumentNumParamType, SmoInstrumentStringParamType 
 import selectComp from './select.vue';
 import dialogContainer from './dialogContainer.vue';
 import numberInputApp from './numberInput.vue';
+import toggle from './toggle.vue';
 import { computed, ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
@@ -158,9 +159,8 @@ const getId = (str: string) => {
       </div>
       <div class="row mb-2" :class="{ hide: !showPercussionSymbols }">
         <div class="col col-12">
-          <input class="form-check-input me-2" type="checkbox" v-model="usePercussionSymbols"
-            :id="getId('font-weight')"></input>
-          <label class="form-check-label" :for="getId('font-weight')">Use Percussion Symbols</label>
+          <toggle :domId="getId('font-weight')" :label="'Use Percussion Symbols'" :initialValue="usePercussionSymbols"
+            :changeCb="(value: boolean) => { usePercussionSymbols = value }" />
         </div>
       </div>
       <div class="group">

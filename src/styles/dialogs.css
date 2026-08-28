@@ -102,6 +102,11 @@
   flex: 0 0 auto;
   width: 25%;
 }
+.row .checkbox-input-toggle-div,
+.attributeDialog .checkbox-input-toggle-div {
+  flex: 0 0 auto;
+  width: 50%;
+}
 .fs-7 {
   font-size: 0.8rem!important;
 }

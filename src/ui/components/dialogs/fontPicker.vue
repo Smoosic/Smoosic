@@ -6,6 +6,7 @@ import { SourceSansProFont } from '../../../styles/font_metrics/ssp-sans-metrics
 import selectComp from './select.vue';
 
 import numberInputApp from './numberInput.vue';
+import toggle from './toggle.vue';
 import { ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
@@ -85,21 +86,21 @@ watch(() => props.font, (next) => {
 <template>
   <div class="group">
     <div class="group-label">{{ label }}</div>    
-    <div class="grow-row">
+    <div class="grow-row mb-2">
       <selectComp :domId="getId('font-family-select')" :label="'Family'" :selections="fontFamilies"
         :initialValue="fontCopy.family" :changeCb="changeFamilyCb" :inline="true" />
       <numberInputApp :domId="getId('page-width-input')" :initialValue="fontSize" :precision="1"
         :changeCb="changeSizeCb" :disabled="false" label="Size" :inline="true" />
     </div>
-  </div>
   <div class="row mb-2 ms-2">
-    <div class="col col-3 ps-0">
-      <input class="form-check-input me-2" type="checkbox" v-model="isBold" :id="getId('font-weight')"></input>
-      <label class="form-check-label" :for="getId('font-weight')">Bold</label>
+    <div class="col col-6 ps-0">
+      <toggle :domId="getId('font-weight')" :label="'Bold'" :initialValue="isBold"
+        :changeCb="(value: boolean) => { isBold = value }" />
     </div>
-    <div class="col col-3 ps-0">
-      <input class="form-check-input me-2" type="checkbox" v-model="isItalic" :id="getId('font-style')"></input>
-      <label class="form-check-label" :for="getId('font-style')">Italic</label>
+    <div class="col col-6 ps-0">
+      <toggle :domId="getId('font-style')" :label="'Italic'" :initialValue="isItalic"
+        :changeCb="(value: boolean) => { isItalic = value }" />
     </div>
+  </div>
   </div>
 </template>

@@ -6,6 +6,7 @@ import { SmoScore } from '../../../smo/data/score';
 import { SelectOption } from '../../common';
 import selectComp from './select.vue';
 import dialogContainer from './dialogContainer.vue';
+import toggle from './toggle.vue';
 
 interface Props {
   staffGroups: SmoSystemGroup[],
@@ -158,20 +159,20 @@ watch(() => props.staffGroups, () => {
       <div class="col col-2 ">{{ choice.staffName }}</div>
       <div class="col col-2">
         <span :class="{ hide: !choice.addToGroup }">
-          <input class="form-check-input" type="checkbox" v-model="choice.inGroup"
-            :id="getId('group-checkbox', choice.staffId)" @change="choice.addCb"></input>
+          <toggle :domId="getId('group-checkbox', choice.staffId)" :label="''" :initialValue="choice.inGroup"
+            :changeCb="(value: boolean) => { choice.inGroup = value; choice.addCb(); }" />
         </span>
       </div>
       <div class="col col-2">
         <span :class="{ hide: !choice.createGroup }">
-          <input class="form-check-input" type="checkbox" v-model="choice.inGroup"
-            :id="getId('group-checkbox', choice.staffId)" @change="choice.createCb"></input>
+          <toggle :domId="getId('group-checkbox', choice.staffId)" :label="''" :initialValue="choice.inGroup"
+            :changeCb="(value: boolean) => { choice.inGroup = value; choice.createCb(); }" />
         </span>
       </div>
       <div class="col col-2">
         <span :class="{ hide: !choice.endsGroup }">
-          <input class="form-check-input" type="checkbox" v-model="choice.inGroup"
-            :id="getId('group-checkbox', choice.staffId)" @change="choice.removeCb"></input>
+          <toggle :domId="getId('group-checkbox', choice.staffId)" :label="''" :initialValue="choice.inGroup"
+            :changeCb="(value: boolean) => { choice.inGroup = value; choice.removeCb(); }" />
         </span>
       </div>
       <div v-if="choice.inGroup && choice.endsGroup" class="col col-12 mb-2 border-bottom"></div>

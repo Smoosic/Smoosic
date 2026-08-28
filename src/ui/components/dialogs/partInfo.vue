@@ -7,6 +7,7 @@ import { SmoPartInfo, SmoPartInfoStringType, SmoPartInfoNumType, SmoPartInfoBool
 import { GlobalLayoutAttributes, 
   GlobalLayoutNumberAttributes, displayMode, GlobalLayoutAttributesArray, GlobalLayoutNumberAttributesArray } from '../../../smo/data/scoreModifiers';
 import dialogContainer from './dialogContainer.vue';
+import toggle from './toggle.vue';
 
 interface Props {
   domId: string,
@@ -141,27 +142,19 @@ const getId = (str: string) => {
       </div>
     </div>
     <div class="row mb-2 align-items-center">
-      <div class="col col-1">
-        <input class="form-check-input" type="checkbox" v-model="partInfo.preserveTextGroups" :id="getId('preserveText')"
-          @change="writeBooleanValue('preserveTextGroups', partInfo.preserveTextGroups)"></input>
+      <div class="col col-6">
+        <toggle :domId="getId('preserveText')" :label="'Preserve Text Groups'" :initialValue="partInfo.preserveTextGroups"
+          :changeCb="(value: boolean) => writeBooleanValue('preserveTextGroups', value)" />
       </div>
-      <div class="col col-5">
-        <label class="form-check-label" :for="getId('preserveText')">Preserve Text Groups</label>
-      </div>
-      <div class="col col-1">
-        <input class="form-check-input" type="checkbox" v-model="partInfo.expandMultimeasureRests" :id="getId('expandMultimeasureRests')"
-          @change="writeBooleanValue('expandMultimeasureRests', partInfo.expandMultimeasureRests)"></input>
-      </div>
-      <div class="col col-5">
-        <label class="form-check-label" :for="getId('expandMultimeasureRests')">Expand Multimeasure Rests</label>
+      <div class="col col-6">
+        <toggle :domId="getId('expandMultimeasureRests')" :label="'Expand Multimeasure Rests'" :initialValue="partInfo.expandMultimeasureRests"
+          :changeCb="(value: boolean) => writeBooleanValue('expandMultimeasureRests', value)" />
       </div>
     </div>
     <div class="row mb-2 align-items-center">
-      <div class="col col-1">
-        <input class="form-check-input" type="checkbox" v-model="includeNext" :id="getId('includeNext')"></input>
-      </div>
-      <div class="col col-5">
-        <label class="form-check-label" :for="getId('includeNext')">Include Next Stave</label>
+      <div class="col col-6">
+        <toggle :domId="getId('includeNext')" :label="'Include Next Stave'" :initialValue="includeNext"
+          :changeCb="(value: boolean) => { includeNext = value }" />
       </div>
     </div>
     <div class="row mb-2">
