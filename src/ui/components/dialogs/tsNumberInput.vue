@@ -84,19 +84,16 @@ watch (numInput, async (newValue: number, oldValue: number) => {
 populateDigits();
 </script>
 <template>
-  <div>
-  <button @click.prevent="increment()" 
-    :id="getId('incButton')"
-    :class="buttonClasses"
-    :disabled="disabled">
-    <span class="smo-icon icon-circle-up fs-6"></span>
-    </button>
-  <button @click.prevent="decrement()" :disabled="disabled"
-    :class="buttonClasses + ' me-2'"
-    :id="getId('decButton')">
-    <span class="smo-icon icon-circle-down fs-6"></span>
-  </button>
-  <span class="tsNumber font-bravura">
+  <div class="num">
+      <div class="num-spin">
+        <div @click.prevent="increment()" :id="getId('incButton')" class="num-btn" role="button" :disabled="disabled">
+          <span class="caret caret-up"></span>
+        </div>
+        <div @click.prevent="decrement()" :disabled="disabled" class="num-btn" role="button" :id="getId('decButton')">
+          <span class="caret caret-down"></span>
+        </div>
+      </div>
+  <span class="tsNumber font-bravura px-1">
     <span v-for="digit in digits" :class="numToTsNumOnes(parseInt(digit))" class="icon-bravura"></span>
   </span>
   </div>

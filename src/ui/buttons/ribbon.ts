@@ -9,14 +9,13 @@ import { CompleteNotifier, RibbonLayout, replaceVueRoot } from '../common';
 import { SuiTracker } from '../../render/sui/tracker';
 import { SuiMenuManager } from '../menus/manager';
 import { SuiLibraryDialog } from '../dialogs/library';
-import { SuiTempoDialog } from '../dialogs/tempo';
 import { ButtonLabel } from './button';
 import { CollapseRibbonControl } from './collapsable';
-import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SuiHelp } from '../help';
 import { SmoUiConfiguration } from '../configuration';
 import { createApp, ref, reactive, watch } from 'vue';
-import { SuiKeySignatureDialog } from '../dialogs/keySignature';
+import { SuiKeySignatureDialogVue } from '../dialogs/keySignatureVue';
+import { SuiTempoDialogVue } from '../dialogs/tempoVue';
 import { default as ribbonApp } from '../components/buttons/ribbon.vue';
 import { default as ribbonSidebarApp } from '../components/buttons/sidebar.vue';
 import { SuiTimeSignatureDialogVue } from '../dialogs/timeSignature';
@@ -136,7 +135,7 @@ export class RibbonButtons {
       if (!this.controller) {
         return;
       }
-      createAndDisplayDialog(SuiKeySignatureDialog, {
+      SuiKeySignatureDialogVue({
         view: this.view,
         completeNotifier: this.controller,
         startPromise: null,
@@ -165,7 +164,7 @@ export class RibbonButtons {
         return;
       }
       const tempo = this.view.tracker.selections[0].measure.getTempo();
-      createAndDisplayDialog(SuiTempoDialog,
+      SuiTempoDialogVue(
         {
           id: 'tempoDialog',
           ctor: 'SuiTempoDialog',
@@ -203,7 +202,7 @@ export class RibbonButtons {
       if (buttonData.ctor === 'SuiLibraryDialog') {
         await SuiLibraryDialog.createAndDisplay(params, this.config);
       } else {
-        createAndDisplayDialog(SuiTempoDialog, params);
+        SuiTempoDialogVue(params);
       }
     } else if (buttonData.ctor === 'helpModal') {
       this.view.navigation.showHelpModal();

@@ -1,8 +1,7 @@
 import { SuiButton, SuiButtonParams } from './button';
-import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SuiKeySignatureDialog } from '../dialogs/keySignature';
+import { SuiKeySignatureDialogVue } from '../dialogs/keySignatureVue';
 import { SuiTimeSignatureDialogVue } from '../dialogs/timeSignature';
-import { SuiTempoDialog } from '../dialogs/tempo';
+import { SuiTempoDialogVue } from '../dialogs/tempoVue';
 import { SuiScoreViewDialogVue } from '../dialogs/scoreView';
 import { KeyEvent } from '../../smo/data/common';
 declare var $: any;
@@ -81,7 +80,7 @@ export class DisplaySettings extends SuiButton {
     if (!this.completeNotifier) {
       return;
     }
-    createAndDisplayDialog(SuiKeySignatureDialog, {
+    SuiKeySignatureDialogVue({
       view: this.view,
       completeNotifier: this.completeNotifier,
       startPromise: null,
@@ -112,7 +111,7 @@ export class DisplaySettings extends SuiButton {
       return;
     }
     const tempo = this.view.tracker.selections[0].measure.getTempo();
-    createAndDisplayDialog(SuiTempoDialog,
+    SuiTempoDialogVue(
       {
         id: 'tempoDialog',
         ctor: 'SuiTempoDialog',

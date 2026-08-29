@@ -275,6 +275,12 @@ h2.sec {
   display: flex;
   height: var(--dlg-h);
 }
+.ts-num .num {
+  height: 2.3rem;
+}
+.ts-num .num-spin {
+  border-radius: var(--dlg-radius-btn);
+}
 
 .num-field {
   display: flex;
@@ -1061,7 +1067,6 @@ h2.sec {
     flex: 1;
     width: auto;
   }
-
   .num-spin {
     width: 26px;
   }

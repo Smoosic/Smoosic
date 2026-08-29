@@ -6,11 +6,10 @@ import { UndoBuffer } from '../../smo/xform/undo';
 import { SuiBeamMenu, SuiBeamMenuOptions } from './beams';
 import { layoutDebug } from '../../render/sui/layoutDebug';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
-import { SuiKeySignatureDialog } from '../dialogs/keySignature';
+import { SuiKeySignatureDialogVue } from '../dialogs/keySignatureVue';
 import { SuiTracker } from '../../render/sui/tracker';
 import { CompleteNotifier, ModalComponent } from '../common';
 import { BrowserEventSource, EventHandler } from '../eventSource';
-import { createAndDisplayDialog } from '../dialogs/dialog';
 import { KeyBinding } from '../../application/common';
 import { Qwerty } from '../qwerty';
 import { SuiLanguageMenu } from './language';
@@ -333,7 +332,7 @@ export class SuiMenuManager {
     if (!binding) {
       // TODO: find a better place for the slash menus
       if (event.key === 'k') {
-        createAndDisplayDialog(SuiKeySignatureDialog, {
+        SuiKeySignatureDialogVue({
           view: this.view,
           completeNotifier: this.completeNotifier,
           startPromise: null,

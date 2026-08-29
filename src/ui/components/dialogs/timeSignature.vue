@@ -134,7 +134,7 @@ const getId = (str: string) => {
       </div>
     </div>
     <div class="row justify-content-center">
-      <div class="col col-4" v-for="(time, index) in timeSignature.times">
+      <div class="col col-2" v-for="(time, index) in timeSignature.times">
         <tsComponent :domId="getId(`tscomp-${index}`)" :index="index" :label="getTsLabel(index)"
           :timeSignature="time" :updateTimeSignatureCb="updateTime"></tsComponent>
       </div>
