@@ -138,7 +138,7 @@ export const SuiNoteHeadDialog = (parameters: SuiDialogParams) => {
     group: 'stems'
   }, {  
     classes: '',
-    icon: 'icon-bravura icon-restQuarter ghost',
+    icon: 'icon-bravura icon-restQuarter ghost start-0',
     id: 'delete',
     label: 'Delete',
     hotkey: 'Delete',

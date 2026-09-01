@@ -542,6 +542,11 @@ h2.sec {
   font: 400 var(--dlg-value)/1 var(--font-body);
 }
 
+.sbtn .icon-bravura {
+  font-size: 2rem;
+  position:relative;
+  top: 0.25rem;
+}
 .sbtn.wide {
   padding: 0 11px;
   font-size: var(--dlg-label);

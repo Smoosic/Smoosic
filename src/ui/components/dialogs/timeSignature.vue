@@ -116,19 +116,17 @@ const getId = (str: string) => {
 
 <template>
   <dialogContainer :domId="domId" :label="label" :cancelCb="cancelCb" :commitCb="commitCb"
-    :classes="'text-center mw-40 nw-40'">
-    <div class="row justify-content-start">
-      <div class="checkbox-input-toggle-div">
+    class="mw-40 nw-40">
+    <div class="toggles">
+      <div class="tgl-row">
         <toggle :domId="getId('use-symbol')" :label="'Use Symbol'" :disabled="!supportsSymbol" :initialValue="useSymbol"
           :changeCb="(value: boolean) => { useSymbol = value }" />
       </div>
-      <div class="checkbox-input-toggle-div">
+      <div class="tgl-row">
         <toggle :domId="getId('display-ts')" :label="'Display Time Signature'" :initialValue="display"
           :changeCb="(value: boolean) => { display = value }" />
       </div>
-    </div>
-    <div class="row justify-content-start mb-2">
-      <div class="checkbox-input-toggle-div">
+      <div class="tgl-row">
         <toggle :domId="getId('display-compound')" :label="'Compound Time Signature'" :initialValue="isCompound"
           :changeCb="(value: boolean) => { isCompound = value }" />
       </div>
@@ -139,18 +137,13 @@ const getId = (str: string) => {
           :timeSignature="time" :updateTimeSignatureCb="updateTime"></tsComponent>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <div class="col col-4">
+    <div class="sect">
+      <div class="sect-body">
+        <div>
+          <span class="spec-name">Alternate display string (for pickups)</span>
         <input type="text" class="form-control form-control-sm" v-model="displayString" :id="getId('display-string')" />
-      </div>
-      <div class="number-input-label-div col col-8">
-        <span class="form-check-lable">Alternate Display String (for pickups)</span>
-      </div>
-    </div>
-    <div class="row mb-2">
-      <div class="col col-3 text-end">Apply To</div>
-      <div class="col col-6">
-        <selectComp :domId="getId('page-size-select')" :label="''" :selections="applyToOptions" :initialValue="applyTo"
+        </div>
+        <selectComp :domId="getId('page-size-select')" :label="'Apply To:'" :selections="applyToOptions" :initialValue="applyTo"
           :changeCb="props.updateApplyTo" />
       </div>
     </div>

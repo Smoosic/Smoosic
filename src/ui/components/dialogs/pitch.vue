@@ -2,7 +2,7 @@
 import dialogContainer from './dialogContainer.vue';
 import { DialogButtonDefinition } from '../../buttons/button';
 import buttonGroup from './buttonGroup.vue';
-import collapsableText from './collapsableText.vue';
+import collapsableRow from './collapsableRow.vue';
 import { ref, Ref, reactive } from 'vue';
 interface Props {
   domId: string,
@@ -49,7 +49,14 @@ lines.push(`<div class="col">A-G note letter</div> <div class="col"> - = half-st
       <buttonGroup :label="'Letter Notes'" :buttonDefs="letters" :domId="getId('letter-buttons')"
         :commonClasses="'btn btn-sm btn-outline-dark py-0  me-1'" rowClasses="align-items-center row " />
     </div>
-    <collapsableText :domId="getId('pitch-help')" :lines="lines" :initialState="false" />
+    <collapsableRow :domId="getId('pitch-help')" :initialState="false" label="" hint="Help">
+      <span class="text-muted">Learn to use the shortcuts, they are much faster!</span>
+      <div class="col">A-G note letter</div> 
+      <div class="col"> - = half-step  </div> 
+      <div class="col">  _ and + octaves </div> 
+      <div class="col"> 2-8 intervals </div>  
+      <div class="col">      arrow keys navigate       </div>      
+    </collapsableRow>
 
   </dialogContainer>
 </template>

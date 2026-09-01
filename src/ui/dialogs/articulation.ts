@@ -61,7 +61,7 @@ export const SuiArticulationDialogVue = (parameters: SuiDialogParams) => {
   }
   const articulations: DialogButtonDefinition[] = reactive([{
     classes: '',
-    icon: 'icon-bravura icon-articAccentBelow',
+    icon: 'icon-bravura icon-articAccentAbove',
     id: 'accent',
     hotkey: '',
     label: 'Accent',
@@ -70,7 +70,7 @@ export const SuiArticulationDialogVue = (parameters: SuiDialogParams) => {
     group: 'Glyphs'
   }, {
     classes: '',
-    icon: 'icon-bravura icon-articTenutoBelow',
+    icon: 'icon-bravura icon-articTenutoAbove',
     id: 'tenuto',
     hotkey: '',
     label: 'Tenuto',
@@ -79,7 +79,7 @@ export const SuiArticulationDialogVue = (parameters: SuiDialogParams) => {
     group: 'Glyphs'
   }, {
     classes: '',
-    icon: 'icon-bravura icon-articStaccatoBelow',
+    icon: 'icon-bravura icon-articStaccatoAbove',
     id: 'staccato',
     hotkey: '',
     label: 'Staccato',
@@ -88,7 +88,7 @@ export const SuiArticulationDialogVue = (parameters: SuiDialogParams) => {
     group: 'Glyphs'
   }, {
     classes: '',
-    icon: 'icon-bravura icon-articMarcatoBelow',
+    icon: 'icon-bravura icon-articMarcatoAbove',
     id: 'marcato',
     hotkey: '',
     label: 'Marcato',
@@ -97,7 +97,7 @@ export const SuiArticulationDialogVue = (parameters: SuiDialogParams) => {
     group: 'Glyphs'
   }, {
     classes: '',
-    icon: 'icon-bravura icon-pluckedSnapPizzicatoBelow',
+    icon: 'icon-bravura icon-pluckedSnapPizzicatoAbove',
     id: 'pizzicato',
     hotkey: '',
     label: 'Pizzicato',
@@ -124,7 +124,7 @@ export const SuiArticulationDialogVue = (parameters: SuiDialogParams) => {
     group: 'Glyphs'
   }, {
     classes: '',
-    icon: 'icon-bravura  icon-fermataBelow',
+    icon: 'icon-bravura  icon-fermataAbove',
     id: 'fermata',
     hotkey: '',
     label: 'Fermata',
