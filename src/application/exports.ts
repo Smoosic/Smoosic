@@ -102,7 +102,6 @@ import { SuiPartMenu } from '../ui/menus/parts';
 import { SuiVoiceMenu } from '../ui/menus/voices';
 import { SuiBeamMenu } from '../ui/menus/beams';
 import { SuiPartSelectionMenu } from '../ui/menus/partSelection';
-import { SuiTimeSignatureMenu } from '../ui/menus/timeSignature';
 import { SuiKeySignatureMenu } from '../ui/menus/keySignature';
 import { SuiStaffModifierMenu } from '../ui/menus/staffModifier';
 import { SuiFileMenu } from '../ui/menus/file';
@@ -324,7 +323,6 @@ export * from '../ui/menus/partSelection';
 export * from '../ui/menus/score';
 export * from '../ui/menus/staffModifier';
 export * from '../ui/menus/text';
-export * from '../ui/menus/timeSignature';
 export * from '../ui/menus/voices';
 export * from '../ui/qwerty';
 export * from '../ui/ribbonLayout/default/defaultRibbon';
@@ -345,7 +343,7 @@ export const Smo = {
   DisplaySettings,  ExtendedCollapseParent, CollapseRibbonControl,
   // Menus
   SuiMenuManager, SuiMenuBase, SuiMenuCustomizer, SuiScoreMenu, SuiFileMenu,
-  SuiTimeSignatureMenu, SuiKeySignatureMenu, SuiStaffModifierMenu,
+  SuiKeySignatureMenu, SuiStaffModifierMenu,
   SuiLanguageMenu, SuiMeasureMenu, SuiNoteMenu, SuiHelpMenu,SuiEditMenu, SmoLanguage, SmoTranslator, SuiPartMenu,
   SuiPartSelectionMenu, SuiTextMenu, SuiVoiceMenu, SuiBeamMenu,
   // Dialogs

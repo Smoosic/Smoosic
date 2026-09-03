@@ -6,7 +6,7 @@ import { SuiTracker } from '../../render/sui/tracker';
 import { CompleteNotifier } from '../common';
 import { BrowserEventSource, EventHandler } from '../eventSource';
 import { KeyBinding } from '../../application/common';
-import { SuiMenuBase } from './menu';
+import { SuiConfiguredMenu } from 'smoosic';
 /**
  * @category SuiMenu
  */
@@ -30,7 +30,7 @@ export declare class SuiMenuManager {
     bound: boolean;
     hotkeyBindings: Record<string, string>;
     closeMenuPromise: Promise<void> | null;
-    menu: SuiMenuBase | null;
+    menu: SuiConfiguredMenu | null;
     keydownHandler: EventHandler | null;
     menuPosition: SvgBox;
     tracker: SuiTracker;
@@ -51,7 +51,7 @@ export declare class SuiMenuManager {
     attach(): void;
     captureMenuEvents(completeNotifier: CompleteNotifier): void;
     dismiss(): void;
-    displayMenu(menu: SuiMenuBase | null): void;
+    displayMenu(menu: SuiConfiguredMenu | null): void;
     createMenu(action: string, notifier: CompleteNotifier): void;
     evKey(event: any): void;
     bindEvents(): void;

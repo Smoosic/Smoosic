@@ -338,7 +338,7 @@ export class RibbonButtons {
       );
       if (buttonData) {
         buttonData.callback = executeButton;
-        buttonData.icon += ' menu-icon';
+        // buttonData.icon += ' menu-icon';
         buttonList.push(buttonData);
         /* if (buttonData.leftText) {
           RibbonButtons.translateButtons.push({ buttonId: buttonData.id, buttonText: buttonData.leftText });

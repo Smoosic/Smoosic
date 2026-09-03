@@ -89,7 +89,7 @@ watch ((dialogNotifiers.splashTimer), (newVal) => {
         </div>
       </div>
       <div class="media" id="media">
-        <div class="d-flex flex-column flex-shrink-0 p-3 sticky-top" id="controls-left">
+        <div class="p-1" id="controls-left">
         </div>
         <div class="flex-lg-column musicRelief scrollContainer" :class="{ horizontal: displayMode === 'horizontal' }" 
           :id="getId('scroll')">

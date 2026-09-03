@@ -1,4 +1,4 @@
-import { MenuDefinition, MenuChoiceDefinition, SuiMenuBase, SuiMenuParams } from './menu';
+import { SuiMenuBase, SuiMenuParams, SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { SuiScorePreferencesDialogVue } from '../dialogs/preferences';
 import { SuiScoreIdentificationDialogVue } from '../dialogs/scoreId';
 import { SuiPageLayoutDialogVue } from '../dialogs/pageLayout';
@@ -12,187 +12,191 @@ declare var $: any;
  * stuff you can do to a score
  * @category SuiMenu
  */
-export class SuiScoreMenu extends SuiMenuBase {
-  static defaults: MenuDefinition = {
-    label: 'Score Settings',
-    menuItems: [{
-      icon: '',
-      text: 'Smoosic Preferences',
-      value: 'preferences'
-    }, {
-      icon: '',
-      text: 'View All',
-      value: 'viewAll'
-    }, {
-      icon: '',
-      text: 'Global Layout',
-      value: 'globalLayout'
-    }, {
-      icon: '',
-      text: 'Page Layout',
-      value: 'pageLayout'
-    },  {
-      icon: '',
-      text: 'System Groups',
-      value: 'staffGroups'
-    }, {
-      icon: '',
-      text: 'Score Fonts',
-      value: 'fonts'
-    }, {
-      icon: '',
-      text: 'Score Info',
-      value: 'identification'
-    }, {
-      icon: '',
-      text: 'Transpose Score',
-      value: 'transposeScore'
-    }, {
-      icon: '',
-      text: 'Cancel',
-      value: 'cancel'
-    }]
-  };
-
-  getDefinition() {
-    return SuiScoreMenu.defaults;
-  }
-  preAttach() {
-    const defs: MenuChoiceDefinition[] = [];
-    this.menuItems.forEach((item) => {
-      // show these options no matter what
-      if (['fonts', 'cancel', 'identification', 'preferences', 'audioSettings', 'transposeScore'].findIndex((x) => x === item.value) >= 0) {
-        defs.push(item);
-      } else if (item.value === 'pageLayout' || item.value === 'globalLayout' || item.value === 'staffGroups') {
-        if (this.view.isPartExposed() === false) {
-          // only show the page layout in score menu if we are in score mode
-          defs.push(item);
-        } 
-      } else if (item.value === 'viewAll') {
-        // Only show 'view all' if we are not viewing all
-        if (this.score.staves.length < this.view.storeScore.staves.length) {
-          defs.push(item);
-        }
-      }
-    });
-    this.menuItems = defs;
-  }
+export class SuiScoreMenu extends SuiConfiguredMenu {
   constructor(params: SuiMenuParams) {
-    super(params);
+    super(params, 'Score Settings', SuiScoreMenuOptions);
   }
-  execStaffGroups() {
-    SuiStaffGroupDialogVue(
+}
+/**
+ * @category SuiMenu
+ */
+const preferencesMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiScorePreferencesDialogVue(
       {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
-        id: 'staffGroups',
-        ctor: 'SuiStaffGroupDialog',
-        tracker: this.view.tracker,
-        modifier: null,
-        startPromise: this.closePromise
-      }
-    );
-  }
-  execScoreId() {
-    SuiScoreIdentificationDialogVue(
-      {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
-        id: 'scoreIdDialog',
-        ctor: 'SuiScoreIdentificationDialog',
-        tracker: this.view.tracker,
-        modifier: null,
-        startPromise: this.closePromise
-      });
-  }
-  execPageLayout() {
-    SuiPageLayoutDialogVue(
-      {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
-        id: 'layoutDialog',
-        ctor: 'SuiPageLayoutDialog',
-        tracker: this.view.tracker,
-        modifier: null,
-        startPromise: this.closePromise
-      });
-  }
-  execFonts() {
-    SuiScoreFontDialogVue(
-      {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
-        id: 'fontDialog',
-        ctor: 'SuiScoreFontDialog',
-        tracker: this.view.tracker,
-        modifier: null,
-        startPromise: this.closePromise
-      });
-  }
-  execGlobalLayout() {
-    SuiGlobalLayoutDialogVue( 
-      {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
-        id: 'globalLayout',
-        ctor: 'SuiGlobalLayoutDialog',
-        tracker: this.view.tracker,
-        modifier: null,
-        startPromise: this.closePromise
-      });
-  }
-  execPreferences() {
-    SuiScorePreferencesDialogVue( 
-      {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
         id: 'preferences',
         ctor: 'SuiScorePreferencesDialog',
-        tracker: this.view.tracker,
+        tracker: menu.view.tracker,
         modifier: null,
-        startPromise: this.closePromise
+        startPromise: menu.closePromise
       });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Smoosic Preferences',
+    value: 'preferences'
   }
-
-  execTransposeScore() {
+}
+/**
+ * @category SuiMenu
+ */
+const viewAllMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    menu.view.viewAll();
+  }, display: (menu: SuiMenuBase) => menu.score.staves.length < menu.view.storeScore.staves.length,
+  menuChoice: {
+    icon: '',
+    text: 'View All',
+    value: 'viewAll'
+  }
+}
+/**
+ * @category SuiMenu
+ */
+const globalLayoutMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiGlobalLayoutDialogVue(
+      {
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
+        id: 'globalLayout',
+        ctor: 'SuiGlobalLayoutDialog',
+        tracker: menu.view.tracker,
+        modifier: null,
+        startPromise: menu.closePromise
+      });
+  }, display: (menu: SuiMenuBase) => menu.view.isPartExposed() === false,
+  menuChoice: {
+    icon: '',
+    text: 'Global Layout',
+    value: 'globalLayout'
+  }
+}
+/**
+ * @category SuiMenu
+ */
+const pageLayoutMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiPageLayoutDialogVue(
+      {
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
+        id: 'layoutDialog',
+        ctor: 'SuiPageLayoutDialog',
+        tracker: menu.view.tracker,
+        modifier: null,
+        startPromise: menu.closePromise
+      });
+  }, display: (menu: SuiMenuBase) => menu.view.isPartExposed() === false,
+  menuChoice: {
+    icon: '',
+    text: 'Page Layout',
+    value: 'pageLayout'
+  }
+}
+/**
+ * @category SuiMenu
+ */
+const staffGroupsMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiStaffGroupDialogVue(
+      {
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
+        id: 'staffGroups',
+        ctor: 'SuiStaffGroupDialog',
+        tracker: menu.view.tracker,
+        modifier: null,
+        startPromise: menu.closePromise
+      }
+    );
+  }, display: (menu: SuiMenuBase) => menu.view.isPartExposed() === false,
+  menuChoice: {
+    icon: '',
+    text: 'System Groups',
+    value: 'staffGroups'
+  }
+}
+/**
+ * @category SuiMenu
+ */
+const fontsMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiScoreFontDialogVue(
+      {
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
+        id: 'fontDialog',
+        ctor: 'SuiScoreFontDialog',
+        tracker: menu.view.tracker,
+        modifier: null,
+        startPromise: menu.closePromise
+      });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Score Fonts',
+    value: 'fonts'
+  }
+}
+/**
+ * @category SuiMenu
+ */
+const identificationMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiScoreIdentificationDialogVue(
+      {
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
+        id: 'scoreIdDialog',
+        ctor: 'SuiScoreIdentificationDialog',
+        tracker: menu.view.tracker,
+        modifier: null,
+        startPromise: menu.closePromise
+      });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Score Info',
+    value: 'identification'
+  }
+}
+/**
+ * @category SuiMenu
+ */
+const transposeScoreMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
     SuiTransposeScoreDialogVue(
       {
-        completeNotifier: this.completeNotifier!,
-        view: this.view,
-        eventSource: this.eventSource,
+        completeNotifier: menu.completeNotifier!,
+        view: menu.view,
+        eventSource: menu.eventSource,
         id: 'transposeScore',
         ctor: 'SuiTransposeScoreDialog',
-        tracker: this.view.tracker,
+        tracker: menu.view.tracker,
         modifier: null,
-        startPromise: this.closePromise
+        startPromise: menu.closePromise
       });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Transpose Score',
+    value: 'transposeScore'
   }
-  async selection(ev: any) {
-    const text = $(ev.currentTarget).attr('data-value');
-    if (text === 'pageLayout') {
-      this.execPageLayout();
-    } else if (text === 'staffGroups') {
-      this.execStaffGroups();
-    } else if (text === 'preferences') {
-      this.execPreferences();
-    } else if (text === 'fonts') {
-      this.execFonts();
-    } else if (text === 'globalLayout') {
-      this.execGlobalLayout();
-    } else if (text === 'identification') {
-      this.execScoreId();
-    } else if (text === 'viewAll') {
-      this.view.viewAll();
-    } else if (text === 'transposeScore') {
-      this.execTransposeScore();
-    }
-    this.complete();
-  }
-  keydown() { }
 }
+/**
+ * stuff you can do to a score
+ * @category SuiMenu
+ */
+const SuiScoreMenuOptions: SuiConfiguredMenuOption[] = [
+  preferencesMenuOption, viewAllMenuOption, globalLayoutMenuOption, pageLayoutMenuOption,
+  staffGroupsMenuOption, fontsMenuOption, identificationMenuOption, transposeScoreMenuOption
+];

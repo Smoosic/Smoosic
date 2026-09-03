@@ -150,7 +150,6 @@ export * from './src/ui/menus/partSelection';
 export * from './src/ui/menus/score';
 export * from './src/ui/menus/staffModifier';
 export * from './src/ui/menus/text';
-export * from './src/ui/menus/timeSignature';
 export * from './src/ui/menus/voices';
 export * from './src/ui/qwerty';
 export * from './src/ui/ribbonLayout/default/defaultRibbon';

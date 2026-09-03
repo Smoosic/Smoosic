@@ -17,6 +17,7 @@ export interface MenuChoiceDefinition {
     text: string;
     value: string;
     hotkey?: string;
+    miIcon?: string;
 }
 /**
  * Menu just array of choices

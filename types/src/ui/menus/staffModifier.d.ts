@@ -1,4 +1,4 @@
-import { SuiMenuBase, SuiMenuParams, MenuDefinition } from './menu';
+import { SuiMenuParams, SuiConfiguredMenu } from './menu';
 import { SmoPedalMarking } from '../../smo/data/staffModifiers';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 /**
@@ -12,10 +12,6 @@ export declare function addOrReplacePedalMarking(view: SuiScoreViewOperations, o
  * the 'lines' menu, mostly staff modifiers.
  * @category SuiMenu
  */
-export declare class SuiStaffModifierMenu extends SuiMenuBase {
+export declare class SuiStaffModifierMenu extends SuiConfiguredMenu {
     constructor(params: SuiMenuParams);
-    static defaults: MenuDefinition;
-    getDefinition(): MenuDefinition;
-    selection(ev: any): Promise<void>;
-    keydown(): void;
 }

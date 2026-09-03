@@ -1,4 +1,4 @@
-import { SuiMenuBase, SuiMenuParams } from './menu';
+import { SuiMenuBase, SuiMenuParams, SuiConfiguredMenu, SuiConfiguredMenuOption } from './menu';
 import { createAndDisplayDialog } from '../dialogs/dialog';
 import {
   SuiFileSaveDialog ,  
@@ -9,94 +9,117 @@ import { SmoScore } from '../../smo/data/score';
 
 declare var $: any;
 
-/**
- * @category SuiMenu
- */
-export class SuiFileMenu extends SuiMenuBase {
-  constructor(params: SuiMenuParams) {
-    super(params);
-  }
-  static defaults = {
-    label: 'File',
-    menuItems: [{
-      icon: 'folder-new',
-      text: 'New Score',
-      value: 'newFile'
-    }, {
-      icon: 'folder-open',
-      text: 'Open',
-      value: 'openFile'
-    }, {
-      icon: '',
-      text: 'Quick Save',
-      value: 'quickSave'
-    }, {
-      icon: 'folder-save',
-      text: 'Save',
-      value: 'saveFile'
-    }, {
-      icon: '',
-      text: 'Print',
-      value: 'printScore'
-    }, {
-      icon: '',
-      text: 'Import Midi',
-      value: 'importMidi'
-    },{
-      icon: '',
-      text: 'Cancel',
-      value: 'cancel'
-    }]
-  };
 
-  getDefinition() {
-    return SuiFileMenu.defaults;
+const systemNewScoreOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+      const score = SmoScore.getDefaultScore(SmoScore.defaults, null);
+      await menu.view.changeScore(score);
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'New',
+    value: 'new'
   }
-  systemPrint() {
+}
+const systemQuickSave: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    menu.view.quickSave();
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Quick Save',
+    value: 'quickSave'
+  }
+}
+const systemPrintOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
     SuiPrintDialog({      ctor: 'SuiPrintFileDialog',
       id: 'print',
-      eventSource: this.eventSource,
+      eventSource: menu.eventSource,
       modifier: null,
-      view: this.view,
-      completeNotifier: this.completeNotifier,
-      startPromise: this.closePromise,
-      tracker: this.tracker
+      view: menu.view,
+      completeNotifier: menu.completeNotifier,
+      startPromise: menu.closePromise,
+      tracker: menu.tracker
     });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Print',
+    value: 'print'
   }
-  async selection(ev: any) {
-    const text = $(ev.currentTarget).attr('data-value');
-    const self = this;
-    if (text === 'saveFile') {
-      SuiFileSaveDialog ({
+}
+const suiFileSaveOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiFileSaveDialog ({
         ctor: 'SuiSaveFileDialog',
-        id: text,
+        id: 'saveFile',
         modifier: null,
-        completeNotifier: this.completeNotifier,
-        tracker: this.tracker,
-        eventSource: this.eventSource,
-        view: this.view,
-        startPromise: this.closePromise
+        completeNotifier: menu.completeNotifier,
+        tracker: menu.tracker,
+        eventSource: menu.eventSource,
+        view: menu.view,
+        startPromise: menu.closePromise
       });
-    } else if (text === 'openFile' || text === 'importMidi') {
-      SuiFileUploadDialog({
-        ctor: 'SuiLoadFileDialog',
-        id: text,
-        modifier: null,
-        completeNotifier: this.completeNotifier,
-        tracker: this.tracker,
-        eventSource: this.eventSource,
-        view: this.view,
-        startPromise: this.closePromise
-      });
-    } else if (text === 'newFile') {
-      const score = SmoScore.getDefaultScore(SmoScore.defaults, null);
-      await this.view.changeScore(score);
-    } else if (text === 'quickSave') {
-      this.view.quickSave();
-    } else if (text === 'printScore') {
-      this.systemPrint();
-    }
-    this.complete();
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Save',
+    value: 'saveFile'
   }
-  keydown() { }
+}
+
+const suiFileOpenOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiFileUploadDialog({
+        ctor: 'SuiLoadFileDialog',
+        id: 'open',
+        modifier: null,
+        completeNotifier: menu.completeNotifier,
+        tracker: menu.tracker,
+        eventSource: menu.eventSource,
+        view: menu.view,
+        startPromise: menu.closePromise
+      });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Open',
+    value: 'loadFile'
+  }
+}
+const suiImportMidiOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiFileUploadDialog({
+        ctor: 'SuiLoadFileDialog',
+        id: 'open',
+        modifier: null,
+        completeNotifier: menu.completeNotifier,
+        tracker: menu.tracker,
+        eventSource: menu.eventSource,
+        view: menu.view,
+        startPromise: menu.closePromise
+      });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Import Midi',
+    value: 'importMidi'
+  }
+}
+
+const SuiFileMenuOptions: SuiConfiguredMenuOption[] = [
+systemNewScoreOption,systemQuickSave, systemPrintOption, suiFileSaveOption,
+suiFileOpenOption,
+suiImportMidiOption
+]
+
+/**
+ * Stuff you can do with parts.
+ * @category SuiMenu
+ */
+export class SuiFileMenu extends SuiConfiguredMenu {
+  constructor(params: SuiMenuParams) {
+    super(params, 'File', SuiFileMenuOptions);
+  }  
 }

@@ -81,3 +81,161 @@ body.modal .overlay,body.showAttributeDialog .overlay {
 body.showAttributeDialog.textEditor .overlay {
 	display:none;
 }
+.mbtn {
+    display: grid;
+    grid-template-columns: 1rem minmax(0, 142px) var(--menu-key-w) 6px;
+    align-items: center;
+    gap: 10px;
+    height: var(--menu-btn-h);
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: var(--dlg-radius-btn);
+    color: var(--color-text);
+    font: 400 1rem / 1 var(--font-body);
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+}
+.mbtn:hover, .mbtn.is-hover {
+    background: var(--color-accent-100);
+    border-color: var(--color-accent-300);
+}
+.side {
+    width: var(--menu-rail);
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-2) 6px var(--space-3);
+    background: var(--color-neutral-100);
+    border-right: 1px solid var(--dlg-rule);
+    font-family: var(--font-body);
+}
+.mi {
+    font-family: "Material Symbols Outlined";
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1rem;
+    line-height: 1;
+    flex: none;
+    width: 20px;
+    text-align: center;
+    font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 20;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+}
+.mbtn > .mi, .mbtn > .bv {
+    grid-column: 1;
+}
+.mbtn-key {
+    font: 400 11px / 1 var(--font-body);
+    color: var(--color-neutral-500);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: .02em;
+}
+.mbtn > .mbtn-key {
+    grid-column: 3;
+    text-align: right;
+}
+.bv {                                    /* Bravura / SMuFL */
+  font-family: "Bravura"; 
+  font-size: 1.5rem; 
+  line-height: 1; 
+  flex: none;
+  width: 20px; text-align: center; user-select: none;
+}
+.bv.oversize {
+  font-size: 1rem;
+}
+.icon.oversize {
+  font-size: 1rem;
+}
+.smoi {
+    font-family: "Smoosic";
+    font-size: 22px;
+    line-height: 1;
+    flex: none;
+    width: 20px;
+    text-align: center;
+    user-select: none;
+}
+.mbtn-label {
+  font-size: 0.75rem;
+}
+.side-group {
+    margin-top: var(--space-3);
+    padding: 0 6px 4px;
+    font: 600 9.5px / 1 var(--font-heading);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-neutral-500);
+}
+.side {
+    width: var(--menu-rail);
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-radius: 2px;
+    padding: var(--space-2) 6px var(--space-3);
+    background: var(--color-neutral-100);
+    border-right: 1px solid var(--dlg-rule);
+    font-family: var(--font-body);
+}
+.mitem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--menu-item-h);
+    padding: 0 12px;
+    font: 400 13.5px / 1 var(--font-body);
+    color: var(--color-text);
+    border-left: 3px solid transparent;
+    cursor: pointer;
+}
+.mitem-label {
+  font-size: 0.75rem;
+}
+.mitem-key {
+    font: 400 11.5px / 1 var(--font-body);
+    color: var(--color-neutral-500);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .04em;
+}
+.mdrop {
+    position: relative;
+    min-width: 276px;
+    background: var(--color-neutral-100);
+    border: 1px solid var(--color-neutral-500);
+    border-radius: var(--dlg-radius);
+    box-shadow: var(--shadow-lg);
+    font-family: var(--font-body);
+    padding: 5px 0 6px;
+}
+.mdrop-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--dlg-rule);
+    font: 600 10.5px / 1 var(--font-heading);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--color-neutral-700);
+}
+.bv.sm { font-size: 18px; }
+/* SMuFL glyphs by name — the codepoint lives here, never in the markup */
+.bv::before { content: ""; }
+.bv-gclef::before        { content: "\E050"; }  /* G clef */
+.bv-common::before       { content: "\E08A"; }  /* common time */
+.bv-num3::before         { content: "\E083"; }  /* time-signature numeral 3 */
+.bv-quarter::before      { content: "\E1D5"; }  /* quarter note, stem up */
+.bv-eighth::before       { content: "\E1D7"; }  /* eighth note, stem up */
+.bv-rest::before         { content: "\E4E5"; }  /* quarter rest */
+.bv-flat::before         { content: "\E260"; }
+.bv-natural::before      { content: "\E261"; }
+.bv-sharp::before        { content: "\E262"; }
+.bv-accent::before       { content: "\E4A0"; }  /* accent above */
+.bv-forte::before        { content: "\E522"; }  /* dynamic forte */

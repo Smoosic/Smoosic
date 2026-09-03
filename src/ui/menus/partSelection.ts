@@ -1,4 +1,4 @@
-import { SuiMenuBase, SuiMenuParams, MenuChoiceDefinition, MenuDefinition } from './menu';
+import { SuiMenuBase, SuiMenuParams, SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { SmoPartInfo } from '../../smo/data/partInfo';
 declare var $: any;
 
@@ -6,66 +6,42 @@ declare var $: any;
  * This is the menu that is always visible on the UI ribbon
  * @category SuiMenu
  */
-export class SuiPartSelectionMenu extends SuiMenuBase {
+export class SuiPartSelectionMenu extends SuiConfiguredMenu {
   partMap: { keys: number[], partMap: Record<number, SmoPartInfo> } = { keys: [], partMap: {} };
   constructor(params: SuiMenuParams) {
-    super(params);
+    super(params, 'Parts', []);
   }
-  static defaults: MenuDefinition = {
-    label: 'Parts',
-    menuItems: [
-       {
-        icon: '',
-        text: 'Cancel',
-        value: 'cancel'
-      }
-    ]
-  };
-  getDefinition() {
-    return SuiPartSelectionMenu.defaults;
-  }
-  selectPart(val: number) {
-    if (val < 0) {
-      this.view.viewAll();
-      this.complete();
-      return;
-    }
-    const partInfo = this.partMap.partMap[val];
-    this.view.exposePart(this.view.storeScore.staves[partInfo.associatedStaff]);
-    this.complete();
-  }  
   preAttach() {
-    const defs: MenuChoiceDefinition[] = [];
     this.partMap = this.view.getPartMap();
-    if (this.view.score.staves.length < this.view.storeScore.staves.length) {
-      defs.push({
-        icon: '',
-        text: 'View All',
-        value: '-1'
+    const cancel = this.menuOptions.find((op) => op.menuChoice.value === 'cancel')!;
+    const rebuilt: SuiConfiguredMenuOption[] = [];
+    if (this.score.staves.length < this.view.storeScore.staves.length) {
+      rebuilt.push({
+        handler: async (menu: SuiMenuBase) => {
+          menu.view.viewAll();
+        }, display: (menu: SuiMenuBase) => true,
+        menuChoice: {
+          icon: '',
+          text: 'View All',
+          value: '-1'
+        }
       });
     }
     this.partMap.keys.forEach((key) => {
-      defs.push({
-        icon: '',
-        text: this.partMap.partMap[key].partName,
-        value: key.toString()
+      const partInfo = this.partMap.partMap[key];
+      rebuilt.push({
+        handler: async (menu: SuiMenuBase) => {
+          menu.view.exposePart(menu.view.storeScore.staves[partInfo.associatedStaff]);
+        }, display: (menu: SuiMenuBase) => true,
+        menuChoice: {
+          icon: '',
+          text: partInfo.partName,
+          value: key.toString()
+        }
       });
     });
-    defs.push({
-      icon: '',
-      text: 'Cancel',
-      value: 'cancel'
-    });
-    this.menuItems = defs;
+    rebuilt.push(cancel);
+    this.menuOptions = rebuilt;
+    super.preAttach();
   }
-
-  async selection(ev: any) {
-    const op: string = $(ev.currentTarget).attr('data-value');
-    const choice = parseInt(op);
-    if (isNaN(choice)) {
-      this.complete(); // cancel
-    }
-    this.selectPart(choice);
-  }
-  keydown() { }
 }

@@ -8,6 +8,12 @@
    ========================================================================== */
 
 :root {
+  --menu-rail: 232px;
+    --menu-rail-sm: 52px;
+    --menu-btn-h: 34px;
+    --menu-item-h: 30px;
+    --menu-key-w: 42px;
+
   --dlg-h: 26px;
   /* control height, compact density */
   --dlg-h-lg: 30px;
@@ -72,9 +78,9 @@
      never take it. */
   --color-process-yellow: #edbb00;
 
-  --font-heading: "Source Serif 4", system-ui, sans-serif;
+  --font-heading: "Roboto Slab", system-ui, sans-serif;
   --font-heading-weight: 600;
-  --font-body: "Source Serif 4", system-ui, sans-serif;
+  --font-body: "Roboto Slab", system-ui, sans-serif;
 
   --space-1: 5.0px;
   --space-2: 10.0px;

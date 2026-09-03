@@ -16,7 +16,7 @@ import { SuiLanguageMenu } from './language';
 import { SuiFileMenu } from './file';
 
 import { SuiMenuBase, SuiMenuParams, suiMenuTranslation, 
-  MenuTranslations, suiConfiguredMenuTranslate } from './menu';
+  SuiConfiguredMenu, MenuTranslations, suiConfiguredMenuTranslate } from './menu';
 import { SuiScoreMenu } from './score';
 import { SuiStaffModifierMenu } from './staffModifier';
 import { SuiMeasureMenu } from './measure';
@@ -54,7 +54,7 @@ export class SuiMenuManager {
   bound: boolean = false;
   hotkeyBindings: Record<string, string> = {};
   closeMenuPromise: Promise<void> | null = null;
-  menu: SuiMenuBase | null = null;
+  menu: SuiConfiguredMenu | null = null;
   keydownHandler: EventHandler | null = null;
   menuPosition: SvgBox = { x: 250, y: 40, width: 1, height: 1 };
   tracker: SuiTracker;
@@ -231,7 +231,7 @@ export class SuiMenuManager {
   dismiss() {
     $('body').trigger('menuDismiss');
   }
-  displayMenu(menu: SuiMenuBase | null) {
+  displayMenu(menu: SuiConfiguredMenu) {
     this.menu = menu;
     if (!this.menu) {
       return;
