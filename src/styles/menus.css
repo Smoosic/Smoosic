@@ -37,6 +37,10 @@ body.slash-menu .control-menu-message {
     display:block;
     flex:3;
 }
+.menuContainer {
+  position: absolute;
+  z-index: 13;
+}
 
 .menuOption .icon {
     display:block;
@@ -99,6 +103,11 @@ body.showAttributeDialog.textEditor .overlay {
 .mbtn:hover, .mbtn.is-hover {
     background: var(--color-accent-100);
     border-color: var(--color-accent-300);
+}
+.mbtn.is-open {
+    background: var(--color-accent);
+    border-color: var(--color-accent-700);
+    color: #fff;
 }
 .side {
     width: var(--menu-rail);
@@ -196,6 +205,11 @@ body.showAttributeDialog.textEditor .overlay {
 }
 .mitem-label {
   font-size: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .mitem-key {
     font: 400 11.5px / 1 var(--font-body);
