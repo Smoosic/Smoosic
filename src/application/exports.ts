@@ -11,8 +11,6 @@ import { SuiExceptionHandler } from '../ui/exceptions';
 import { Qwerty } from '../ui/qwerty';
 import { SuiPiano } from '../render/sui/piano';
 import { SuiHelp } from '../ui/help';
-import { CollapseRibbonControl, ExtendedCollapseParent } from '../ui/buttons/collapsable';
-import { DisplaySettings } from '../ui/buttons/display';
 import { SmoTranslationEditor } from '../ui/i18n/translationEditor';
 import { SmoConfiguration } from './configuration';
 import { RibbonLayout, ModalComponent, CompleteNotifier, RibbonDefinition, replaceVueRoot } from '../ui/common';
@@ -232,8 +230,6 @@ export * from '../smo/xform/tickDuration';
 export * from '../smo/xform/tickMap';
 export * from '../smo/xform/undo';
 export * from '../ui/buttons/button';
-export * from '../ui/buttons/collapsable';
-export * from '../ui/buttons/display';
 export * from '../ui/buttons/ribbon';
 export * from '../ui/common';
 export * from '../ui/configuration';
@@ -340,7 +336,6 @@ export const Smo = {
   simpleRibbonLayout,
   RibbonButtons,
   ModalComponent, CompleteNotifier,
-  DisplaySettings,  ExtendedCollapseParent, CollapseRibbonControl,
   // Menus
   SuiMenuManager, SuiMenuBase, SuiMenuCustomizer, SuiScoreMenu, SuiFileMenu,
   SuiKeySignatureMenu, SuiStaffModifierMenu,

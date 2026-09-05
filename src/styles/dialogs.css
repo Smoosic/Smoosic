@@ -142,9 +142,6 @@
 .btn-square {
   border-radius: 0;
 }
-.collapsable-container {
-  position: relative;
-}
 .dropdown-toggle::after {
   display: none;
 }
@@ -163,60 +160,14 @@ button.number-click:disabled {
 input.number-click {
   line-height: 1rem;
 }
-.collapsable-button[data-bs-toggle] {
-  width: 2rem;
-  height: 2rem;
-  position: absolute;
-  border-color: #6664;
-}
 button.dropdown-toggle[data-bs-toggle][aria-expanded="true"] span.smo-icon,
-.collapsable-button[data-bs-toggle][aria-expanded="true"] span.smo-icon {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease-in-out;
-}
 button.dropdown-toggle[data-bs-toggle] span.smo-icon{
   top:0.25rem;
 }
-.collapsable-button[data-bs-toggle] span.smo-icon {
-  top:0.5rem;
-}
 button.dropdown-toggle[data-bs-toggle] span.smo-icon,
-.collapsable-button[data-bs-toggle] span.smo-icon {
-  position:absolute;
-  left:0.5rem;
-  transform: rotate(0deg);
-  transition: transform 0.3s ease-in-out;
-}
 .dropdown-menu.collapsing,
-.collapsable-text.collapsing,
-.collapsable-row.collapsing {  
-  transition: opacity .5s linear ease-out;
-  height: 0;
-  border:0;
-}
-.collapsable-row.collapsing {
-  display: flex;
-}
 .dropdown-menu.collapsing,
-.collapsable-text.collapsing{
-   display:block;
-}
-.collapsable-row.collapsing.show {
-  height: auto;
-  @starting-style {
-    height: 0;
-    overflow: hidden;
-  }
-}
 .dropdown-menu.collapsing.show,
-.collapsable-text.collapsing.show {  
-  display:block;
-  height: auto;
-  @starting-style {
-    height: 0;
-    overflow: hidden;
-  }
-}
 .dropdown .dropdown-menu {
   padding-top: 0;
 }

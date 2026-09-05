@@ -170,7 +170,7 @@ body.showAttributeDialog.textEditor .overlay {
     user-select: none;
 }
 .mbtn-label {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
 }
 .side-group {
     margin-top: var(--space-3);
