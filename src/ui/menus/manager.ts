@@ -1,7 +1,7 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { createTopDomContainer } from '../../common/htmlHelpers';
-import { SvgBox } from '../../smo/data/common';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { SuiBeamMenu, SuiBeamMenuOptions } from './beams';
 import { layoutDebug } from '../../render/sui/layoutDebug';
@@ -231,12 +231,14 @@ export class SuiMenuManager {
     this.attach();
   }
 
-  async createMenu(action: string, notifier: CompleteNotifier) {
+  async createMenu(action: string, notifier: CompleteNotifier, anchor?: SvgPoint) {
     this.captureMenuEvents(notifier);
     if (!this.completeNotifier) {
       return;
     }
-    this.menuPosition = { x: 250, y: 40, width: 1, height: 1 };
+    this.menuPosition = anchor ?
+      { x: anchor.x, y: anchor.y, width: 1, height: 1 } :
+      { x: 250, y: 40, width: 1, height: 1 };
     // If we were called from the ribbon, we notify the controller that we are
     // taking over the keyboard.  If this was a key-based command we already did.
     this.debug.addDialogDebug('createMenu creating ' + action);

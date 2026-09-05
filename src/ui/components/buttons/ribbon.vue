@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import buttonComp from './buttonComp.vue';
+import buttonComp from './ribbonButtons.vue';
 import{ ButtonDefinition } from '../../buttons/button'
 interface Props {
   domId: string,

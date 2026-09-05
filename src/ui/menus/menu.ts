@@ -179,6 +179,7 @@ export class SuiConfiguredMenu extends SuiMenuBase {
     }
     super({ items: SuiConfiguredMenu.definitionFromOptions(label, options), ...params });
     this.menuOptions = options;
+    this.label = label ?? '';
   }
   async selection(ev: any) {
     const text = $(ev.currentTarget).attr('data-value');

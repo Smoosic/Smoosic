@@ -61,8 +61,6 @@ export * from './src/smo/xform/tickDuration';
 export * from './src/smo/xform/tickMap';
 export * from './src/smo/xform/undo';
 export * from './src/ui/buttons/button';
-export * from './src/ui/buttons/collapsable';
-export * from './src/ui/buttons/display';
 export * from './src/ui/buttons/ribbon';
 export * from './src/ui/common';
 export * from './src/ui/configuration';

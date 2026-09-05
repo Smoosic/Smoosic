@@ -45,7 +45,12 @@ export interface ButtonDefinition {
       direction: string
     }
 }
-export type ButtonCallback = (button: ButtonDefinition) => Promise<void>;
+/**
+ * @param button - the button definition that was activated
+ * @param elementId - the actual rendered DOM id of the clicked element, when known.
+ * Used to anchor any menu the button opens near the triggering element.
+ */
+export type ButtonCallback = (button: ButtonDefinition, elementId?: string) => Promise<void>;
 export type DialogButtonState = 'selected' | 'unselected' | 'partiallySelected';
 export interface DialogButtonDefinition {
     label: string,

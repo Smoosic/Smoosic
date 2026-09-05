@@ -19,7 +19,7 @@ const { domId, buttonProps } = { ...props };
       isOpen.value = true;
     }
     setTimeout(async () => {
-      await buttonProps.callback!(buttonProps);
+      await buttonProps.callback!(buttonProps, getId(buttonProps.id));
       isOpen.value = false;
     }, 1);
   }

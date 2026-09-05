@@ -58,6 +58,7 @@ onUnmounted(() => {
 });
 </script>
 <template>
+  <div class="menu-layer">
   <div class="mdrop" :size="menuItems.length" role="menu">
     <div class="mdrop-head">
     <span>
@@ -66,8 +67,9 @@ onUnmounted(() => {
     <div v-for="item, index in menuItems" class="mitem" :id="itemId(index)" tabindex="-1"
       @click.prevent="selectItem(item)">
       <span :class="item.menuChoice.icon">{{ miString(item.menuChoice) }}</span>
-      <span class="miitem-label">{{ item.menuChoice.text }}</span>
+      <span class="mitem-label">{{ item.menuChoice.text }}</span>
       <span class="mitem-key">{{ item.menuChoice.hotkey }}</span>
       </div>
+    </div>
     </div>
 </template>

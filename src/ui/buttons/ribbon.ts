@@ -1,7 +1,7 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { buildDom, getDomContainer } from '../../common/htmlHelpers';
-import { KeyEvent } from '../../smo/data/common';
+import { KeyEvent, SvgPoint } from '../../smo/data/common';
 import { ButtonDefinition, ButtonAction } from './button';
 import { BrowserEventSource } from '../eventSource';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
@@ -82,7 +82,31 @@ export class RibbonButtons {
     this.ribbonButtons = params.ribbonButtons;
     this.ribbons = params.ribbons;
   }
-  async executeQuickButton(button: ButtonDefinition) {
+  // Anchor point for a menu opened from a standard menu button: the button's top-right corner.
+  resolveTopRightAnchor(elementId?: string): SvgPoint | undefined {
+    if (!elementId) {
+      return undefined;
+    }
+    const element = document.getElementById(elementId.replace(/^#/, ''));
+    if (!element) {
+      return undefined;
+    }
+    const rect = element.getBoundingClientRect();
+    return { x: rect.right, y: rect.top };
+  }
+  // Anchor point for a menu opened from a quick-action button: the control's bottom-left corner.
+  resolveBottomLeftAnchor(elementId?: string): SvgPoint | undefined {
+    if (!elementId) {
+      return undefined;
+    }
+    const element = document.getElementById(elementId.replace(/^#/, ''));
+    if (!element) {
+      return undefined;
+    }
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left, y: rect.bottom };
+  }
+  async executeQuickButton(button: ButtonDefinition, elementId?: string) {
     if (button.id === 'setView') {
     SuiScoreViewDialogVue(
       {
@@ -160,7 +184,8 @@ export class RibbonButtons {
         return;
       }
       await this.view.renderPromise();
-      this.menus.createMenu('SuiPartSelectionMenu', this.controller);
+      const anchor = this.resolveBottomLeftAnchor(elementId);
+      this.menus.createMenu('SuiPartSelectionMenu', this.controller, anchor);
     }
   }
   async executeButtonModal(buttonElement: string, buttonData: ButtonDefinition) {
@@ -189,7 +214,8 @@ export class RibbonButtons {
       await this.executeButtonModal(buttonElement, buttonData);
     }
     if (buttonData.action === 'menu' || buttonData.action === 'collapseChildMenu') {
-      await this.menus.createMenu(buttonData.ctor, this.controller);
+      const anchor = this.resolveTopRightAnchor(buttonElement);
+      await this.menus.createMenu(buttonData.ctor, this.controller, anchor);
     }
   }
 
@@ -208,8 +234,8 @@ export class RibbonButtons {
   // the button's configured action.
   createRibbonHtml(buttonAr: string[], selector: string | HTMLElement) {
     const dataArray: ButtonDefinition[] = reactive([]);
-    const buttonCallback = async (button: ButtonDefinition) => {
-      return await this.executeQuickButton(button);
+    const buttonCallback = async (button: ButtonDefinition, elementId?: string) => {
+      return await this.executeQuickButton(button, elementId);
     };
     buttonAr.forEach((buttonId) => {
       const buttonData = this.ribbonButtons.find((e) =>
@@ -240,9 +266,9 @@ export class RibbonButtons {
   createSidebarMenuHtml(buttonAr: string[], selector: string | HTMLElement) {
     let buttonClass = '';
     const buttonList: ButtonDefinition[] = [];
-    const executeButton = async (buttonData: ButtonDefinition) => {
-      await this.executeButton(buttonData.id, buttonData);
-    };    
+    const executeButton = async (buttonData: ButtonDefinition, elementId?: string) => {
+      await this.executeButton(elementId ?? buttonData.id, buttonData);
+    };
     buttonAr.forEach((buttonId) => {
       const buttonData = this.ribbonButtons.find((e) =>
         e.id === buttonId

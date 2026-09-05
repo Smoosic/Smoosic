@@ -16,7 +16,7 @@ const { domId, buttonProps } = { ...props };
     :class="buttonProps.classes"
     :aria-label="getLabelText()"
     v-if="buttonProps.callback"
-    @click.prevent="buttonProps.callback(buttonProps)">
+    @click.prevent="buttonProps.callback(buttonProps, getId(buttonProps.id))">
     <span class="left-text"><span class="text-span">{{ buttonProps.leftText }}</span>
     <span :class="buttonProps.icon"></span></span>
     <span class="right-text">{{ buttonProps.rightText }}</span></button>

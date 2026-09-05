@@ -1,4 +1,4 @@
-import { SvgBox } from '../../smo/data/common';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { layoutDebug } from '../../render/sui/layoutDebug';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
@@ -51,7 +51,7 @@ export declare class SuiMenuManager {
     captureMenuEvents(completeNotifier: CompleteNotifier): void;
     dismiss(): void;
     displayMenu(menu: SuiConfiguredMenu): void;
-    createMenu(action: string, notifier: CompleteNotifier): void;
+    createMenu(action: string, notifier: CompleteNotifier, anchor?: SvgPoint): Promise<void | null>;
     evKey(event: any): void;
     bindEvents(): void;
 }

@@ -204,6 +204,13 @@ body.showAttributeDialog.textEditor .overlay {
     cursor: pointer;
 }
 .mitem-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mitem-label {
   font-size: 0.75rem;
   flex: 1;
   min-width: 0;
@@ -226,6 +233,14 @@ body.showAttributeDialog.textEditor .overlay {
     box-shadow: var(--shadow-lg);
     font-family: var(--font-body);
     padding: 5px 0 6px;
+}
+.menu-layer {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-4);
 }
 .mdrop-head {
     display: flex;
