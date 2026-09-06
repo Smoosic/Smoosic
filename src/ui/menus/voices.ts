@@ -76,7 +76,7 @@ class selectVoiceMenuOption implements SuiConfiguredMenuOption {
     return false;
   }
   get menuChoice()  {
-    const icon = this.isNew ? 'mi Add' : '';
+    const icon = this.isNew ? 'mi add' : '';
     return {
       icon,
       text: `Voice ${this.voice + 1}`,
