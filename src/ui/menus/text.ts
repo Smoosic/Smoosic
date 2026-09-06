@@ -26,7 +26,7 @@ const rehearsalLetterDialogMenuOption: SuiConfiguredMenuOption = {
     menu.view.toggleRehearsalMark();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi font_download',
     text: 'Rehearsal Letter',
     value: 'rehearsalLetter'
   }
@@ -48,7 +48,7 @@ const textBlockDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi title',
     text: 'Score Text',
     value: 'textBlock'
   }
@@ -79,7 +79,7 @@ const chordChangeDialogMenuOption: SuiConfiguredMenuOption = {
     );
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-csymHalfDiminished',
     text: 'Chord Changes',
     value: 'chordChanges'
   }
@@ -110,7 +110,7 @@ const lyricsDialogMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'icon-smo icon-lyric',
     text: 'Lyrics',
     value: 'lyricMenu'
   }
@@ -146,7 +146,7 @@ const dynamicsDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-mezzo-forte',
     text: 'Dynamics',
     value: 'dynamicsMenu'
   }

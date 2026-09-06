@@ -13,7 +13,7 @@ declare var $: any;
  */
 export const createNotePartMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {
-    icon: '',
+        icon: 'mi add',
         text: 'Create New Part/Stave',
         value: 'createPart'
   }, display: () => true,
@@ -36,7 +36,7 @@ export const createNotePartMenuOption: SuiConfiguredMenuOption = {
  */
 export const removePartMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {    
-      icon: 'cancel-circle',
+      icon: 'mi delete',
       text: 'Remove Selected Parts/Staves',
       value: 'removePart'
   }, display: () => true,
@@ -49,7 +49,7 @@ export const removePartMenuOption: SuiConfiguredMenuOption = {
  */
 export const partPropertiesMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {    
-    icon: '',
+    icon: 'mi settings',
     text: 'Part Properties',
     value: 'editPart'
   }, display: (menu: SuiMenuBase) => menu.view.isPartExposed(),
@@ -78,7 +78,7 @@ export const partPropertiesMenuOption: SuiConfiguredMenuOption = {
  */
 export const pageLayoutMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {
-    icon: '',
+    icon: 'mi margin',
     text: 'Page Layout',
     value: 'pageLayout'
   }, display: (menu: SuiMenuBase) => menu.view.isPartExposed(),
@@ -101,7 +101,7 @@ export const pageLayoutMenuOption: SuiConfiguredMenuOption = {
  */
 export const viewPartialScoreMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {
-    icon: '',
+    icon: 'mi disabled_visible',
     text: 'Show/Hide Staves',
     value: 'view'
   }, display: (menu: SuiMenuBase) => !menu.view.isPartExposed(),
@@ -124,7 +124,7 @@ export const viewPartialScoreMenuOption: SuiConfiguredMenuOption = {
  */
 export const viewFullScoreMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {
-    icon: '',
+    icon: 'mi visibility',
     text: 'View All',
     value: 'viewAll'
   }, display: (menu: SuiMenuBase) => menu.view.score.staves.length < menu.view.storeScore.staves.length,
@@ -137,7 +137,7 @@ export const viewFullScoreMenuOption: SuiConfiguredMenuOption = {
  */
 export const editInstrumentMenuOption: SuiConfiguredMenuOption = {
   menuChoice: {
-    icon: '',
+    icon: 'mi tune',
     text: 'Instrument Properties',
     value: 'editInstrument'
   }, display: (menu: SuiMenuBase) => true,
@@ -160,7 +160,7 @@ export const editInstrumentMenuOption: SuiConfiguredMenuOption = {
  */
 export const tabStaveMenuOption: SuiConfiguredMenuOption = {
   menuChoice:  {
-    icon: '',
+    icon: 'bv tall bv-fretboard5string',
     text: 'Guitar Tablature',
     value: 'tabStave'
   }, display: (menu: SuiMenuBase) => true,

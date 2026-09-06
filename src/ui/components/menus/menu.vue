@@ -17,7 +17,11 @@ menuItems.forEach((item, index) => {
 });
 const focusIndex = ref(-1);
 const miString = (item: MenuChoiceDefinition) => {
-  return item.miIcon ?? '';
+  const sp = item.icon.split(' ');
+  if (sp.length > 1 && sp[0] === 'mi') {
+    return sp[1];
+  }
+  return '';
 }
 const itemId = (index: number) => `${props.domId}-item-${index}`;
 const selectItem = async (option: SuiConfiguredMenuOption) => {
@@ -30,6 +34,16 @@ const advanceFocus = (inc: number) => {
   }
   focusIndex.value = (focusIndex.value + inc + menuItems.length) % menuItems.length;
   document.getElementById(itemId(focusIndex.value))?.focus();
+}
+/**
+ * align menu text if no icon present
+ * @param item 
+ */
+const menuIcon = (item: SuiConfiguredMenuOption) => {
+  if (item.menuChoice.icon.length > 0) {
+    return item.menuChoice.icon;
+  }
+  return "mi";
 }
 let keydownHandler: EventHandler | null = null;
 onMounted(() => {
@@ -66,7 +80,7 @@ onUnmounted(() => {
     </span></div>
     <div v-for="item, index in menuItems" class="mitem" :id="itemId(index)" tabindex="-1"
       @click.prevent="selectItem(item)">
-      <span :class="item.menuChoice.icon">{{ miString(item.menuChoice) }}</span>
+      <span :class="menuIcon(item)">{{ miString(item.menuChoice) }}</span>
       <span class="mitem-label">{{ item.menuChoice.text }}</span>
       <span class="mitem-key">{{ item.menuChoice.hotkey }}</span>
       </div>

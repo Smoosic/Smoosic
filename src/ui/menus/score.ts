@@ -35,7 +35,7 @@ const preferencesMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi settings',
     text: 'Smoosic Preferences',
     value: 'preferences'
   }
@@ -48,7 +48,7 @@ const viewAllMenuOption: SuiConfiguredMenuOption = {
     menu.view.viewAll();
   }, display: (menu: SuiMenuBase) => menu.score.staves.length < menu.view.storeScore.staves.length,
   menuChoice: {
-    icon: '',
+    icon: 'mi table_rows',
     text: 'View All',
     value: 'viewAll'
   }
@@ -71,8 +71,8 @@ const globalLayoutMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => menu.view.isPartExposed() === false,
   menuChoice: {
-    icon: '',
-    text: 'Global Layout',
+    icon: 'mi insert_page_break',
+    text: 'Score Layout',
     value: 'globalLayout'
   }
 }
@@ -94,8 +94,8 @@ const pageLayoutMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => menu.view.isPartExposed() === false,
   menuChoice: {
-    icon: '',
-    text: 'Page Layout',
+    icon: 'mi margin',
+    text: 'Page Margins',
     value: 'pageLayout'
   }
 }
@@ -118,7 +118,7 @@ const staffGroupsMenuOption: SuiConfiguredMenuOption = {
     );
   }, display: (menu: SuiMenuBase) => menu.view.isPartExposed() === false,
   menuChoice: {
-    icon: '',
+    icon: 'bv tall bv-brace',
     text: 'System Groups',
     value: 'staffGroups'
   }
@@ -141,7 +141,7 @@ const fontsMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi font_download',
     text: 'Score Fonts',
     value: 'fonts'
   }
@@ -164,7 +164,7 @@ const identificationMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi info',
     text: 'Score Info',
     value: 'identification'
   }
@@ -187,7 +187,7 @@ const transposeScoreMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-accidentalSharp',
     text: 'Transpose Score',
     value: 'transposeScore'
   }

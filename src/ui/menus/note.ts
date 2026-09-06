@@ -31,7 +31,7 @@ const toggleCueMenuOption: SuiConfiguredMenuOption = {
     await menu.view.toggleCue();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv sm bv-noteheadHalfFilled',
     text: 'Toggle Cue',
     value: 'toggleCueMenuOption'
   }
@@ -53,7 +53,7 @@ const arpeggioMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv tall oversize bv-arpeggiatoUp',
     text: 'Arpeggio',
     value: 'arpeggioDialog'
   }
@@ -75,7 +75,7 @@ const noteHeadMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-noteheadXBlack',
     text: 'Head and Stem',
     value: 'noteHeadDialog'
   }
@@ -119,7 +119,7 @@ const graceNotesMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'icon-smo icon-grace_select',
     text: 'Grace Notes',
     value: 'graceNotes'
   }
@@ -141,7 +141,7 @@ const clefNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-fClef',
     text: 'Change Clef',
     value: 'clefNoteDialog'
   }
@@ -184,7 +184,7 @@ const togglePedalRelease: SuiConfiguredMenuOption = {
     return show;
   }),
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-keyboardPedalUp',
     text: 'Toggle Pedal Release',
     value: 'togglePedalRelease'
   }
@@ -206,7 +206,7 @@ const ornamentNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-ornamentMordent',
     text: 'Ornaments',
     value: 'ornamentDialog'
   }
@@ -228,7 +228,7 @@ const durationDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'icon-smo icon-duration',
     text: 'Durations',
     value: 'durationDialog'
   }
@@ -250,7 +250,7 @@ const articulationNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-accent',
     text: 'Articulations',
     value: 'articulationDialog'
   }
@@ -272,7 +272,7 @@ const microtoneNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-accidentalKoron',
     text: 'Microtones',
     value: 'microtoneDialog'
   }

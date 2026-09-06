@@ -154,12 +154,6 @@ body.showAttributeDialog.textEditor .overlay {
   flex: none;
   width: 20px; text-align: center; user-select: none;
 }
-.bv.oversize {
-  font-size: 1rem;
-}
-.icon.oversize {
-  font-size: 1rem;
-}
 .smoi {
     font-family: "Smoosic";
     font-size: 22px;
@@ -211,7 +205,7 @@ body.showAttributeDialog.textEditor .overlay {
     white-space: nowrap;
 }
 .mitem-label {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -255,16 +249,16 @@ body.showAttributeDialog.textEditor .overlay {
     color: var(--color-neutral-700);
 }
 .bv.sm { font-size: 18px; }
-/* SMuFL glyphs by name — the codepoint lives here, never in the markup */
-.bv::before { content: ""; }
-.bv-gclef::before        { content: "\E050"; }  /* G clef */
-.bv-common::before       { content: "\E08A"; }  /* common time */
-.bv-num3::before         { content: "\E083"; }  /* time-signature numeral 3 */
-.bv-quarter::before      { content: "\E1D5"; }  /* quarter note, stem up */
-.bv-eighth::before       { content: "\E1D7"; }  /* eighth note, stem up */
-.bv-rest::before         { content: "\E4E5"; }  /* quarter rest */
-.bv-flat::before         { content: "\E260"; }
-.bv-natural::before      { content: "\E261"; }
-.bv-sharp::before        { content: "\E262"; }
-.bv-accent::before       { content: "\E4A0"; }  /* accent above */
-.bv-forte::before        { content: "\E522"; }  /* dynamic forte */
+.bv.oversize {
+  font-size: 1rem;
+}
+.icon-smo.oversize {
+  font-size: 0.5rem;
+}
+.bv.tall {
+  height: 1rem;
+  padding-top:0.25rem;
+}
+.icon.oversize {
+  font-size: 1rem;
+}

@@ -36,7 +36,7 @@ const crescendoMenuOption: SuiConfiguredMenuOption = {
     menu.view.crescendo();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'cresc',
+    icon: 'bv bv-cresc',
     text: 'Cresc. Hairpin',
     value: 'crescendo'
   }
@@ -49,7 +49,7 @@ const decrescendoMenuOption: SuiConfiguredMenuOption = {
     menu.view.decrescendo();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'decresc',
+    icon: 'bv bv-decresc',
     text: 'Dim. Hairpin',
     value: 'decrescendo'
   }
@@ -62,7 +62,7 @@ const slurMenuOption: SuiConfiguredMenuOption = {
     menu.view.addSlur();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'slur',
+    icon: 'icon-smo icon-slur oversize',
     text: 'Slur',
     value: 'slur'
   }
@@ -75,7 +75,7 @@ const tieMenuOption: SuiConfiguredMenuOption = {
     menu.view.tie();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'slur',
+    icon: 'bv bv-tie',
     text: 'Tie',
     value: 'tie'
   }
@@ -102,7 +102,7 @@ const pedalMarkingMenuOption: SuiConfiguredMenuOption = {
     await addOrReplacePedalMarking(menu.view, pedalMarking);
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'pedal',
+    icon: 'bv bv-pedal-before',
     text: 'Pedal Marking',
     value: 'pedalMarking'
   }
@@ -115,7 +115,7 @@ const endingMenuOption: SuiConfiguredMenuOption = {
     menu.view.addEnding();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'ending',
+    icon: 'smo-icon icon-ending oversize',
     text: 'nth ending',
     value: 'ending'
   }
@@ -173,37 +173,11 @@ const ritardMenuOption: SuiConfiguredMenuOption = {
   }
 }
 /**
- * @category SuiMenu
- */
-const resetSlursMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    await menu.view.refreshViewport();
-  }, display: (menu: SuiMenuBase) => true,
-  menuChoice: {
-    icon: 'slur',
-    text: 'Reset slurs',
-    value: 'resetSlurs'
-  }
-}
-/**
- * @category SuiMenu
- */
-const endingsMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    menu.view.addEnding();
-  }, display: (menu: SuiMenuBase) => true,
-  menuChoice: {
-    icon: 'icon-ending',
-    text: 'Repeate Endings',
-    value: 'endings'
-  }
-}
-/**
  * the 'lines' menu, mostly staff modifiers.
  * @category SuiMenu
  */
 const SuiStaffModifierMenuOptions: SuiConfiguredMenuOption[] = [
   crescendoMenuOption, decrescendoMenuOption, slurMenuOption, tieMenuOption,
   pedalMarkingMenuOption, endingMenuOption, dimenuendoMenuOption, crescendoBracketMenuOption,
-  accelMenuOption, ritardMenuOption, resetSlursMenuOption, endingsMenuOption
+  accelMenuOption, ritardMenuOption
 ];

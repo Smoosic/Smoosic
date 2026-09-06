@@ -149,7 +149,7 @@ const cancelOption: SuiConfiguredMenuOption = {
     menu.complete();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi cancel',
     text: 'Cancel',
     value: 'cancel'
   }

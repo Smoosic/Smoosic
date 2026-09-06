@@ -16,7 +16,7 @@ const systemNewScoreOption: SuiConfiguredMenuOption = {
       await menu.view.changeScore(score);
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi create',
     text: 'New',
     value: 'new'
   }
@@ -26,7 +26,7 @@ const systemQuickSave: SuiConfiguredMenuOption = {
     menu.view.quickSave();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi save',
     text: 'Quick Save',
     value: 'quickSave'
   }
@@ -44,7 +44,7 @@ const systemPrintOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi print',
     text: 'Print',
     value: 'print'
   }
@@ -63,7 +63,7 @@ const suiFileSaveOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi save',
     text: 'Save',
     value: 'saveFile'
   }
@@ -83,7 +83,7 @@ const suiFileOpenOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi file_open',
     text: 'Open',
     value: 'loadFile'
   }
@@ -102,7 +102,7 @@ const suiImportMidiOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi piano',
     text: 'Import Midi',
     value: 'importMidi'
   }

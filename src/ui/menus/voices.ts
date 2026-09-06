@@ -19,7 +19,7 @@ class voiceSwapperMenuOption implements SuiConfiguredMenuOption {
   label: string;
   get menuChoice(): MenuChoiceDefinition  {
     return {
-      icon: '',
+      icon: 'mi cached',
       text: this.label,
       value: this.cmd
     }
@@ -50,6 +50,7 @@ class voiceSwapperMenuOption implements SuiConfiguredMenuOption {
 }
 class selectVoiceMenuOption implements SuiConfiguredMenuOption {
   voice: number;
+  isNew: boolean = false;
   constructor(voice: number) {
     this.voice = voice;
   }
@@ -60,10 +61,12 @@ class selectVoiceMenuOption implements SuiConfiguredMenuOption {
     for (let i = 0; i < menu.view.tracker.selections.length; ++i) {
       const mm = menu.view.tracker.selections[i].measure;
       if (mm.voices.length === 1) {
+        this.isNew = true;
         return this.voice === 1;
       }
       // If there are n voices, and I am n+1, show option
       if (mm.voices.length === this.voice) {
+        this.isNew = true;
         return true;
       }
       if (mm.voices.length > this.voice && mm.getActiveVoice() !== this.voice) {
@@ -73,95 +76,12 @@ class selectVoiceMenuOption implements SuiConfiguredMenuOption {
     return false;
   }
   get menuChoice()  {
+    const icon = this.isNew ? 'mi Add' : '';
     return {
-      icon: '',
+      icon,
       text: `Voice ${this.voice + 1}`,
       value: `voice${this.voice.toString()}`
     };
-  }
-}
-/**
- * @category SuiMenu
- */
-const selectVoiceOneMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    await menu.view.populateVoice(0);
-  }, display: (menu: SuiMenuBase) => {
-    for (let i = 0; i < menu.view.tracker.selections.length; ++i) {
-      const mm = menu.view.tracker.selections[i].measure;
-      if (mm.voices.length > 1) {
-        return true;
-      }
-    }
-    return false;
-  },
-  menuChoice: {
-    icon: '',
-    text: 'Voice 1',
-    value: 'voiceOne'
-  }
-}
-/**
- * @category SuiMenu
- */
-const selectVoiceTwoMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    await menu.view.populateVoice(1);
-  }, display: (menu: SuiMenuBase) => {
-    for (let i = 0; i < menu.view.tracker.selections.length; ++i) {
-      const mm = menu.view.tracker.selections[i].measure;
-      if (mm.voices.length <= 4 && mm.voices.length > 1) {
-        return true;
-      }
-    }
-    return false;
-  },
-  menuChoice: {
-    icon: '',
-    text: 'Voice 2',
-    value: 'voiceTwo'
-  }
-}
-/**
- * @category SuiMenu
- */
-const selectVoiceThreeMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    await menu.view.populateVoice(2);
-  }, display: (menu: SuiMenuBase) => {
-    for (let i = 0; i < menu.view.tracker.selections.length; ++i) {
-      const mm = menu.view.tracker.selections[i].measure;
-      if (mm.voices.length < 4 && mm.voices.length > 1) {
-        return true;
-      }
-    }
-    return false;
-  },
-  menuChoice: {
-    icon: '',
-    text: 'Voice 3',
-    value: 'voiceThree'
-  }
-}
-/**
- * @category SuiMenu
- */
-const selectVoiceFourMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    await menu.view.populateVoice(3);
-  }, display: (menu: SuiMenuBase) => {
-    for (let i = 0; i < menu.view.tracker.selections.length; ++i) {
-      const mm = menu.view.tracker.selections[i].measure;
-      if (mm.voices.length < 4 && mm.voices.length > 2) {
-        return true;
-      }
-    }
-    return false;
-  },
-  menuChoice: {
-    icon: '',
-    text: 'Voice 4',
-    value: 'voiceFour'
   }
 }
 /**
@@ -180,7 +100,7 @@ const removeVoiceMenuOption: SuiConfiguredMenuOption = {
     return false;
   },
   menuChoice: {
-    icon: '',
+    icon: 'mi delete',
     text: 'Remove Voice',
     value: 'removeVoice'
   }
