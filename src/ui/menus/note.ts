@@ -119,7 +119,7 @@ const graceNotesMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'icon-smo icon-grace_select',
+    icon: 'icon-smo smoi icon-grace_note',
     text: 'Grace Notes',
     value: 'graceNotes'
   }
@@ -228,7 +228,7 @@ const durationDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'icon-smo icon-duration',
+    icon: 'icon-smo smoi icon-duration',
     text: 'Durations',
     value: 'durationDialog'
   }

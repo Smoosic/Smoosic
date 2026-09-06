@@ -62,7 +62,7 @@ const slurMenuOption: SuiConfiguredMenuOption = {
     menu.view.addSlur();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'icon-smo icon-slur oversize',
+    icon: 'icon-smo smoi icon-slur oversize',
     text: 'Slur',
     value: 'slur'
   }
@@ -115,7 +115,7 @@ const endingMenuOption: SuiConfiguredMenuOption = {
     menu.view.addEnding();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'smo-icon icon-ending oversize',
+    icon: 'smo-icon smoi icon-ending oversize',
     text: 'nth ending',
     value: 'ending'
   }

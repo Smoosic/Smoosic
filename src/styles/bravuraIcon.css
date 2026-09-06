@@ -466,4 +466,6 @@
 .bv-accidentalNarrowReversedFlatAndFlat::before {content: "\e285";}
 .bv-accidentalWilsonPlus::before {content: "\e47b";}
 .bv-accidentalWilsonMinus::before {content: "\e47c";}
+
 .bv-mezzo-forte::before { content: "\E52D"; }
+.bv-beamed::before { content: "\E1F2"; }

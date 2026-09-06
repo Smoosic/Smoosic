@@ -110,7 +110,7 @@ const lyricsDialogMenuOption: SuiConfiguredMenuOption = {
       });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: 'icon-smo icon-lyric',
+    icon: 'icon-smo smoi oversize icon-lyric',
     text: 'Lyrics',
     value: 'lyricMenu'
   }

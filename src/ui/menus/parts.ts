@@ -181,7 +181,7 @@ export const tabStaveMenuOption: SuiConfiguredMenuOption = {
  */
 export const moveUpMenuOption: SuiConfiguredMenuOption = {
   menuChoice:  {
-    icon: 'icon-smo icon-arrow-up',
+    icon: 'icon-smo smoi icon-arrow-up',
     text: 'Move Part Up',
     value: 'partUp'
   }, display: (menu: SuiMenuBase) =>  {
@@ -193,7 +193,7 @@ export const moveUpMenuOption: SuiConfiguredMenuOption = {
 }
 export const moveDownMenuOption: SuiConfiguredMenuOption = {
   menuChoice:  {
-    icon: 'icon-smo icon-flip icon-arrow-up',
+    icon: 'icon-smo smoi icon-flip icon-arrow-up',
     text: 'Move Part Down',
     value: 'partDown'
   }, display: (menu: SuiMenuBase) =>  {

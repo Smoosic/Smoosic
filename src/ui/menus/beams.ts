@@ -36,7 +36,7 @@ const unbeamSelectionsMenuOption: SuiConfiguredMenuOption = {
     return false;
   },
   menuChoice: {
-    icon: 'icon smo-icon icon-beamBreak',
+    icon: 'smoi icon-smo icon-beamBreak',
     text: 'Unbeam Selections',
     hotkey: 'x',
     value: 'toggleBeamMenuOption'
@@ -66,7 +66,7 @@ const beamSelectionsMenuOption: SuiConfiguredMenuOption = {
     return false;
   },
   menuChoice: {
-    icon: 'icon smo-icon icon-beam',
+    icon: 'bv tall bv-beamed',
     text: 'Beam Selections',
     hotkey: 'Shift-X',
     value: 'beamSelectionsMenuOption'
@@ -96,7 +96,7 @@ const toggleBeamDirectionMenuOption: SuiConfiguredMenuOption = {
     return false;
   },
   menuChoice: {
-    icon: 'icon icon-smo icon-flagFlip',
+    icon: 'smoi icon-smo icon-flagFlip',
     text: 'Toggle Stem Direction (auto, up, down)',
     hotkey: 'Shift-B',
     value: 'toggleBeamDirection'
