@@ -10,9 +10,6 @@ import { SuiLyricDialog } from './lyric';
 import { SuiChordChangeDialog } from './chordChange';
 import { SuiTieAttributesDialog } from './tie';
 import { SuiDynamicModifierDialog } from './dynamics';
-import { SuiTextBlockDialog } from './textBlock';
-import { SuiTextBracketDialog } from './textBracket';
-import { SuiArpeggioDialog } from './arpeggio';
 import { SuiDialogNotifier, SmoDynamicComponentCtor, SuiBaseComponentParams } from './components/baseComponent';
 import { SuiButtonComponent, SuiButtonComposite, SuiButtonCompositeParams, SuiButtonComponentParams } from './components/button';
 import { CheckboxDropdownComponent, CheckboxDropdownComponentParams } from './components/checkdrop';
@@ -118,8 +115,6 @@ export const initDialogTranslationElements = () => {
   DialogTranslations.push(suiDialogTranslate(SuiSlurAttributesDialog.dialogElements, 'SuiSlurAttributesDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiDynamicModifierDialog.dialogElements, 'SuiDynamicModifierDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiVoltaAttributeDialog.dialogElements, 'SuiVoltaAttributeDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiTextBlockDialog.dialogElements, 'SuiTextBlockDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiTextBlockDialog.dialogElements, 'SuiTextBracketDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiLyricDialog.dialogElements, 'SuiLyricDialog'));
   // DialogTranslations.push(suiDialogTranslate(SuiArpeggioDialog.dialogElements, 'SuiArpeggioDialog'));
 }

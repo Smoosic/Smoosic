@@ -47,6 +47,7 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
     workingGroup = new SmoTextGroup(grpParams);
     parameters.modifier = workingGroup;
     workingGroup.setActiveBlock(newText);
+    workingGroup.beingEdited = true;
     view.groupUndo(true);
     view.addTextGroup(workingGroup);
   } else {
@@ -55,6 +56,7 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
     og.elements = [];
     workingGroup = SmoTextGroup.deserializePreserveId(parameters.modifier);
     workingGroup.setActiveBlock(workingGroup.textBlocks[0].text);
+    workingGroup.beingEdited = true;
     view.groupUndo(true);
   }
   if (!workingGroup.logicalBox) {
@@ -74,6 +76,7 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
   };
 
   const commitCb = async () => {
+    modifier.value.beingEdited = false;
     modifier.value.elements.forEach((el:ElementLike) => RemoveElementLike(el));
     modifier.value.elements = [];
     modifier.value.trimEmptyBlocks();
@@ -82,6 +85,7 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
     finish();
   };
   const cancelCb = async () => {
+    modifier.value.beingEdited = false;
     if (edited) {
       modifier.value.elements.forEach((element: ElementLike) => {
         RemoveElementLike(element);
@@ -93,6 +97,7 @@ export const SuiTextBlockDialogVue = (parameters: SuiDialogParams) => {
     finish();
   };
   const removeCb = async () => {
+    modifier.value.beingEdited = false;
     modifier.value.elements.forEach((element: ElementLike) => {
       RemoveElementLike(element);
     });

@@ -119,7 +119,6 @@ export * from './src/ui/dialogs/staffGroup';
 export * from './src/ui/dialogs/tabNote';
 export * from './src/ui/dialogs/tabStave';
 export * from './src/ui/dialogs/tempo';
-export * from './src/ui/dialogs/textBlock';
 export * from './src/ui/dialogs/textBracket';
 export * from './src/ui/dialogs/tie';
 export * from './src/ui/dialogs/timeSignature';

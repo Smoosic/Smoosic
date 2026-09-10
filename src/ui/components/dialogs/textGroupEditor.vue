@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, Ref, watch } from 'vue';
+import { computed, ref, Ref, watch, onBeforeUnmount } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
 import { createStyleTag } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,12 +14,16 @@ import selectComp from './select.vue';
 // No css-loader is wired into this project's webpack build (no other .vue
 // component here has a <style> block), so inject the small amount of CSS
 // this editor needs via TipTap's own createStyleTag utility instead.
-createStyleTag(
-  '.text-group-editor-content .ProseMirror p { margin: 0 0 0.25rem 0; }'
-  + '.text-group-editor-content .text-block-atom { cursor: default; margin: 0 0.15em; }',
-  undefined,
-  'text-group-editor'
-);
+//
+// The active block's font is applied here too, as an explicit rule on
+// ".ProseMirror p" (updated reactively below), rather than only as an
+// inline `:style` on the outer EditorContent div: ProseMirror's generated
+// <p> did not reliably pick up that font via plain CSS inheritance from
+// the styled ancestor div, so this rule -- confirmed the winning source in
+// DevTools -- is what actually has to carry the font-family/size/weight/style.
+const BASE_EDITOR_CSS = '.text-group-editor-content .ProseMirror p { margin: 0 0 0.25rem 0; }'
+  + '.text-group-editor-content .text-block-atom { cursor: default; margin: 0 0.15em; }';
+const editorStyleTag = createStyleTag(BASE_EDITOR_CSS, undefined, 'text-group-editor');
 
 interface Props {
   domId: string,
@@ -46,8 +50,40 @@ ensureActiveBlock(props.textGroup);
 // rendered as a read-only textBlockAtom node (see textGroupHtml.ts).
 const activeBlockId: Ref<string> = ref(props.textGroup.getActiveBlock().attrs.id);
 
+// Debounced live preview (spec: "periodically ... replace the contents of
+// the active text block ... so the user can see it in context"). Only real
+// keystrokes should trigger this -- programmatic content swaps (block
+// switch, relative-position change, remove) call rebuildContent() with
+// emitUpdate: false below, so they don't re-trigger it redundantly.
+const PREVIEW_DEBOUNCE_MS = 400;
+let previewTimer: ReturnType<typeof setTimeout> | null = null;
+const pushPreview = async () => {
+  previewTimer = null;
+  if (!editor.value) {
+    return;
+  }
+  const updated = htmlToTextGroup(editor.value.getJSON(), props.textGroup);
+  props.textGroup.textBlocks = updated.textBlocks;
+  props.textGroup.justification = updated.justification;
+  props.textGroup.relativePosition = updated.relativePosition;
+  await props.rerender();
+};
+const schedulePreview = () => {
+  if (previewTimer !== null) {
+    clearTimeout(previewTimer);
+  }
+  previewTimer = setTimeout(pushPreview, PREVIEW_DEBOUNCE_MS);
+};
+onBeforeUnmount(() => {
+  if (previewTimer !== null) {
+    clearTimeout(previewTimer);
+    previewTimer = null;
+  }
+});
+
 const editor = useEditor({
   content: textGroupToHtml(props.textGroup, activeBlockId.value),
+  onUpdate: schedulePreview,
   extensions: [
     StarterKit.configure({
       blockquote: false,
@@ -71,7 +107,7 @@ const editor = useEditor({
 });
 
 const rebuildContent = () => {
-  editor.value?.commands.setContent(textGroupToHtml(props.textGroup, activeBlockId.value));
+  editor.value?.commands.setContent(textGroupToHtml(props.textGroup, activeBlockId.value), { emitUpdate: false });
 };
 
 const computeFontStyle = () => {
@@ -90,6 +126,11 @@ const activeFontStyle: Ref<Record<string, string>> = ref(computeFontStyle());
 const refreshActiveFont = () => {
   activeFontStyle.value = computeFontStyle();
 };
+watch(activeFontStyle, (f) => {
+  editorStyleTag.textContent = BASE_EDITOR_CSS
+    + `.text-group-editor-content .ProseMirror p { font-family: ${f.fontFamily}; font-size: ${f.fontSize}; `
+    + `font-weight: ${f.fontWeight}; font-style: ${f.fontStyle}; }`;
+}, { immediate: true });
 
 // re-initialize the document if a different text group is passed in
 watch(() => props.textGroup, (next) => {

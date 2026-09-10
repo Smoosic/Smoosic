@@ -1,7 +1,6 @@
 import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShowOption, 
   SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SuiTextBlockDialog } from '../dialogs/textBlock';
 import { SmoDynamicText } from '../../smo/data/noteModifiers';
 import { SuiChordChangeDialog } from '../dialogs/chordChange';
 import { SuiLyricDialog } from '../dialogs/lyric';

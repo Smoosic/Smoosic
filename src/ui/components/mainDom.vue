@@ -86,7 +86,7 @@ watch ((dialogNotifiers.splashTimer), (newVal) => {
           </div>
           <div class="key-right-ctrl"></div>
         </div>
-        <div class="col-8 controls-top" id="controls-top">
+        <div class="controls-top" id="controls-top">
         </div>
       </div>
       <div class="media" id="media">

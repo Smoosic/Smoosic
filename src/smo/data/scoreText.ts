@@ -505,7 +505,8 @@ export class SmoTextGroup extends SmoScoreModifierBase {
   elements: ElementLike[] = [];
   textBlocks: SmoTextBlock[] = [];
   edited: boolean = false;  // indicates not edited this session
-  skipRender: boolean = false; // don't render if it is being edited  
+  skipRender: boolean = false; // don't render if it is being edited
+  beingEdited: boolean = false; // session-only render hint: dim this group's SVG while its dialog is open (never serialized)
   static deserialize(jObj: SmoTextGroupParamsSer) {
     const textBlocks: SmoTextBlock[] = [];
     const params: any = {};
@@ -566,6 +567,7 @@ export class SmoTextGroup extends SmoScoreModifierBase {
       smoSerialize.serializedMerge(SmoTextGroup.nonTextAttributes, tg, params);
       params.textBlocks = nblocks;
       const ngroup: SmoTextGroup = new SmoTextGroup(params);
+      ngroup.beingEdited = tg.beingEdited;
       ngroup.textBlocks.forEach((block) => {
         const xx = block.text;
         xx.classes = 'score-text ' + xx.attrs.id;
