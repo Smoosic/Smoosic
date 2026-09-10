@@ -66,10 +66,12 @@ watch ((dialogNotifiers.splashTimer), (newVal) => {
   <div id="help-dialog-container" :class="{ hide: !showHelpDialog }" class="card-view"></div>
   <div class="vueDialogContainer vue-modal-container" 
     :id="getId('vue-modal-container')" :class="{ hide: !showAttributeDialog }"></div>
-  <div class="dom-container" :class="{ masked: dialogNotifiers.showSplash.value }">
+  <div class="dom-container app" :class="{ masked: dialogNotifiers.showSplash.value }">
     <div class="mask"></div>
-    <div class="workspace language-dir">
-      <div class="row navbar-expand justify-content-start ms-5 flex-md-fill" :id="getId('top-bar')">
+    <div class="side" id="controls-left">
+    </div>
+    <div class="workspace language-dir app-col">
+      <div class="navbar-expand justify-content-start flex-md-fill" :id="getId('top-bar')">
         <sub class="col-1 hide" :id="getId('link-hdr')"><a href="https://github.com/Smoosic/smoosic" aria-label="Github link" 
           target="_blank" tabindex="0">Github
             site</a> |
@@ -78,7 +80,6 @@ watch ((dialogNotifiers.splashTimer), (newVal) => {
           <a href="https://smoosic.github.io/Smoosic/release/html/smoosic.html" aria-label="application link"
             target="_blank" tabindex="0">application</a><button class="close-header" aria-label="Close"><span
               class="icon icon-cross"></span></button></sub>
-        <h4 class="col-1 titleText">Smoosic</h4>
         <div class="hide piano-container">
           <div class="key-left-ctrl"></div>
           <div class="piano-keys" ref="pianoKeys">
@@ -89,8 +90,6 @@ watch ((dialogNotifiers.splashTimer), (newVal) => {
         </div>
       </div>
       <div class="media" id="media">
-        <div class="p-1" id="controls-left">
-        </div>
         <div class="flex-lg-column musicRelief scrollContainer" :class="{ horizontal: displayMode === 'horizontal' }" 
           :id="getId('scroll')">
           <div class="score-container" :id="getId('score')">

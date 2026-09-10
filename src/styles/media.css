@@ -300,6 +300,7 @@ body.printing .media div.d-flex
 body.printing .workspace-container,
 body.printing #top-bar ,
 body.printing .controls-left,
+body.printing .side,
 body.printing .control-bar
  {
   display:none;
@@ -336,11 +337,23 @@ body.printing .printFrame {
     display: flex;
   }
   .workspace {
-    padding-top: 2px;
     position:relative;
     background: #99a;
-    display:flex;
-    flex-flow:row wrap;
+  }
+  .app {
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      border: 1px solid var(--dlg-rule);
+      border-radius: var(--dlg-radius);
+      background: var(--dlg-field);
+  }
+
+  .app-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
   }
 }
 

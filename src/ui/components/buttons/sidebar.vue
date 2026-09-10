@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ButtonDefinition } from '../../buttons/button';
-import buttonComp  from './menuButtons.vue';
+import buttonComp  from './sidebarButtons.vue';
 interface Props {
   domId: string,
   buttonProps: ButtonDefinition[]
@@ -14,10 +14,12 @@ const getClasses = (btnProps: ButtonDefinition) => `${btnProps.icon} ${btnProps.
 
 </script>
 <template>
-  <div class="side">
+   <div class="side-brand">
+     <span class="bv bv-gclef"></span>
+     <span data-dc-tpl="158">Smoosic</span>
+    </div>
   <div class="side-group" role="group" :id="domId">
     <buttonComp v-for="props in buttonProps" :buttonProps="props" :domId="getId(props.id)" :key="props.id">
     </buttonComp>
-  </div>
   </div>
 </template>

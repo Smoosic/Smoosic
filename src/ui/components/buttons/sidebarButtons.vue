@@ -12,6 +12,16 @@ const { domId, buttonProps } = { ...props };
   const getLabelText = () => {
     return buttonProps.leftText || buttonProps.rightText || '';
   }
+  /**
+ * align menu text if no icon present
+ * @param item 
+ */
+const menuIcon = () => {
+  if (buttonProps.icon.length > 0) {
+    return buttonProps.icon;
+  }
+  return "mi";
+}
   const opensMenu = buttonProps.action === 'menu' || buttonProps.action === 'collapseChildMenu';
   const isOpen = ref(false);
   const onClick = () => {

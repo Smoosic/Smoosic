@@ -32,23 +32,14 @@ export class defaultRibbonLayout {
     return ['DebugGroup', 'DebugButton2'];
   }
   static get displayIds() {
-    return ['selectPart', 'setView','refresh', 'zoomout', 'zoomin', 'playButton2', 'stopButton2', 'keySignature', 'ribbonTempo', 'ribbonTime'];
+    return ['setView','refresh', 'zoomout', 'zoomin', 'playButton2', 'stopButton2', 'keySignature', 'ribbonTempo', 'ribbonTime', 'selectPart'];
   }
   static get displayButtons(): ButtonDefinition[] {
     return [{
-      leftText: '',
-      rightText: 'Select Part',
-      classes: 'drop-down',
-      icon: 'icon-smo icon-circle-down menu-icon',
-      action: 'collapseChild',
-      ctor: 'DisplaySettings',
-      group: 'quickButtons',
-      id: 'selectPart'
-    },  {
       leftText: 'View',
       rightText: '',
-      classes: 'icon',
-      icon: 'icon-smo icon-eye menu-icon fs-3',
+      classes: '',
+      icon: 'mi visibility',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -56,8 +47,8 @@ export class defaultRibbonLayout {
     }, {
       leftText: 'Refresh',
       rightText: '',
-      classes: 'icon refresh-button',
-      icon: 'icon-smo icon-refresh menu-icon',
+      classes: 'sep-before',
+      icon: 'mi refresh',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -65,8 +56,8 @@ export class defaultRibbonLayout {
     }, {
       leftText: 'Zoom In',
       rightText: '',
-      classes: 'icon',
-      icon: 'icon-smo icon-zoomplus menu-icon',
+      classes: '',
+      icon: 'mi zoom_in',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -74,8 +65,8 @@ export class defaultRibbonLayout {
     }, {
       leftText: 'Zoom Out',
       rightText: '',
-      classes: 'icon',
-      icon: 'icon-smo icon-zoomminus menu-icon',
+      classes: 'sep-after',
+      icon: 'mi zoom_out',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -83,8 +74,8 @@ export class defaultRibbonLayout {
     }, {
       leftText: 'Play',
       rightText: '',
-      classes: 'icon',
-      icon: 'icon-smo icon-play3 menu-icon',
+      classes: 'sep-before',
+      icon: 'mi play_arrow',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -92,8 +83,8 @@ export class defaultRibbonLayout {
     }, {
       leftText: 'Stop',
       rightText: '',
-      classes: 'icon',
-      icon: 'icon-smo icon-stop2 menu-icon',
+      classes: '',
+      icon: 'mi stop',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -101,8 +92,8 @@ export class defaultRibbonLayout {
     }, {
       leftText: 'Key',
       rightText: '',
-      classes: 'text-icon',
-      icon: 'icon-smo icon-key-sig-b menu-icon',
+      classes: 'sep-before',
+      icon: 'bv bv-sharp',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -110,8 +101,8 @@ export class defaultRibbonLayout {
     },  {
       leftText: 'Tempo',
       rightText: '',
-      classes: 'text-icon',
-      icon: 'icon-smo icon-metronome4 menu-icon',
+      classes: '',
+      icon: 'bv bv-metronome',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
@@ -119,12 +110,21 @@ export class defaultRibbonLayout {
     },  {
       leftText: 'Time',
       rightText: '',
-      classes: 'text-icon',
-      icon: 'icon-bravura icon-timeSigCommon menu-icon',
+      classes: '',
+      icon: 'bv bv-common',
       action: 'collapseChild',
       ctor: 'DisplaySettings',
       group: 'quickButtons',
       id: 'ribbonTime'
+    },{
+      leftText: '',
+      rightText: 'Select Part',
+      classes: 'spacer-before',
+      icon: 'mi groups',
+      action: 'collapseChild',
+      ctor: 'DisplaySettings',
+      group: 'quickButtons',
+      id: 'selectPart'
     }
     ];
   }

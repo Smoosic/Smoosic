@@ -469,3 +469,4 @@
 
 .bv-mezzo-forte::before { content: "\E52D"; }
 .bv-beamed::before { content: "\E1F2"; }
+.bv-metronome::before { content: "\ECA5"; }

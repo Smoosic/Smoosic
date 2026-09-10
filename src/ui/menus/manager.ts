@@ -17,7 +17,7 @@ import { SuiFileMenu } from './file';
 import { App, createApp } from 'vue';
 import menuComponent from '../components/menus/menu.vue';
 
-import { SuiMenuBase, SuiMenuParams, suiMenuTranslation, 
+import { SuiMenuParams, 
   SuiConfiguredMenu, MenuTranslations, suiConfiguredMenuTranslate } from './menu';
 import { SuiScoreMenu } from './score';
 import { SuiStaffModifierMenu } from './staffModifier';
@@ -197,9 +197,9 @@ export class SuiMenuManager {
 
   captureMenuEvents(completeNotifier: CompleteNotifier) {
     var self = this;
-    if (this.closeMenuPromise) {
-      console.log('menu already open, skipping');
-      return;
+    if (this.closeMenuPromise) {  // close already-open menu
+      this.dismiss();
+      completeNotifier.unbindKeyboardForModal(this as ModalComponent);
     }
     this.bindEvents();
     this.debug.addDialogDebug('slash menu creating closeMenuPromise');

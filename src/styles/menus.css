@@ -166,6 +166,15 @@ body.showAttributeDialog.textEditor .overlay {
 .mbtn-label {
   font-size: 0.9rem;
 }
+.side-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 10px;
+    font: 600 12px / 1 var(--font-heading);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
 .side-group {
     margin-top: var(--space-3);
     padding: 0 6px 4px;

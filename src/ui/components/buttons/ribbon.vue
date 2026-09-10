@@ -12,8 +12,10 @@ const getId = (str: string) => `${domId}-${str}`;
 
 </script>
 <template>
-  <div class="row ribbonButtonContainer" :id="domId">
+  <div class="ribbon-host" :id="domId">
+    <div class="ribbon">
     <buttonComp v-for="props in buttonProps" :buttonProps="props" :domId="getId(props.id)" :key="props.id">
     </buttonComp>
+    </div>
   </div>
 </template>
