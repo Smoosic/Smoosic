@@ -3,7 +3,7 @@ import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShow
 import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SmoDynamicText } from '../../smo/data/noteModifiers';
 import { SuiChordChangeDialog } from '../dialogs/chordChange';
-import { SuiLyricDialog } from '../dialogs/lyric';
+import { SuiLyricDialogVue } from '../dialogs/lyricVue';
 import { SuiDynamicModifierDialogVue } from '../dialogs/dynamicsVue';
 import { SuiTextBlockDialogVue } from '../dialogs/textBlockVue';
 
@@ -96,17 +96,16 @@ const lyricsDialogMenuOption: SuiConfiguredMenuOption = {
     const lyrics = note.getTrueLyrics();
     const lyric = lyrics.length > 0 ? lyrics[0] : null;
 
-    createAndDisplayDialog(SuiLyricDialog, 
-      {
-        completeNotifier: menu.completeNotifier!,
-        view: menu.view,
-        eventSource: menu.eventSource,
-        id: 'lyricDialog',
-        ctor: 'SuiLyricDialog',
-        tracker: menu.view.tracker,
-        startPromise: menu.closePromise,
-        modifier: lyric
-      });
+    SuiLyricDialogVue({
+      completeNotifier: menu.completeNotifier!,
+      view: menu.view,
+      eventSource: menu.eventSource,
+      id: 'textDialog',
+      ctor: 'SuiTextBlockDialog',
+      tracker: menu.view.tracker,
+      startPromise: menu.closePromise,
+      modifier: null
+    });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
     icon: 'icon-smo smoi oversize icon-lyric',

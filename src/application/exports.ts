@@ -47,7 +47,6 @@ import { SuiScoreFontDialogVue } from '../ui/dialogs/fonts';
 import { SuiGlobalLayoutDialogVue } from '../ui/dialogs/globalLayout';
 import { SuiScoreViewDialogVue } from '../ui/dialogs/scoreView';import { SuiLibraryDialog } from '../ui/dialogs/library';
 import { SuiChordChangeDialog } from '../ui/dialogs/chordChange';
-import { SuiLyricDialog } from '../ui/dialogs/lyric';
 import { SuiDynamicModifierDialog } from '../ui/dialogs/dynamics';
 import { SuiSlurAttributesDialog } from '../ui/dialogs/slur';
 import { SuiPedalMarkingDialog } from '../ui/dialogs/pedalMarking';
@@ -78,8 +77,7 @@ import { SuiTreeComponent } from '../ui/dialogs/components/tree';
 import { SuiPitchArrayComponent, SuiPitchArrayComponentTab, 
    SuiPitchComponent, SuiPitchComposite } from '../ui/dialogs/components/pitch';
 import {
-    SuiLyricComponent, SuiChordComponent,
-    SuiNoteTextComponent
+    SuiChordComponent,  SuiNoteTextComponent
 } from '../ui/dialogs/components/noteText';
 import { SuiDragText } from '../ui/dialogs/components/dragText';
 import { SuiTextInPlace } from '../ui/dialogs/components/textInPlace';
@@ -270,7 +268,6 @@ export * from '../ui/dialogs/hairpin';
 export * from '../ui/dialogs/instrument';
 export * from '../ui/dialogs/keySignature';
 export * from '../ui/dialogs/library';
-export * from '../ui/dialogs/lyric';
 export * from '../ui/dialogs/measureFormat';
 export * from '../ui/dialogs/microtones';
 export * from '../ui/dialogs/noteHead';
@@ -348,7 +345,7 @@ export const Smo = {
   GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
   SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
-  SuiTimeSignatureDialogVue, SuiLyricDialog, SuiChordChangeDialog,
+  SuiTimeSignatureDialogVue, SuiChordChangeDialog,
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
   SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,
   SuiScorePreferencesDialogVue,
@@ -366,7 +363,7 @@ export const Smo = {
   SuiRockerComponent, SuiFileDownloadComponent, SuiButtonArrayComponent, SuiButtonArrayMSComponent,
   SuiToggleComponent, SuiButtonComponent, SuiDropdownComposite,
   SuiToggleComposite, SuiButtonComposite, SuiRockerComposite, SuiTextInputComposite,
-  SuiFontComponent, SuiTextInPlace, SuiLyricComponent, SuiChordComponent, SuiDragText,
+  SuiFontComponent, SuiTextInPlace, SuiChordComponent, SuiDragText,
   SuiNoteTextComponent, SuiTextBlockComponent, SuiTextInputComponent, SuiReadOnlyTextComponent,
   SuiDynamicModifierDialog, CheckboxDropdownComponent, TieMappingComponent, StaffAddRemoveComponent,
   StaffCheckComponent, TextCheckComponent, SuiArpeggioDialog, SuiClefChangeDialog,

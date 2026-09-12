@@ -102,7 +102,7 @@ export * from './src/ui/dialogs/hairpin';
 export * from './src/ui/dialogs/instrument';
 export * from './src/ui/dialogs/keySignature';
 export * from './src/ui/dialogs/library';
-export * from './src/ui/dialogs/lyric';
+export * from './src/ui/dialogs/lyricVue';
 export * from './src/ui/dialogs/measureFormat';
 export * from './src/ui/dialogs/microtones';
 export * from './src/ui/dialogs/noteHead';

@@ -6,7 +6,7 @@ import { SuiHairpinAttributesDialog } from './hairpin';
 import { SuiSlurAttributesDialog } from './slur';
 import { SuiPedalMarkingDialog } from './pedalMarking';
 import { SuiVoltaAttributeDialog } from './volta';
-import { SuiLyricDialog } from './lyric';
+import { SuiLyricDialogVue } from './lyricVue';
 import { SuiChordChangeDialog } from './chordChange';
 import { SuiTieAttributesDialog } from './tie';
 import { SuiDynamicModifierDialog } from './dynamics';
@@ -100,7 +100,17 @@ export function isModifierWithDialog(modifier: SmoModifier) {
       
       const lModifier = (modifier as SmoLyric);
       if (lModifier.parser == SmoLyric.parsers.lyric) {
-        return createAndDisplayDialog(SuiLyricDialog, parameters);
+        SuiLyricDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'textDialog',
+        ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+        });
+        return null;
       } else {
         return createAndDisplayDialog(SuiChordChangeDialog, parameters);
       }
@@ -115,7 +125,6 @@ export const initDialogTranslationElements = () => {
   DialogTranslations.push(suiDialogTranslate(SuiSlurAttributesDialog.dialogElements, 'SuiSlurAttributesDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiDynamicModifierDialog.dialogElements, 'SuiDynamicModifierDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiVoltaAttributeDialog.dialogElements, 'SuiVoltaAttributeDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiLyricDialog.dialogElements, 'SuiLyricDialog'));
   // DialogTranslations.push(suiDialogTranslate(SuiArpeggioDialog.dialogElements, 'SuiArpeggioDialog'));
 }
 export const initDialogConstructors = () => {
