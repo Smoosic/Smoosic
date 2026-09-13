@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, Ref } from 'vue';
+import { ref, Ref, onBeforeUnmount } from 'vue';
 import { SmoSelector, SmoSelection } from '../../../smo/xform/selections';
 import { SmoLyric } from '../../../smo/data/noteModifiers';
+import { SmoScoreText } from '../../../smo/data/scoreText';
 import { FontInfo } from '../../../common/vex';
 import { SelectOption } from '../../common';
 import { SuiScoreViewOperations } from '../../../render/sui/scoreViewOperations';
+import { SvgHelpers } from '../../../render/sui/svgHelpers';
 import dialogContainer from './dialogContainer.vue';
 import numberInputApp from './numberInput.vue';
 import selectComp from './select.vue';
@@ -41,6 +43,62 @@ const verseOptions: SelectOption[] = [
   { value: '3', label: '4' }
 ];
 
+// Subtle position marker (012-lyric-live-preview-cursor): a plain-DOM
+// element, not a Vue ref -- it's imperative SVG state, not template-bound.
+let markerElement: SVGLineElement | null = null;
+
+// If the current note's lyric has already been rendered (existing text),
+// approximate "end of existing text" with the whole run's bounding box
+// (no per-character layout is available without the legacy inline-SVG
+// editor this dialog deliberately does not use -- see 010 research.md §3).
+// Otherwise, fall back to a position near the note itself, mirroring the
+// legacy SuiLyricSession._startSessionForNote fallback.
+const computeMarkerPosition = (): { x: number, y: number, height: number } | null => {
+  const lyric = currentLyric.value;
+  if (!lyric) {
+    return null;
+  }
+  if (lyric.logicalBox) {
+    const box = lyric.logicalBox;
+    return { x: box.x + box.width, y: box.y, height: box.height };
+  }
+  const selection = SmoSelection.noteFromSelector(score, currentSelector.value);
+  const note = selection?.note;
+  if (!note || !note.logicalBox) {
+    return null;
+  }
+  const height = SmoScoreText.fontPointSize(lyric.fontInfo.size);
+  return {
+    x: note.logicalBox.x,
+    y: note.logicalBox.y + note.logicalBox.height + height,
+    height
+  };
+};
+const removeMarker = () => {
+  if (markerElement) {
+    markerElement.remove();
+    markerElement = null;
+  }
+};
+const updateMarker = () => {
+  removeMarker();
+  if (mode.value !== 'editing') {
+    return;
+  }
+  const pos = computeMarkerPosition();
+  if (!pos) {
+    return;
+  }
+  const context = props.view.tracker.renderer.pageMap.getRenderer({ x: pos.x, y: pos.y });
+  if (!context) {
+    return;
+  }
+  markerElement = SvgHelpers.renderLyricPositionMarker(
+    context.svg, pos.x - context.box.x, pos.y - context.box.y, pos.height
+  );
+};
+onBeforeUnmount(() => removeMarker());
+
 // Mirrors SuiLyricSession._setLyricForNote (src/render/sui/textEdit.ts):
 // load the note's existing lyric for this verse, or build a default one
 // seeded from the score's 'lyrics' font entry if none exists yet.
@@ -73,6 +131,7 @@ const loadNote = (selector: SmoSelector, verseNum: number) => {
     weight: 'normal',
     style: lyric.fontInfo.style ?? 'normal'
   };
+  updateMarker();
 };
 // Auto-start editing on the initially selected note, unconditionally,
 // matching SuiLyricDialog.bindElements()'s unconditional startEditSession().
@@ -110,6 +169,23 @@ const navigate = async (direction: 'next' | 'previous') => {
 const goNext = () => navigate('next');
 const goPrevious = () => navigate('previous');
 
+// Handles lyricEditorComp's `advance` emit (011-lyric-editor-auto-advance):
+// typing '-' or Space in the editor. 'commit' reuses navigate('next') verbatim
+// (hyphen already inserted, or Space with existing text). 'skip' (Space with no
+// text) advances without ever calling commitIfChanged/addOrUpdateLyric, so
+// skipping empty notes with the space bar never persists an empty lyric.
+const onEditorAdvance = async (mode: 'commit' | 'skip') => {
+  if (mode === 'commit') {
+    await navigate('next');
+    return;
+  }
+  const next = SmoSelection.nextNoteSelectionFromSelector(score, currentSelector.value);
+  if (next) {
+    currentSelector.value = next.selector;
+    loadNote(currentSelector.value, verse.value);
+  }
+};
+
 // Mirrors SuiLyricSession.removeLyric: remove, then advance forward
 // without re-committing the now-deleted lyric.
 const deleteCurrent = async () => {
@@ -128,6 +204,17 @@ const deleteCurrent = async () => {
 const enterDialogMode = async () => {
   await commitIfChanged();
   mode.value = 'dialog';
+  removeMarker();
+};
+
+// Handles lyricEditorComp's `preview` emit (012-lyric-live-preview-cursor):
+// a debounced pause in typing. Reuses commitIfChanged() unchanged -- there
+// is no separate draft state in this dialog, so the periodic preview write
+// and the eventual persisted state are the same operation (see 012
+// research.md §5) -- then repositions the marker to the newly-rendered text.
+const onEditorPreview = async () => {
+  await commitIfChanged();
+  updateMarker();
 };
 const enterEditingMode = () => {
   mode.value = 'editing';
@@ -167,6 +254,7 @@ const finish = async () => {
   if (mode.value === 'editing') {
     await commitIfChanged();
   }
+  removeMarker();
 };
 const handleCommit = async () => {
   await finish();
@@ -183,7 +271,8 @@ const handleCancel = async () => {
     <template v-if="mode === 'editing'">
       <div class="row mb-2 ms-2">
         <div class="col">
-          <lyricEditorComp ref="lyricEditorRef" :domId="getId('editor')" :text="lyricText" :fontInfo="fontInfo" />
+          <lyricEditorComp ref="lyricEditorRef" :domId="getId('editor')" :text="lyricText" :fontInfo="fontInfo"
+            @advance="onEditorAdvance" @preview="onEditorPreview" />
         </div>
       </div>
       <div class="row mb-2 ms-2 align-items-center">

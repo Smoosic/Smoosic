@@ -100,8 +100,8 @@ const lyricsDialogMenuOption: SuiConfiguredMenuOption = {
       completeNotifier: menu.completeNotifier!,
       view: menu.view,
       eventSource: menu.eventSource,
-      id: 'textDialog',
-      ctor: 'SuiTextBlockDialog',
+      id: 'lyricDialog',
+      ctor: 'SuiLyricDialogVue',
       tracker: menu.view.tracker,
       startPromise: menu.closePromise,
       modifier: null

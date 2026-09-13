@@ -96,6 +96,7 @@ const getChoicesForStaff = (staffNum: number): GroupChoice => {
       await props.createStaffGroupCb(staffNum);
     }
   };
+  const groupOptions: SelectOption[] = [];
   const lsg = (staffNum > 0) ? getGroupForStaff(staffNum - 1) : undefined;
   const sg = getGroupForStaff(staffNum);
   if (!sg) {

@@ -231,6 +231,37 @@ export class SvgHelpers {
     svg.appendChild(e);
   }
 
+  // ### renderLyricPositionMarker
+  // Draws a single, subtle vertical line marking where a lyric is being
+  // edited (012-lyric-live-preview-cursor). Unlike renderCursor's ornate
+  // I-beam glyph, this is a plain line; the caller is responsible for
+  // removing the returned element when the marker should disappear.
+  static renderLyricPositionMarker(svg: SVGSVGElement, x: number, y: number, height: number): SVGLineElement {
+    const ns = SvgHelpers.namespace;
+    const line = document.createElementNS(ns, 'line') as unknown as SVGLineElement;
+    line.setAttributeNS('', 'x1', x.toString());
+    line.setAttributeNS('', 'x2', x.toString());
+    line.setAttributeNS('', 'y1', y.toString());
+    line.setAttributeNS('', 'y2', (y + height).toString());
+    line.setAttributeNS('', 'stroke', '#888');
+    line.setAttributeNS('', 'stroke-width', '1');
+    line.setAttributeNS('', 'opacity', '0.6');
+    line.setAttributeNS('', 'class', 'lyric-position-marker');
+    // Blink like a text caret: native SVG animation, no JS polling loop.
+    // discrete calcMode snaps between the two opacity values instead of
+    // fading, so it reads as an on/off blink rather than a pulse.
+    const blink = document.createElementNS(ns, 'animate');
+    blink.setAttributeNS('', 'attributeName', 'opacity');
+    blink.setAttributeNS('', 'values', '0.6;0.6;0;0');
+    blink.setAttributeNS('', 'keyTimes', '0;0.5;0.5;1');
+    blink.setAttributeNS('', 'calcMode', 'discrete');
+    blink.setAttributeNS('', 'dur', '1s');
+    blink.setAttributeNS('', 'repeatCount', 'indefinite');
+    line.appendChild(blink);
+    svg.appendChild(line);
+    return line;
+  }
+
   // ### boxNote
   // update the note geometry based on current viewbox conditions.
   // This may not be the appropriate place for this...maybe in layout
