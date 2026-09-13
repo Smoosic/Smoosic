@@ -149,6 +149,11 @@ const nodeTextType = (marks: readonly { type: { name: string } }[]): TextType =>
 const editor = useEditor({
   content: toDoc(decodeChordText(props.text)),
   onUpdate: schedulePreview,
+  // Move keyboard focus into the editor as soon as it's constructed -- both
+  // on the dialog's initial open and on every later remount when the
+  // dialog's v-if returns to editing mode (014-editor-autofocus). 'end'
+  // places a collapsed cursor after any existing content, never selecting it.
+  autofocus: 'end',
   extensions: [
     StarterKit.configure({
       blockquote: false,

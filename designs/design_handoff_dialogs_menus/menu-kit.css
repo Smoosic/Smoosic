@@ -1,0 +1,254 @@
+/* ==========================================================================
+   Smoosic menu kit — left sidebar menu buttons + dropdown menu modals.
+   Loads after dialog-kit.css and reuses its tokens; Broadsheet tokens first.
+   Icons: Material Symbols Outlined (ligature names) or Bravura (SMuFL char).
+   ========================================================================== */
+
+@font-face {
+  font-family: "Bravura";
+  src: url("fonts/Bravura_1.392.woff") format("woff");
+  font-display: block;
+}
+
+:root {
+  --menu-rail: 232px;         /* expanded rail: fits icon + longest label + Alt-X + caret */
+  --menu-rail-sm: 52px;       /* icon-only rail */
+  --menu-btn-h: 34px;
+  --menu-item-h: 30px;
+  --menu-key-w: 42px;         /* hotkey track — fits "Alt-X" at 11px */
+}
+
+/* ---------- icons ------------------------------------------------------- */
+.mi {                                    /* Material Symbols */
+  font-family: "Material Symbols Outlined"; font-weight: 400; font-style: normal;
+  font-size: 20px; line-height: 1; flex: none; width: 20px; text-align: center;
+  font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 20;
+  -webkit-font-smoothing: antialiased; user-select: none;
+}
+.bv {                                    /* Bravura / SMuFL */
+  font-family: "Bravura"; font-size: 22px; line-height: 1; flex: none;
+  width: 20px; text-align: center; user-select: none;
+}
+.bv.sm { font-size: 18px; }
+/* SMuFL glyphs by name — the codepoint lives here, never in the markup */
+.bv::before { content: ""; }
+.bv-gclef::before        { content: "\E050"; }  /* G clef */
+.bv-fclef::before        { content: "\E062"; }  /* F clef */
+.bv-cclef::before        { content: "\E05C"; }  /* C clef */
+.bv-common::before       { content: "\E08A"; }  /* common time */
+.bv-num3::before         { content: "\E083"; }  /* time-signature numeral 3 */
+.bv-quarter::before      { content: "\E1D5"; }  /* quarter note, stem up */
+.bv-eighth::before       { content: "\E1D7"; }  /* eighth note, stem up */
+.bv-rest::before         { content: "\E4E5"; }  /* quarter rest */
+.bv-flat::before         { content: "\E260"; }
+.bv-natural::before      { content: "\E261"; }
+.bv-sharp::before        { content: "\E262"; }
+.bv-accent::before       { content: "\E4A0"; }  /* accent above */
+.bv-forte::before        { content: "\E522"; }  /* dynamic forte */
+.bv-metronome::before    { content: "\ECA5"; }  /* metronome mark, quarter */
+.bv-cutcommon::before    { content: "\E08B"; }  /* cut time */
+.mi.sm { font-size: 17px; width: 17px; font-variation-settings: "opsz" 20; }
+
+/* ---------- sidebar ----------------------------------------------------- */
+.side { width: var(--menu-rail); flex: none; display: flex; flex-direction: column;
+  gap: 2px; padding: var(--space-2) 6px var(--space-3);
+  background: var(--color-neutral-100); border-right: 1px solid var(--dlg-rule);
+  font-family: var(--font-body); }
+.side-brand { display: flex; align-items: center; gap: 8px; padding: 4px 6px 10px;
+  font: 600 12px/1 var(--font-heading); letter-spacing: .12em; text-transform: uppercase; }
+.side-brand .bv { font-size: 26px; width: 18px; }
+.side-group { margin-top: var(--space-3); padding: 0 6px 4px;
+  font: 600 9.5px/1 var(--font-heading); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--color-neutral-500); }
+.side-group:first-of-type { margin-top: 0; }
+
+/* four fixed tracks, so icons, labels, hotkeys and carets align down the rail.
+   The hotkey track is sized for the longest "Alt-X" style binding. */
+.mbtn { display: grid; grid-template-columns: 20px minmax(0, 1fr) var(--menu-key-w) 6px;
+  align-items: center; gap: 10px; height: var(--menu-btn-h);
+  padding: 0 8px; border: 1px solid transparent; border-radius: var(--dlg-radius-btn);
+  color: var(--color-text); font: 400 13.5px/1 var(--font-body); cursor: pointer;
+  background: transparent; text-align: left; }
+.mbtn > .mi, .mbtn > .bv { grid-column: 1; }
+.mbtn-label { grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mbtn > .mbtn-key { grid-column: 3; text-align: right; }
+.mbtn > .caret-right { grid-column: 4; border-left-color: var(--color-neutral-500); }
+.mbtn:hover, .mbtn.is-hover { background: var(--color-accent-100); border-color: var(--color-accent-300); }
+.mbtn:hover .caret-right, .mbtn.is-hover .caret-right { border-left-color: var(--color-accent-700); }
+.mbtn:active, .mbtn.is-pressed { background: var(--color-accent-200); border-color: var(--color-accent); }
+.mbtn:focus-visible, .mbtn.is-focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+/* the button whose dropdown is open stays lit and squares off toward the menu */
+.mbtn.is-open { background: var(--color-accent); border-color: var(--color-accent-700); color: #fff; }
+.mbtn.is-open .caret-right { border-left-color: #fff; }
+.mbtn.is-disabled { opacity: .45; cursor: default; }
+.mbtn-key { font: 400 11px/1 var(--font-body); color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: .02em; }
+.mbtn.is-open .mbtn-key { color: var(--color-accent-100); }
+
+/* icon-only rail */
+.side.is-rail { width: var(--menu-rail-sm); align-items: center; }
+.side.is-rail .mbtn { width: 38px; grid-template-columns: 1fr; justify-items: center; padding: 0; gap: 0; }
+.side.is-rail .mbtn-label, .side.is-rail .mbtn-key,
+.side.is-rail .caret-right, .side.is-rail .side-group { display: none; }
+.side.is-rail .side-brand { padding: 4px 0 10px; }
+.side.is-rail .side-brand span:last-child { display: none; }
+
+/* ---------- dropdown menu (a modal, anchored to its button) ------------- */
+.mdrop { position: relative; min-width: 276px; background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-500); border-radius: var(--dlg-radius);
+  box-shadow: var(--shadow-lg); font-family: var(--font-body);
+  padding: 5px 0 6px; }
+.mdrop-head { display: flex; align-items: center; gap: 8px; padding: 5px 12px 8px;
+  margin-bottom: 4px; border-bottom: 1px solid var(--dlg-rule);
+  font: 600 10.5px/1 var(--font-heading); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--color-neutral-700); }
+.mdrop-head .hint { margin-left: auto; letter-spacing: 0; text-transform: none; }
+
+.mitem { display: flex; align-items: center; gap: 10px; height: var(--menu-item-h);
+  padding: 0 12px; font: 400 13.5px/1 var(--font-body); color: var(--color-text);
+  border-left: 3px solid transparent; cursor: pointer; }
+.mitem-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mitem-key { font: 400 11.5px/1 var(--font-body); color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.mitem:hover, .mitem.is-hover { background: var(--color-accent-100); border-left-color: var(--color-accent); }
+.mitem:hover .mitem-key, .mitem.is-hover .mitem-key { color: var(--color-accent-700); }
+.mitem:focus-visible, .mitem.is-focus { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.mitem.is-checked { font-weight: 600; }
+.mitem.is-checked .mi.check { color: var(--color-accent-700); }
+.mitem.is-disabled { opacity: .45; cursor: default; }
+.mitem .mi.check { width: 16px; font-size: 16px; }
+.mitem.is-danger { color: var(--color-accent-2-700); }
+.mitem.is-danger:hover, .mitem.is-danger.is-hover {
+  background: var(--color-accent-2-100); border-left-color: var(--color-accent-2); }
+.mdrop-sep { height: 1px; margin: 5px 12px; background: var(--dlg-rule); }
+.mdrop-note { padding: 6px 12px 2px; font: 400 11.5px/1.4 var(--font-body);
+  color: var(--color-neutral-700); }
+
+/* the submenu opens to the right of its parent item, flipping left when the
+   dropdown is closer to the container's right edge than the submenu is wide */
+.msub { position: absolute; top: 34px; left: calc(100% - 6px); }
+.msub.flip-left { left: auto; right: calc(100% - 6px); }
+
+/* ---------- application shell (mockup framing) -------------------------- */
+.app { display: flex; align-items: stretch; overflow: hidden;
+  border: 1px solid var(--dlg-rule); border-radius: var(--dlg-radius);
+  background: var(--dlg-field); }
+.app-main { position: relative; flex: 1; min-height: 460px; overflow: hidden; }
+.app-main .score { background-position: 0 48px; }
+/* the caption sits at the foot of the canvas so open menus never cover it */
+.app-main .inert-chip { top: auto; bottom: 12px; }
+.menu-layer { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start;
+  gap: var(--space-4); padding: var(--space-4); }
+
+@media (max-width: 768px) {
+  .side { width: var(--menu-rail-sm); align-items: center; }
+  .side .mbtn { width: 38px; grid-template-columns: 1fr; justify-items: center; padding: 0; gap: 0; }
+  .side .mbtn-label, .side .mbtn-key, .side .caret-right, .side .side-group { display: none; }
+  .side-brand { padding: 4px 0 10px; }
+  .side-brand span:last-child { display: none; }
+  .mdrop { min-width: 0; width: calc(100vw - 76px); }
+  .mitem { height: 40px; font-size: 14px; }     /* 40px touch rows */
+  .msub { position: static; }
+}
+
+
+/* ==========================================================================
+   Ribbon — permanent action bar across the top of the application.
+   Three button kinds: .rbtn (icon only), .rbtn.has-text (icon + label),
+   and .rpart (the part-selection dropdown trigger).
+   ========================================================================== */
+
+:root {
+  --ribbon-h: 48px;
+  --rbtn: 34px;              /* icon-only hit box */
+}
+
+/* the ribbon degrades on the width it is actually given, not the viewport's */
+.ribbon-host { container-type: inline-size; min-width: 0; }
+.ribbon { display: flex; align-items: center; gap: 4px; height: var(--ribbon-h);
+  padding: 0 10px; background: var(--color-neutral-100);
+  border-bottom: 1px solid var(--dlg-rule); font-family: var(--font-body);
+  overflow-x: auto; scrollbar-width: none; }
+.ribbon::-webkit-scrollbar { display: none; }
+.ribbon-sep { flex: none; width: 1px; height: 22px; margin: 0 4px; background: var(--dlg-rule); }
+.ribbon-spacer { flex: 1 1 auto; min-width: 8px; }
+
+/* --- icon-only and icon+text share one button --------------------------- */
+.rbtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  flex: none; width: var(--rbtn); height: var(--rbtn); padding: 0;
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--dlg-radius-btn); color: var(--color-text);
+  font: 400 13px/1 var(--font-body); cursor: pointer; }
+.rbtn.has-text { width: auto; padding: 0 8px 0 6px; gap: 6px; }
+.rbtn-label { white-space: nowrap; }
+.rbtn-val { font-variant-numeric: tabular-nums; color: var(--color-neutral-700); }
+.rbtn.has-text .bv { width: 16px; font-size: 19px; }
+
+.rbtn:hover, .rbtn.is-hover { background: var(--color-accent-100); border-color: var(--color-accent-300); }
+.rbtn:active, .rbtn.is-pressed { background: var(--color-accent-200); border-color: var(--color-accent); }
+.rbtn:focus-visible, .rbtn.is-focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+/* latched: the state is on (view overlay showing, transport playing) */
+.rbtn.is-on { background: var(--color-accent); border-color: var(--color-accent-700); color: #fff; }
+.rbtn.is-on .rbtn-val { color: var(--color-accent-100); }
+.rbtn.is-disabled { opacity: .45; cursor: default; }
+/* stop is the one destructive-adjacent transport control */
+.rbtn.is-stop:hover, .rbtn.is-stop.is-hover {
+  background: var(--color-accent-2-100); border-color: var(--color-accent-2-300); color: var(--color-accent-2-700); }
+
+/* --- part selection ----------------------------------------------------- */
+.rpart { display: inline-flex; align-items: center; gap: 8px; flex: none;
+  height: var(--rbtn); min-width: 140px; padding: 0 8px 0 9px;
+  background: var(--dlg-field); border: 1px solid var(--dlg-line);
+  border-radius: var(--dlg-radius-btn); color: var(--color-text);
+  font: 400 13px/1 var(--font-body); cursor: pointer; }
+.rpart-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; text-align: left; }
+.rpart-count { font: 400 11px/1 var(--font-body); color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums; }
+.rpart:hover, .rpart.is-hover { border-color: var(--color-accent); }
+.rpart:focus-visible, .rpart.is-focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.rpart.is-open { border-color: var(--color-accent);
+  border-radius: var(--dlg-radius-btn) var(--dlg-radius-btn) 0 0; }
+.rpart.is-open .caret-down { border-top-color: var(--color-accent-700); }
+/* its menu is the same dropdown modal as the sidebar's, anchored below */
+.rpart-menu { position: absolute; top: calc(var(--ribbon-h) - 8px); z-index: 2; }
+
+/* below 800px of ribbon width the text buttons shed their label and value;
+   below 660px the part-selection control goes icon-only too */
+@container (max-width: 800px) {
+  .rbtn.has-text { width: var(--rbtn); padding: 0; }
+  .rbtn.has-text .rbtn-label, .rbtn.has-text .rbtn-val { display: none; }
+}
+@container (max-width: 660px) {
+  .rpart { min-width: 0; width: var(--rbtn); padding: 0; justify-content: center; }
+  .rpart .rpart-label, .rpart .rpart-count { display: none; }
+  .ribbon-spacer { min-width: 0; }
+}
+
+/* --- ribbon inside the app shell ---------------------------------------- */
+.app-col { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.app-col > .app-main { border-radius: 0; }
+
+/* compact ribbon: icon-only at 40px. Applied by the media query below, and
+   available as .is-compact so the mockup can show it at desktop width. */
+.ribbon.is-compact { padding: 0 6px; gap: 2px; }
+.ribbon.is-compact .ribbon-sep { margin: 0 4px; }
+.ribbon.is-compact .rbtn { width: 40px; height: 40px; }
+.ribbon.is-compact .rbtn.has-text { width: 40px; padding: 0; }
+.ribbon.is-compact .rbtn.has-text .rbtn-label,
+.ribbon.is-compact .rbtn.has-text .rbtn-val { display: none; }
+.ribbon.is-compact .rpart { height: 40px; min-width: 0; width: 40px; padding: 0; justify-content: center; }
+.ribbon.is-compact .rpart .rpart-label,
+.ribbon.is-compact .rpart .rpart-count { display: none; }
+.ribbon.is-compact .ribbon-spacer { display: none; }
+
+@media (max-width: 768px) {
+  .ribbon { padding: 0 6px; gap: 2px; }
+  .ribbon-sep { margin: 0 4px; }
+  .rbtn { width: 40px; height: 40px; }        /* 40px touch targets */
+  .rbtn.has-text { width: 40px; padding: 0; }
+  .rbtn.has-text .rbtn-label, .rbtn.has-text .rbtn-val { display: none; }
+  .rpart { height: 40px; min-width: 0; width: 40px; padding: 0; justify-content: center; }
+  .rpart .rpart-label, .rpart .rpart-count { display: none; }
+  .ribbon-spacer { display: none; }
+}

@@ -1,0 +1,394 @@
+/* Broadsheet — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #0088b0;
+  --color-accent-2: #d6006c;
+  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+
+  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
+     same step of any role matches the others in visual value. */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #e9f8ff;
+  --color-accent-200: #cbeeff;
+  --color-accent-300: #99e0ff;
+  --color-accent-400: #62c5ee;
+  --color-accent-500: #38a6cf;
+  --color-accent-600: #1186ac;
+  --color-accent-700: #006786;
+  --color-accent-800: #004961;
+  --color-accent-900: #0a303e;
+
+  --color-accent-2-100: #fff1f4;
+  --color-accent-2-200: #ffdee6;
+  --color-accent-2-300: #ffc0d0;
+  --color-accent-2-400: #ff90b1;
+  --color-accent-2-500: #ff458e;
+  --color-accent-2-600: #d82071;
+  --color-accent-2-700: #aa0b56;
+  --color-accent-2-800: #790e3d;
+  --color-accent-2-900: #4b1528;
+
+  /* The third process ink — review round 3: the deck's print treatments
+     (the CMYK separation and the misregistered plate numerals below) need
+     the full four-color set. Cyan and magenta are the system's own accents;
+     this yellow completes them, muted to the same press-ink register. A
+     print treatment color, not an interface accent — body copy and chrome
+     never take it. */
+  --color-process-yellow: #edbb00;
+
+  --font-heading: "Source Serif 4", system-ui, sans-serif;
+  --font-heading-weight: 600;
+  --font-body: "Source Serif 4", system-ui, sans-serif;
+
+  --space-1: 5.0px;
+  --space-2: 10.0px;
+  --space-3: 15.0px;
+  --space-4: 20.0px;
+  --space-6: 30.0px;
+  --space-8: 40.0px;
+
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+
+  /* Elevation — derived from the ground: soft ink-tinted shadows on a
+     light theme, a hairline edge + ambient darkness on a dark one. */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+
+.halftone{position:relative;filter:grayscale(0.35) contrast(1.15);overflow:hidden}
+.halftone::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(0,0,0,0.22) 30%,transparent 32%);
+  background-size:3px 3px;mix-blend-mode:multiply}
+
+/* The four-color separation treatment (review round 3) — a photograph
+   printed as its misregistered process plates, after the Catalogue Three
+   grammar. Markup: a figure.cmyk holding five copies of the image — the
+   first is the layout sizer (hidden), then one per plate, each tagged
+   .sep-c/.sep-m/.sep-y/.sep-k. The plates are extracted live by the SVG
+   feColorMatrix filters in print-plates.js, the system's own defs —
+   inlined in the compiled bundle every template page loads, and a
+   page that links styles.css directly adds
+   <script src="print-plates.js"></script> itself (the defs must be in
+   the document: a data-URI filter reference would not survive Chromium,
+   and external-file references are unreliable across engines) — nudged
+   a few pixels out of register, and multiplied
+   onto the paper ground; the halftone dot screens the recombined print.
+   The plate offsets live with the deck's projection-scale CSS, since
+   misregistration is sized to the output. */
+.cmyk{position:relative;overflow:hidden;background:var(--color-bg)}
+.cmyk img:first-child{opacity:0} /* layout sizer AND the alt-bearing image — opacity
+  keeps it in the accessibility tree (visibility:hidden would drop the figure's only
+  description); fully transparent, it adds nothing to the multiply backdrop */
+.cmyk img+img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply}
+.cmyk .sep-c{filter:url(#sep-c)}
+.cmyk .sep-m{filter:url(#sep-m)}
+.cmyk .sep-y{filter:url(#sep-y)}
+.cmyk .sep-k{filter:url(#sep-k)}
+.cmyk::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(0,0,0,0.22) 30%,transparent 32%);
+  background-size:3px 3px;mix-blend-mode:multiply}
+
+/* The one-image separation (review round 9, promoted from the deck in the
+   landing divergence) — the same four plates as ONE compound filter,
+   #sep-all in print-plates.js, for a single swappable image: a .print
+   wrapper inside the figure holds one <image-slot>, and the filter
+   extracts, offsets and multiplies the plates live from whatever the slot
+   shows. Markup: figure.cmyk > .print > image-slot (the page sizes the
+   .print — aspect-ratio, or absolute fill for bleeds). Hover resolves
+   the print into the photograph — the pressman checking registration on
+   the light table — so the source shows crisp and any swap chrome stays
+   legible; only the reduced-motion fallback below still lifts as a
+   single cut (a url() filter cannot CSS-transition; the press driver
+   animates the defs instead). */
+.cmyk .print{position:relative;width:100%;filter:url(#sep-all)}
+/* no hover end-state swap: the press driver (print-plates.js) eases the
+   plates into register while purifying their inks to the pure-process
+   separation on the same curve, so the converged four-plate merge IS
+   the photograph (their multiply equals SourceGraphic by construction)
+   — no cut anywhere on the animated path */
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .cmyk .print:hover{filter:none} /* without the driver (it stands down on
+    exactly these conditions), hover stays the old single cut to the
+    crisp source */
+}
+.cmyk .print image-slot{width:100%;height:100%;display:block}
+
+/* The plate numeral (review rounds 3-4) — display figures set as
+   misregistered process plates, the catalog's cover grammar. Review
+   round 4 (Barron): THREE plates — C, M, Y only, no black plate — so the
+   dark core comes entirely from the C×M×Y multiply overlap (the inks
+   product to exact black), with the fringes the registration drift; and
+   the spread pulled in by half (less jumbled: one figure with plate
+   fringes rather than figures sliding apart). Markup: a .cmyk-num holding
+   a .paper span (the white of the sheet: the glyph's union, built from
+   offset text-shadow copies) and three .plate spans. The construction
+   carries its own ground (--cmyk-num-ground, defaulting to paper) painted
+   on its padding box, so the multiply plates always have their backdrop
+   even inside an isolated stacking context (entrance animations); the
+   padding bleeds wider than any plate offset and the negative margin
+   hands the layout box back. Offsets are em-scaled to the glyph. The
+   .paper span carries the text once for assistive tech; the .plate spans
+   are aria-hidden repeats. */
+.cmyk-num{--cmyk-num-ground:var(--color-bg);
+  position:relative;width:fit-content;line-height:0.9;
+  font-feature-settings:"pnum" 1;
+  background:var(--cmyk-num-ground);padding:0.12em;margin:-0.12em}
+.cmyk-num .paper{color:var(--color-bg); /* the white of the sheet — always paper,
+  whatever the ground: the plates read as printed on paper even when the
+  surrounding page is ink */
+  text-shadow:0.036em 0.025em 0 var(--color-bg),-0.031em -0.023em 0 var(--color-bg)}
+.cmyk-num .plate{position:absolute;inset:0.12em;mix-blend-mode:multiply;
+  text-box:trim-both cap alphabetic /* the host trims to its cap box; each
+  absolute plate must trim its own line the same way, or its glyphs sit a
+  half-leading below the paper union */}
+.cmyk-num .plate-c{color:var(--color-accent)}
+
+/* The plate headline (divergence round 3, Barron: "use both" — the
+   photograph's plates AND the cover grammar's text plates, on the same
+   page). The same three-plate construction as .cmyk-num — paper span
+   carrying the real text, C/M/Y plate repeats, dark core from the
+   multiply overlap — at HALF the numeral's round-4 offsets: the serif's
+   display hairlines are thinner than the numeral strokes the spread was
+   measured on, and the full offsets swallow them whole (probed at the
+   hero's 80px — the fringes read as an anaglyph poster, not a breath
+   out of register) — recut for display
+   headlines that sit in running text blocks on the page's own paper:
+   no ground painting and no padding bleed (the numeral's ground exists
+   for isolated stacking contexts; a headline on the page multiplies
+   straight onto the sheet), no width:fit-content and no line-height
+   override (the host display class owns its metrics — apply this to
+   each .line, which is position:relative for its plates), and the
+   plates are inert to the hand (pointer-events/user-select none, so a
+   triple-click selects the headline once, not four times). Plates take
+   the same pointer lean as .cmyk-num. */
+.cmyk-head{position:relative}
+.cmyk-head .paper{color:var(--color-bg);
+  text-shadow:0.027em 0.0185em 0 var(--color-bg),-0.0245em -0.0175em 0 var(--color-bg)
+  /* the union's copies sit at the construction's halved plate offsets
+     PLUS the full lean (0.018+0.009 / 0.0125+0.006, and mirrored), so
+     the union still backs the plates at viewport-edge lean — invisible
+     on the page's own paper, load-bearing on any other ground */}
+.cmyk-head .plate{position:absolute;inset:0;mix-blend-mode:multiply;
+  pointer-events:none;user-select:none;
+  text-box:trim-both cap alphabetic /* match the host's trim, or the
+  plates sit a half-leading below the paper union */}
+.cmyk-head .plate-c{color:var(--color-accent)}
+.cmyk-head .plate-m{color:var(--color-accent-2);
+  translate:calc(0.018em + 0.009em*var(--press-nx, 0)) calc(0.0125em + 0.006em*var(--press-ny, 0))}
+.cmyk-head .plate-y{color:var(--color-process-yellow);
+  translate:calc(-0.0155em + 0.009em*var(--press-nx, 0)) calc(-0.0115em + 0.006em*var(--press-ny, 0))}
+.cmyk-num .plate-m{color:var(--color-accent-2);
+  translate:calc(0.036em + 0.018em*var(--press-nx, 0)) calc(0.025em + 0.0125em*var(--press-ny, 0))}
+.cmyk-num .plate-y{color:var(--color-process-yellow);
+  translate:calc(-0.031em + 0.018em*var(--press-nx, 0)) calc(-0.023em + 0.0125em*var(--press-ny, 0))}
+/* --press-nx/--press-ny: the pointer lean as a bare -1..1 factor,
+   published on :root by the press driver (print-plates.js) and zero
+   whenever the driver stands down. Each construction scales the lean to
+   its own spread (half of it, here as everywhere) so the moving plates
+   drift a breath toward the cursor and the C plate holds. */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Components — built with the tokens above. Plain CSS
+   on plain HTML: no JavaScript, no build step. Each class is documented in
+   readme.md and demonstrated in foundations/ and components/.
+   ══════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 400; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; }
+h6 { letter-spacing: 0.08em; text-transform: uppercase; }
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+figure { margin: 0; }
+figcaption {
+  font-size: 11px; margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.text-muted { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — rules — */
+.hr {
+  height: 1px; border: 0; margin: var(--space-4) 0;
+  background: var(--color-divider);
+}
+
+/* — buttons — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text); /* matches the .input's 14px —
+     the pair sits side by side in sign-up rows */
+  background: transparent; border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--color-accent); color: var(--color-bg); }
+.btn-primary:hover { background: var(--color-accent-600); }
+.btn-primary:active { background: var(--color-accent-700); }
+.btn-secondary { border-color: var(--color-divider); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+.btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-block { width: 100%; margin-top: var(--space-2); }
+
+/* — forms — */
+.field > label {
+  display: block; font-size: 12px; margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.input::placeholder { color: color-mix(in srgb, var(--color-text) 65%, transparent); opacity: 1; }
+  /* explicit, measured: the browser default gray misses the 4.5:1 small-text bar on
+     the surface fill; 65% ink measures 4.8:1 there, still a step quieter than typed
+     text (opacity:1 overrides Firefox's default placeholder fade) */
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+textarea.input { min-height: 90px; resize: vertical; }
+.radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.radio input, .seg-opt input {
+  position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+.radio .dot {
+  width: 16px; height: 16px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--color-divider);
+}
+.radio:hover .dot { border-color: var(--color-accent); }
+.radio input:checked + .dot {
+  border-color: var(--color-accent); background: var(--color-accent);
+  box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.seg {
+  display: inline-flex; overflow: hidden;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.seg-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; cursor: pointer;
+}
+.seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+.seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+.seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+/* — cards — */
+.card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface);
+}
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.card-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 17px; line-height: 1.2;
+}
+.card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.card-meta {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+.elev-sm { box-shadow: var(--shadow-sm); }
+.elev-md { box-shadow: var(--shadow-md); }
+.elev-lg { box-shadow: var(--shadow-lg); }
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; font-size: 11px;
+  letter-spacing: 0.02em; padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+.tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+.tag-accent-2 { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+.tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+/* — navigation — */
+.nav {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: none;
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 18px; margin-right: auto;
+}
+.nav a { color: inherit; text-decoration: none; font-size: 14px; }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* — tables — */
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2); border-bottom: 1px solid var(--color-divider);
+}
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+.table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+
+/* — dialog — */
+.dialog-backdrop {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.dialog {
+  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-surface); box-shadow: var(--shadow-lg);
+}
+.dialog-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 20px;
+}
+.dialog-body { font-size: 14px; opacity: 0.85; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+

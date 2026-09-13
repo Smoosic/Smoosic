@@ -84,6 +84,14 @@ onBeforeUnmount(() => {
 const editor = useEditor({
   content: textGroupToHtml(props.textGroup, activeBlockId.value),
   onUpdate: schedulePreview,
+  // Move keyboard focus into the editor as soon as it's constructed -- both
+  // on the dialog's initial open and on every later remount when the
+  // dialog's v-if returns to editing mode (014-editor-autofocus). Reuses
+  // the same best-effort editor.commands.focus() call activateBlock()
+  // already relies on below, rather than a doc-level `autofocus: 'end'`,
+  // since the active (editable) block isn't always the last block in a
+  // multi-block document -- 'end' could land next to a read-only atom node.
+  onCreate: ({ editor }) => editor.commands.focus(),
   extensions: [
     StarterKit.configure({
       blockquote: false,

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<link rel="stylesheet" href="_ds/broadsheet-7752158b-cef4-4eb9-b463-df3121e505c2/styles.css">
+<script src="_ds/broadsheet-7752158b-cef4-4eb9-b463-df3121e505c2/_ds_bundle.js"></script>
+<link rel="stylesheet" href="dialog-kit.css">
+<link rel="stylesheet" href="menu-kit.css">
+<link rel="stylesheet" href="staff-groups.css">
+<style>body{margin:0;background:var(--color-bg)}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent)}</style>
+</helmet>
+
+<div class="doc">
+
+  <div class="masthead">
+    <h1>Staff groups</h1>
+    <span class="sub">Smoosic · staffGroups.vue · group builder for a large score</span>
+  </div>
+  <div class="rule-hair"></div>
+
+  <div class="notes">
+    <div>
+      <div class="eyebrow">What changed</div>
+      <p>The current component spends three columns on Add, Create and Remove toggles, so the same question is asked three times per stave and the answer is a checkbox that means "do a thing". Here each stave has one dropdown whose options are the four operations, and the group itself owns its connector dropdown.</p>
+    </div>
+    <div>
+      <div class="eyebrow">Reading the list</div>
+      <p>Groups are drawn, not described: the connector graphic spans its staves in the left gutter at the same weight the score will print, so the shape of the bracketing is legible without reading a single label. Ungrouped staves sit flush with an empty gutter.</p>
+    </div>
+    <div>
+      <div class="eyebrow">Data</div>
+      <p>Connector values follow <code>SmoSystemGroup.connectorTypes</code> — brace 0, bracket 1, single 2, double 3 — and the dropdown writes <code>leftConnector</code> through <code>setConnectorCb</code>. The four actions map to <code>addToGroupCb</code>, <code>createStaffGroupCb</code> and <code>removeFromGroupCb</code>.</p>
+    </div>
+  </div>
+
+  <!-- ============ 1 · THE DIALOG ============ -->
+  <h2 class="sec">1 · The dialog</h2>
+  <p class="sec-sub">A ten-stave orchestral score with three groups, with the Viola row's action menu open. Woodwinds are bracketed, the harp is braced, strings are bracketed; percussion sits outside every group.</p>
+
+  <div class="canvas" style="padding:26px">
+    <div class="score"></div>
+    <div class="inert-chip"><span class="inert-dot"></span><span>inert layer</span></div>
+    <div class="dlg-layer" style="padding:4px">
+
+      <div class="dlg" style="width:472px">
+        <div class="dlg-bar">
+          <span class="grip"></span>
+          <span class="dlg-title">Staff groups</span>
+          <span class="dlg-meta">10 staves · 3 groups</span>
+        </div>
+        <div class="dlg-body">
+
+          <div class="sg-list has-menu">
+            <div class="sg-head"><span>Group</span><span>Stave</span><span>Action</span></div>
+
+            <div class="sg-group">
+              <div class="sg-conn sg-bracket" style="top:33px;bottom:0"></div>
+              <div class="sg-group-bar">
+                <span></span>
+                <span class="sg-group-name">Woodwinds<span class="sg-group-count">4 staves</span></span>
+                <div class="sel"><span>Bracket</span><span class="caret caret-down caret-lg"></span></div>
+              </div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">1</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Flute</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">2</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Oboe</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">3</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Clarinet in B♭</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">4</span><span class="bv sm bv-fclef"></span><span class="sg-name-label">Bassoon</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+            </div>
+
+            <div class="sg-row is-loose"><span></span><span class="sg-name"><span class="sg-num">5</span><span class="mi sm">graphic_eq</span><span class="sg-name-label">Percussion</span></span><div class="sg-act"><span class="sg-act-label">Ungrouped</span><span class="caret caret-down"></span></div></div>
+
+            <div class="sg-group">
+              <div class="sg-conn sg-brace" style="top:33px;bottom:0"></div>
+              <div class="sg-group-bar">
+                <span></span>
+                <span class="sg-group-name">Harp<span class="sg-group-count">2 staves</span></span>
+                <div class="sel"><span>Brace</span><span class="caret caret-down caret-lg"></span></div>
+              </div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">6</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Harp</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">7</span><span class="bv sm bv-fclef"></span><span class="sg-name-label">Harp</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+            </div>
+
+            <div class="sg-group">
+              <div class="sg-conn sg-bracket" style="top:33px;bottom:0"></div>
+              <div class="sg-group-bar">
+                <span></span>
+                <span class="sg-group-name">Strings<span class="sg-group-count">3 staves</span></span>
+                <div class="sel"><span>Bracket</span><span class="caret caret-down caret-lg"></span></div>
+              </div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">8</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Violin I</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+              <div class="sg-row is-selected"><span></span><span class="sg-name"><span class="sg-num">9</span><span class="bv sm bv-cclef"></span><span class="sg-name-label">Viola</span></span><div class="sg-act is-open"><span class="sg-act-label">Grouped</span><span class="caret caret-up"></span></div></div>
+              <div class="sg-row"><span></span><span class="sg-name"><span class="sg-num">10</span><span class="bv sm bv-fclef"></span><span class="sg-name-label">Cello</span></span><div class="sg-act"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+              <div class="mdrop sg-menu">
+                <div class="mdrop-head"><span>Viola</span><span class="hint">stave 9</span></div>
+                <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">vertical_align_top</span><span class="mitem-label">Add above</span></div>
+                <div class="mitem is-hover"><span class="mi check">&nbsp;</span><span class="mi sm">vertical_align_bottom</span><span class="mitem-label">Add below</span></div>
+                <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">add_box</span><span class="mitem-label">Create new group</span></div>
+                <div class="mdrop-sep"></div>
+                <div class="mitem is-danger"><span class="mi check">&nbsp;</span><span class="mi sm">link_off</span><span class="mitem-label">Remove from group</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-legend">
+            <span><span class="mi sm">info</span>Choose an action on any stave to change its grouping.</span>
+          </div>
+
+          <div class="actions">
+            <div class="act act-ok">OK</div>
+            <div class="act act-cancel">Cancel</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 2 · CONNECTORS ============ -->
+  <h2 class="sec">2 · Connectors</h2>
+  <p class="sec-sub">Four values from <code>SmoSystemGroup.connectorTypes</code>. Drawn in the gutter at printing weight so the list reads as a score rather than a form; all four stretch to their group's height, so the graphic is the same shape at two staves or twelve.</p>
+
+  <div class="wrap">
+    <div class="spec" style="width:380px">
+      <div class="spec-h">The four graphics</div>
+      <p class="spec-p">Each spans its group's full height, however many staves that is.</p>
+      <div style="display:flex;gap:26px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="sg-swatch"><span class="sg-conn sg-brace" style="left:0;top:0;bottom:0"></span></div>
+          <span class="hint">Brace · 0</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="sg-swatch"><span class="sg-conn sg-bracket" style="left:0;top:0;bottom:0"></span></div>
+          <span class="hint">Bracket · 1</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="sg-swatch"><span class="sg-conn sg-single" style="left:0;top:0;bottom:0"></span></div>
+          <span class="hint">Single · 2</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="sg-swatch"><span class="sg-conn sg-double" style="left:0;top:0;bottom:0"></span></div>
+          <span class="hint">Double · 3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec" style="width:300px">
+      <div class="spec-h">Connector dropdown</div>
+      <p class="spec-p">Belongs to the group, not the stave — one per group, on its first row.</p>
+      <div class="sg-group-bar" style="border-radius:var(--radius-md);padding:6px 10px;grid-template-columns:minmax(0,1fr) 132px">
+        <span class="sg-group-name">Woodwinds<span class="sg-group-count">4</span></span>
+        <div style="position:relative">
+          <div class="sel is-open"><span>Bracket</span><span class="caret caret-up caret-lg"></span></div>
+          <div class="sel-panel" style="position:absolute;top:100%;left:0;right:0;z-index:2">
+            <div class="sel-opt">Brace</div>
+            <div class="sel-opt is-active">Bracket</div>
+            <div class="sel-opt is-hover">Single line</div>
+            <div class="sel-opt">Double line</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:112px"></div>
+    </div>
+
+    <div class="spec" style="width:280px">
+      <div class="spec-h">Option availability</div>
+      <p class="spec-p">The same four options always appear; the ones that cannot apply are disabled rather than hidden, so the row never changes height and the position of each option is learnable.</p>
+      <div class="mdrop" style="box-shadow:none;min-width:0">
+        <div class="mitem is-disabled"><span class="mi check">&nbsp;</span><span class="mi sm">vertical_align_top</span><span class="mitem-label">Add above</span></div>
+        <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">vertical_align_bottom</span><span class="mitem-label">Add below</span></div>
+        <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">add_box</span><span class="mitem-label">Create new group</span></div>
+        <div class="mitem is-disabled is-danger"><span class="mi check">&nbsp;</span><span class="mi sm">link_off</span><span class="mitem-label">Remove from group</span></div>
+      </div>
+      <p class="spec-p" style="margin:10px 0 0">Stave 1, ungrouped: nothing above it to join, and nothing to remove it from.</p>
+    </div>
+
+    <div class="spec" style="width:280px">
+      <div class="spec-h">Action trigger</div>
+      <p class="spec-p">Reads the stave's current condition, not a verb — the verbs are inside.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="spec-row"><div class="spec-name" style="width:52px">Rest</div><div class="sg-act" style="width:148px"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+        <div class="spec-row"><div class="spec-name" style="width:52px">Hover</div><div class="sg-act is-hover" style="width:148px"><span class="sg-act-label">Ungrouped</span><span class="caret caret-down"></span></div></div>
+        <div class="spec-row"><div class="spec-name" style="width:52px">Focus</div><div class="sg-act is-focus" style="width:148px"><span class="sg-act-label">Grouped</span><span class="caret caret-down"></span></div></div>
+        <div class="spec-row"><div class="spec-name" style="width:52px">Open</div><div class="sg-act is-open" style="width:148px"><span class="sg-act-label">Grouped</span><span class="caret caret-up"></span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 3 · 768 ============ -->
+  <h2 class="sec">3 · At 768px</h2>
+  <p class="sec-sub">The action trigger collapses to its caret, rows grow to 40px, and the connector dropdown drops onto its own line under the group name.</p>
+
+  <div class="frame">
+    <div class="frame-label">768 px</div>
+    <div class="score"></div>
+    <div class="dlg dlg-stack" style="max-width:420px">
+      <div class="dlg-bar" style="padding:9px 12px">
+        <span class="dlg-title" style="font-size:12px">Staff groups</span>
+        <span class="dlg-meta">10 · 3</span>
+      </div>
+      <div class="dlg-body">
+        <div class="sg-list">
+          <div class="sg-head" style="grid-template-columns:minmax(var(--sg-gutter),auto) minmax(0,1fr) 40px"><span>Group</span><span>Stave</span><span></span></div>
+          <div class="sg-group">
+            <div class="sg-conn sg-bracket" style="top:56px;bottom:0"></div>
+            <div class="sg-group-bar" style="grid-template-columns:var(--sg-gutter) minmax(0,1fr);row-gap:6px">
+              <span></span>
+              <span class="sg-group-name">Woodwinds<span class="sg-group-count">4 staves</span></span>
+              <span></span>
+              <div class="sel"><span>Bracket</span><span class="caret caret-down caret-lg"></span></div>
+            </div>
+            <div class="sg-row" style="grid-template-columns:var(--sg-gutter) minmax(0,1fr) 40px;min-height:40px"><span></span><span class="sg-name"><span class="sg-num">1</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Flute</span></span><div class="sg-act" style="width:32px;padding:0;justify-content:center"><span class="caret caret-down"></span></div></div>
+            <div class="sg-row" style="grid-template-columns:var(--sg-gutter) minmax(0,1fr) 40px;min-height:40px"><span></span><span class="sg-name"><span class="sg-num">2</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Oboe</span></span><div class="sg-act" style="width:32px;padding:0;justify-content:center"><span class="caret caret-down"></span></div></div>
+            <div class="sg-row" style="grid-template-columns:var(--sg-gutter) minmax(0,1fr) 40px;min-height:40px"><span></span><span class="sg-name"><span class="sg-num">3</span><span class="bv sm bv-gclef"></span><span class="sg-name-label">Clarinet in B♭</span></span><div class="sg-act" style="width:32px;padding:0;justify-content:center"><span class="caret caret-down"></span></div></div>
+          </div>
+          <div class="sg-row is-loose" style="grid-template-columns:var(--sg-gutter) minmax(0,1fr) 40px;min-height:40px"><span></span><span class="sg-name"><span class="sg-num">4</span><span class="mi sm">graphic_eq</span><span class="sg-name-label">Percussion</span></span><div class="sg-act" style="width:32px;padding:0;justify-content:center"><span class="caret caret-down"></span></div></div>
+        </div>
+        <div class="actions">
+          <div class="act act-ok">OK</div>
+          <div class="act act-cancel">Cancel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" style="margin-top:var(--space-6)">
+    <div class="col" style="width:400px">
+      <div class="eyebrow">Open questions</div>
+      <ul class="list">
+        <li>Group names — I've shown Woodwinds, Harp, Strings. <code>SmoSystemGroup</code> carries <code>text</code> and <code>shortText</code>; should this dialog let you edit them, or derive a name from the staves it spans?</li>
+        <li>The trigger currently reads the state ("Grouped"). An alternative is a plain icon button, which is tidier but gives no read on the row.</li>
+        <li>Should overlapping groups be preventable in the UI, or left to <code>overlaps()</code> to reject on commit?</li>
+        <li>Nothing here reorders staves. Worth adding drag-to-reorder, or does that belong in the instruments dialog?</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360}}"></script>
+</body>
+</html>
