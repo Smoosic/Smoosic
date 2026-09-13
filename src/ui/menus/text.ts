@@ -2,7 +2,7 @@ import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShow
   SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SmoDynamicText } from '../../smo/data/noteModifiers';
-import { SuiChordChangeDialog } from '../dialogs/chordChange';
+import { SuiChordChangeDialogVue } from '../dialogs/chordChangeVue';
 import { SuiLyricDialogVue } from '../dialogs/lyricVue';
 import { SuiDynamicModifierDialogVue } from '../dialogs/dynamicsVue';
 import { SuiTextBlockDialogVue } from '../dialogs/textBlockVue';
@@ -64,8 +64,7 @@ const chordChangeDialogMenuOption: SuiConfiguredMenuOption = {
     }
     const lyrics = note.getChords();
     const lyric = lyrics.length > 0 ? null : lyrics[0];
-    createAndDisplayDialog(SuiChordChangeDialog,
-      {
+    SuiChordChangeDialogVue(      {
         completeNotifier: menu.completeNotifier!,
         view: menu.view,
         eventSource: menu.eventSource,

@@ -7,7 +7,7 @@ import { SuiSlurAttributesDialog } from './slur';
 import { SuiPedalMarkingDialog } from './pedalMarking';
 import { SuiVoltaAttributeDialog } from './volta';
 import { SuiLyricDialogVue } from './lyricVue';
-import { SuiChordChangeDialog } from './chordChange';
+import { SuiChordChangeDialogVue } from './chordChangeVue';
 import { SuiTieAttributesDialog } from './tie';
 import { SuiDynamicModifierDialog } from './dynamics';
 import { SuiDialogNotifier, SmoDynamicComponentCtor, SuiBaseComponentParams } from './components/baseComponent';
@@ -112,7 +112,17 @@ export function isModifierWithDialog(modifier: SmoModifier) {
         });
         return null;
       } else {
-        return createAndDisplayDialog(SuiChordChangeDialog, parameters);
+        SuiChordChangeDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'textDialog',
+        ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+        });
+        return null;
       }
     }
   }
