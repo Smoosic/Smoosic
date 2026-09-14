@@ -227,6 +227,48 @@ body.showAttributeDialog.textEditor .overlay {
     font-variant-numeric: tabular-nums;
     letter-spacing: .04em;
 }
+.mitem:hover, .mitem.is-hover {
+    background: var(--color-accent-100);
+    border-left-color: var(--color-accent);
+}
+.mitem:hover .mitem-key, .mitem.is-hover .mitem-key {
+    color: var(--color-accent-700);
+}
+.mitem:focus-visible, .mitem.is-focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+}
+.mitem.is-checked {
+    font-weight: 600;
+}
+.mitem.is-checked .mi.check {
+    color: var(--color-accent-700);
+}
+.mitem.is-disabled {
+    opacity: .45;
+    cursor: default;
+}
+.mitem .mi.check {
+    width: 16px;
+    font-size: 16px;
+}
+.mitem.is-danger {
+    color: var(--color-accent-2-700);
+}
+.mitem.is-danger:hover, .mitem.is-danger.is-hover {
+    background: var(--color-accent-2-100);
+    border-left-color: var(--color-accent-2);
+}
+.mdrop-sep {
+    height: 1px;
+    margin: 5px 12px;
+    background: var(--dlg-rule);
+}
+.mdrop-note {
+    padding: 6px 12px 2px;
+    font: 400 11.5px / 1.4 var(--font-body);
+    color: var(--color-neutral-700);
+}
 .mdrop {
     position: relative;
     min-width: 276px;

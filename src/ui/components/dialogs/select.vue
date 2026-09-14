@@ -74,7 +74,7 @@ onMounted(() => {
 </script>
 <template>
   <div :class="{'inline-row' : inline }" class="dropdown">
-    <div class="spec-name">{{ label }}</div>
+    <div v-if="label" class="spec-name">{{ label }}</div>
     <button :id="getId('select-button')" class="sel" type="button"
       :aria-expanded="showDropdown" data-bs-toggle="dropdown" @click="toggleDropdown">
       <span>{{ selectLabel }}</span>

@@ -1,182 +1,270 @@
 <script setup lang="ts">
-import { reactive, Ref, ref, watch } from 'vue';
-import { SmoSystemGroup } from '../../../smo/data/scoreModifiers'
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { SmoSystemGroup } from '../../../smo/data/scoreModifiers';
 import { SmoSystemStaff } from '../../../smo/data/systemStaff';
 import { SmoScore } from '../../../smo/data/score';
 import { SelectOption } from '../../common';
 import selectComp from './select.vue';
 import dialogContainer from './dialogContainer.vue';
-import toggle from './toggle.vue';
+import staffGroupRow from './staffGroupRow.vue';
 
 interface Props {
   staffGroups: SmoSystemGroup[],
-  score: SmoScore
+  score: SmoScore,
   domId: string,
   label: string,
   setConnectorCb: (staffId: number, connectorType: string) => Promise<void>,
   removeFromGroupCb: (staffId: number) => Promise<void>,
-  addToGroupCb: (staffId: number) => Promise<void>,
+  addToGroupCb: (staffId: number, direction: 'above' | 'below') => Promise<void>,
   createStaffGroupCb: (staffId: number) => Promise<void>,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>
 }
+const props = defineProps<Props>();
+const { score, domId } = props;
+
 const connectorTypeOptions: SelectOption[] = [
   { label: 'Brace', value: '0' },
   { label: 'Bracket', value: '1' },
-  { label: 'Single Line', value: '2' },
-  { label: 'Double Line', value: '3' }
+  { label: 'Single line', value: '2' },
+  { label: 'Double line', value: '3' }
 ];
 
-interface GroupChoice {
+interface StaveRow {
   staffId: number,
-  staffName: string,
-  options: SelectOption[],
-  selectedValue: string,
-  startsGroup: boolean,
-  endsGroup: boolean,
+  name: string,
+  bravura: boolean,
+  icon: string,
   inGroup: boolean,
-  createGroup: boolean,
-  addToGroup: boolean,
-  connectorCb: (value: string) => void,
-  removeCb: () => void,
-  addCb: () => void,
-  createCb: () => void
+  actionLabel: string,
+  canAddAbove: boolean,
+  canAddBelow: boolean,
+  canCreate: boolean,
+  canRemove: boolean
 }
-const props = defineProps<Props>();
-const { staffGroups, label, score, domId, setConnectorCb, removeFromGroupCb } = props;
-const getDomId = () => {
-  return `attr-modal-dialog-${domId}`;
+interface GroupBlock {
+  type: 'group',
+  key: string,
+  group: SmoSystemGroup,
+  name: string,
+  connectorValue: string,
+  connectorOptions: SelectOption[],
+  rows: StaveRow[]
 }
-const getId = (str: string, staffId: number) => {
-  return `${domId}-${staffId}-${str}`;
+interface LooseBlock {
+  type: 'loose',
+  key: string,
+  row: StaveRow
 }
-const getGroupForStaff = (staffNum: number): SmoSystemGroup | undefined => {
-  return staffGroups.find((sg) => sg.startSelector.staff <= staffNum && sg.endSelector.staff >= staffNum);
-}
-const startsGroup = (staffNum: number) => {
-  const sg = getGroupForStaff(staffNum);
-  if (sg && sg.startSelector.staff === staffNum) {
-    return true;
-  }
-  return false;
-};
-const endsGroup = (staffNum: number) => {
-  const sg = getGroupForStaff(staffNum);
-  if (sg && sg.endSelector.staff === staffNum) {
-    return true;
-  }
-  return false;
-};
+type Block = GroupBlock | LooseBlock;
 
-const staveChoices: Record<number, SelectOption[]> = reactive({})
-score.staves.forEach((staff: SmoSystemStaff, ix: number) => {
-  staveChoices[ix] = reactive([]);
-});
-const getChoicesForStaff = (staffNum: number): GroupChoice => {
-  const rv = {
-    options: [] as SelectOption[],
-    selectedValue: '',
-    staffId: staffNum,
-    staffName: score.staves[staffNum].partInfo.partName,
-    startsGroup: false,
-    endsGroup: false,
-    inGroup: false,
-    addToGroup: false,
-    createGroup: true,
-    connectorCb: async (value: string) => {
-      await setConnectorCb(staffNum, value);
-    },
-    removeCb: async () => {
-      await removeFromGroupCb(staffNum);
-    },
-    addCb: async () => {
-      await props.addToGroupCb(staffNum);
-    },
-    createCb: async () => {
-      await props.createStaffGroupCb(staffNum);
-    }
+interface MenuAction {
+  key: string,
+  icon: string,
+  label: string,
+  danger: boolean,
+  disabled: boolean,
+  run: () => Promise<void>
+}
+
+const getId = (str: string, staffId?: number) => {
+  return typeof staffId === 'number' ? `${domId}-${staffId}-${str}` : `${domId}-${str}`;
+}
+
+const getGroupForStaff = (staffId: number): SmoSystemGroup | undefined =>
+  props.staffGroups.find((sg) => sg.startSelector.staff <= staffId && sg.endSelector.staff >= staffId);
+
+const clefIcon = (staff: SmoSystemStaff): { bravura: boolean, icon: string } => {
+  const clef = staff.measures.length > 0 ? staff.measures[0].clef : 'treble';
+  if (clef === 'bass') {
+    return { bravura: true, icon: 'bv-fclef' };
+  }
+  if (clef === 'alto' || clef === 'tenor') {
+    return { bravura: true, icon: 'bv-cclef' };
+  }
+  if (clef === 'percussion') {
+    return { bravura: false, icon: 'graphic_eq' };
+  }
+  return { bravura: true, icon: 'bv-gclef' };
+}
+
+const buildRow = (staffId: number): StaveRow => {
+  const staff = score.staves[staffId];
+  const sg = getGroupForStaff(staffId);
+  const aboveGroup = staffId > 0 ? getGroupForStaff(staffId - 1) : undefined;
+  const belowGroup = staffId < score.staves.length - 1 ? getGroupForStaff(staffId + 1) : undefined;
+  const { bravura, icon } = clefIcon(staff);
+  return {
+    staffId,
+    name: staff.partInfo.partName,
+    bravura,
+    icon,
+    inGroup: !!sg,
+    actionLabel: sg ? 'Grouped' : 'Ungrouped',
+    canAddAbove: !sg && !!aboveGroup,
+    canAddBelow: !sg && !!belowGroup,
+    canCreate: !sg,
+    canRemove: !!sg
   };
-  const groupOptions: SelectOption[] = [];
-  const lsg = (staffNum > 0) ? getGroupForStaff(staffNum - 1) : undefined;
-  const sg = getGroupForStaff(staffNum);
-  if (!sg) {
-    if (lsg) {
-      rv.addToGroup = true;
-    }
-    return rv;
-  }
-  rv.options = JSON.parse(JSON.stringify(connectorTypeOptions));
-  rv.selectedValue = sg.leftConnector.toString();
-  rv.startsGroup = startsGroup(staffNum);
-  rv.endsGroup = endsGroup(staffNum);
-  rv.inGroup = true;
-  rv.createGroup = false;
-  return rv;
-};
-
-const choices: GroupChoice[] = reactive([]);
-const updateChoices = () => {
-  choices.splice(0);
-  score.staves.forEach((staff: SmoSystemStaff, ix: number) => {
-    choices.push(getChoicesForStaff(ix));
-  });
 }
-updateChoices();
-watch(() => props.staffGroups, () => {
-  updateChoices();
-}, { deep: true });
 
+const staveCountLabel = (count: number) => count === 1 ? '1 stave' : `${count} staves`;
+
+const groupLabel = (group: SmoSystemGroup) => {
+  if (group.text && group.text.trim().length > 0) {
+    return group.text;
+  }
+  const start = group.startSelector.staff + 1;
+  const end = group.endSelector.staff + 1;
+  return start === end ? `Staff ${start}` : `Staves ${start}–${end}`;
+}
+
+const blocks = computed<Block[]>(() => {
+  const rv: Block[] = [];
+  let i = 0;
+  while (i < score.staves.length) {
+    const sg = getGroupForStaff(i);
+    if (sg && sg.startSelector.staff === i) {
+      const rows: StaveRow[] = [];
+      const end = Math.min(sg.endSelector.staff, score.staves.length - 1);
+      for (let j = sg.startSelector.staff; j <= end; ++j) {
+        rows.push(buildRow(j));
+      }
+      rv.push({
+        type: 'group',
+        key: `group-${sg.attrs.id}`,
+        group: sg,
+        name: groupLabel(sg),
+        connectorValue: sg.leftConnector.toString(),
+        connectorOptions: JSON.parse(JSON.stringify(connectorTypeOptions)),
+        rows
+      });
+      i = end + 1;
+    } else {
+      rv.push({ type: 'loose', key: `loose-${i}`, row: buildRow(i) });
+      i += 1;
+    }
+  }
+  return rv;
+});
+
+const connectorClass = (group: SmoSystemGroup) => {
+  const name = SmoSystemGroup.connectorTypeNames[group.leftConnector] ?? 'bracket';
+  return `sg-${name}`;
+}
+
+const openStaffId = ref<number | null>(null);
+const hasOpenMenu = computed(() => openStaffId.value !== null);
+
+const toggleMenu = (staffId: number) => {
+  openStaffId.value = openStaffId.value === staffId ? null : staffId;
+}
+const closeMenu = () => {
+  openStaffId.value = null;
+}
+
+const menuActionsFor = (row: StaveRow): MenuAction[] => [
+  {
+    key: 'add-above',
+    icon: 'vertical_align_top',
+    label: 'Add above',
+    danger: false,
+    disabled: !row.canAddAbove,
+    run: async () => { await props.addToGroupCb(row.staffId, 'above'); }
+  },
+  {
+    key: 'add-below',
+    icon: 'vertical_align_bottom',
+    label: 'Add below',
+    danger: false,
+    disabled: !row.canAddBelow,
+    run: async () => { await props.addToGroupCb(row.staffId, 'below'); }
+  },
+  {
+    key: 'create',
+    icon: 'add_box',
+    label: 'Create new group',
+    danger: false,
+    disabled: !row.canCreate,
+    run: async () => { await props.createStaffGroupCb(row.staffId); }
+  },
+  {
+    key: 'remove',
+    icon: 'link_off',
+    label: 'Remove from group',
+    danger: true,
+    disabled: !row.canRemove,
+    run: async () => { await props.removeFromGroupCb(row.staffId); }
+  }
+];
+
+const runAction = async (action: MenuAction) => {
+  if (action.disabled) {
+    return;
+  }
+  closeMenu();
+  await action.run();
+}
+
+const connectorChange = async (group: SmoSystemGroup, value: string) => {
+  await props.setConnectorCb(group.startSelector.staff, value);
+}
+
+const outsideClickListener = (event: MouseEvent) => {
+  if (openStaffId.value === null) {
+    return;
+  }
+  const target = event.target as HTMLElement;
+  if (target.closest('.sg-act') || target.closest('.sg-menu')) {
+    return;
+  }
+  closeMenu();
+}
+const keydownListener = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && openStaffId.value !== null) {
+    closeMenu();
+  }
+}
+onMounted(() => {
+  document.addEventListener('click', outsideClickListener, { capture: true });
+  document.addEventListener('keydown', keydownListener);
+});
+onUnmounted(() => {
+  document.removeEventListener('click', outsideClickListener, { capture: true });
+  document.removeEventListener('keydown', keydownListener);
+});
 </script>
 <template>
-  <dialogContainer :domId="domId" :label="label" :commitCb="commitCb" :cancelCb="cancelCb"
-    :classes="'text-center container'">
-    <div class="row nw-50">
-      <div class="col col-4">
-        <h4 class="h5">Connector Type</h4>
+  <dialogContainer :domId="domId" :label="label" :commitCb="commitCb" :cancelCb="cancelCb">
+    <div class="dlg-body">
+      <div class="sg-list" :class="{ 'has-menu': hasOpenMenu }">
+        <div class="sg-head"><span>Group</span><span>Stave</span><span>Action</span></div>
+
+        <template v-for="block in blocks" :key="block.key">
+          <div v-if="block.type === 'group'" class="sg-group">
+            <div class="sg-conn" :class="connectorClass(block.group)" style="top:33px;bottom:0"></div>
+            <div class="sg-group-bar">
+              <span></span>
+              <span class="sg-group-name">{{ block.name }}<span class="sg-group-count">{{ staveCountLabel(block.rows.length) }}</span></span>
+              <selectComp :domId="getId('connector', block.group.startSelector.staff)" :label="''"
+                :initialValue="block.connectorValue" :selections="block.connectorOptions"
+                :changeCb="(value: string) => connectorChange(block.group, value)" />
+            </div>
+            <staffGroupRow v-for="row in block.rows" :key="row.staffId" :domId="domId" :staffId="row.staffId"
+              :name="row.name" :bravura="row.bravura" :icon="row.icon" :actionLabel="row.actionLabel"
+              :isOpen="openStaffId === row.staffId" :isLoose="false" :actions="menuActionsFor(row)"
+              :toggleCb="toggleMenu" :runActionCb="runAction" />
+          </div>
+          <staffGroupRow v-else :domId="domId" :staffId="block.row.staffId" :name="block.row.name"
+            :bravura="block.row.bravura" :icon="block.row.icon" :actionLabel="block.row.actionLabel"
+            :isOpen="openStaffId === block.row.staffId" :isLoose="true" :actions="menuActionsFor(block.row)"
+            :toggleCb="toggleMenu" :runActionCb="runAction" />
+        </template>
       </div>
-      <div class="col col-2">
-        <h4 class="h5">Stave</h4>
+
+      <div class="sg-legend">
+        <span><span class="mi sm">info</span>Choose an action on any stave to change its grouping.</span>
       </div>
-      <div class="col col-2">
-        <span class="fs-5">Add</span>
-      </div>
-      <div class="col col-2">
-        <span class="fs-5">Create</span>
-      </div>
-      <div class="col col-2">
-        <span class="fs-5">Remove</span>
-      </div>
-    </div>
-    <div v-for="choice in choices" class="row">
-      <div class="col col-4">
-        <div v-if="choice.startsGroup">
-          <selectComp :domId="getId('connectorSelect', choice.staffId)" :label="'Connector Type'"
-            :initialValue="choice.selectedValue" :selections="choice.options" :changeCb="choice.connectorCb" />
-        </div>
-        <div v-if="choice.inGroup && !choice.startsGroup" class="group-line-container">
-          <span class="show-group-line"></span>
-        </div>
-      </div>
-      <div class="col col-2 ">{{ choice.staffName }}</div>
-      <div class="col col-2">
-        <span :class="{ hide: !choice.addToGroup }">
-          <toggle :domId="getId('group-checkbox', choice.staffId)" :label="''" :initialValue="choice.inGroup"
-            :changeCb="(value: boolean) => { choice.inGroup = value; choice.addCb(); }" />
-        </span>
-      </div>
-      <div class="col col-2">
-        <span :class="{ hide: !choice.createGroup }">
-          <toggle :domId="getId('group-checkbox', choice.staffId)" :label="''" :initialValue="choice.inGroup"
-            :changeCb="(value: boolean) => { choice.inGroup = value; choice.createCb(); }" />
-        </span>
-      </div>
-      <div class="col col-2">
-        <span :class="{ hide: !choice.endsGroup }">
-          <toggle :domId="getId('group-checkbox', choice.staffId)" :label="''" :initialValue="choice.inGroup"
-            :changeCb="(value: boolean) => { choice.inGroup = value; choice.removeCb(); }" />
-        </span>
-      </div>
-      <div v-if="choice.inGroup && choice.endsGroup" class="col col-12 mb-2 border-bottom"></div>
     </div>
   </dialogContainer>
 </template>
