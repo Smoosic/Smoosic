@@ -8,7 +8,7 @@ import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { CompleteNotifier, RibbonLayout, replaceVueRoot } from '../common';
 import { SuiTracker } from '../../render/sui/tracker';
 import { SuiMenuManager } from '../menus/manager';
-import { SuiLibraryDialog } from '../dialogs/library';
+import { SuiLibraryDialogVue } from '../dialogs/libraryVue';
 import { ButtonLabel } from './button';
 import { SmoUiConfiguration } from '../configuration';
 import { createApp, ref, reactive, watch } from 'vue';
@@ -200,7 +200,13 @@ export class RibbonButtons {
         tracker: this.view.tracker
       };
       if (buttonData.ctor === 'SuiLibraryDialog') {
-        await SuiLibraryDialog.createAndDisplay(params, this.config);
+        SuiLibraryDialogVue({eventSource: this.eventSource,
+        completeNotifier: this.controller,
+        view: this.view,
+        ctor: buttonData.ctor,
+        id: buttonData.id,
+        startPromise: null,
+        tracker: this.view.tracker}, this.config);
       } else {
         SuiTempoDialogVue(params);
       }
