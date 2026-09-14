@@ -137,7 +137,14 @@ export type SuiMenuShowOption = (menu: SuiMenuBase) => boolean;
 export interface SuiConfiguredMenuOption {
   menuChoice: MenuChoiceDefinition,
   handler: SuiMenuHandler,
-  display: SuiMenuShowOption
+  display: SuiMenuShowOption,
+  /**
+   * When present and non-empty, selecting this option displays these options
+   * as the menu's new item list in place of the parent's, instead of running
+   * `handler`. Lets any menu choice lead to a further set of choices (a
+   * submenu) without a dedicated dialog or a new top-level menu registration.
+   */
+  subMenu?: SuiConfiguredMenuOption[]
 }
 
 /**
@@ -219,6 +226,22 @@ export class SuiConfiguredMenu extends SuiMenuBase {
       customize(this);
     }
   }
+}
+
+/**
+ * Render-time data for one level of a (possibly nested) menu, used by
+ * menu.vue / menuLevel.vue to display a submenu beside its parent instead
+ * of replacing it. Each level optionally links to the next via `child`.
+ * @category SuiMenu
+ */
+export interface SuiMenuLevel {
+  items: SuiConfiguredMenuOption[],
+  domId: string,
+  focusIndex: number,
+  isDeepest: boolean,
+  openValue: string | null,
+  selectFn: (item: SuiConfiguredMenuOption) => void,
+  child: SuiMenuLevel | null
 }
 
 export const SuiMenuCustomizer = (fcn: customizeMenuOptionsFcn, ctor: string) => {

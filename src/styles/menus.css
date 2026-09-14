@@ -241,6 +241,10 @@ body.showAttributeDialog.textEditor .overlay {
 .mitem.is-checked {
     font-weight: 600;
 }
+.mitem.is-open {
+    background: var(--color-accent-100);
+    border-left-color: var(--color-accent);
+}
 .mitem.is-checked .mi.check {
     color: var(--color-accent-700);
 }
@@ -278,6 +282,13 @@ body.showAttributeDialog.textEditor .overlay {
     box-shadow: var(--shadow-lg);
     font-family: var(--font-body);
     padding: 5px 0 6px;
+}
+/* a submenu opens to the right of its parent item's panel, staying up
+   alongside it until the submenu itself closes */
+.msub {
+    position: absolute;
+    top: 34px;
+    left: calc(100% - 6px);
 }
 .menu-layer {
     position: relative;

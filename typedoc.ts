@@ -66,7 +66,6 @@ export * from './src/ui/common';
 export * from './src/ui/configuration';
 export * from './src/ui/dialogs/adapter';
 export * from './src/ui/dialogs/addMeasure';
-export * from './src/ui/dialogs/arpeggio';
 export * from './src/ui/dialogs/articulation';
 export * from './src/ui/dialogs/audioSettings';
 export * from './src/ui/dialogs/chordChange';

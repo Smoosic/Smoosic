@@ -135,7 +135,6 @@ export const initDialogTranslationElements = () => {
   DialogTranslations.push(suiDialogTranslate(SuiSlurAttributesDialog.dialogElements, 'SuiSlurAttributesDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiDynamicModifierDialog.dialogElements, 'SuiDynamicModifierDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiVoltaAttributeDialog.dialogElements, 'SuiVoltaAttributeDialog'));
-  // DialogTranslations.push(suiDialogTranslate(SuiArpeggioDialog.dialogElements, 'SuiArpeggioDialog'));
 }
 export const initDialogConstructors = () => {
   SmoDynamicComponentCtor['SuiButtonComponent'] = 

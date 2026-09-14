@@ -1,5 +1,4 @@
 import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SuiArpeggioDialog } from '../dialogs/arpeggio';
 import { SuiClefChangeDialog } from '../dialogs/clefChange';
 import { SuiNoteHeadDialog } from '../dialogs/noteHead';
 import { SuiOrnamentDialogVue } from '../dialogs/ornament';
@@ -8,6 +7,7 @@ import { SuiArticulationDialogVue } from '../dialogs/articulation';
 import { SuiGraceNoteDialog } from '../dialogs/gracenote';
 import { SuiMicrotoneDialogVue } from '../dialogs/microtones';
 import { SuiPitchDialogVue } from '../dialogs/pitch';
+import { SmoArpeggioType } from '../../smo/data/noteModifiers';
 import { SmoPedalMarking } from '../../smo/data/staffModifiers';
 import { SmoSelector } from '../../smo/xform/selections';
 import { SuiMenuBase, SuiMenuParams, 
@@ -37,21 +37,36 @@ const toggleCueMenuOption: SuiConfiguredMenuOption = {
   }
 }
 /**
+ * One choice per arpeggio style, shown as a submenu of arpeggioMenuOption.
+ * @category SuiMenu
+ */
+const arpeggioStyleOption = (type: SmoArpeggioType, text: string): SuiConfiguredMenuOption => ({
+  handler: async (menu: SuiMenuBase) => {
+    await menu.view.addRemoveArpeggio(type);
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text,
+    value: type
+  }
+});
+const arpeggioStyleOptions: SuiConfiguredMenuOption[] = [
+  arpeggioStyleOption('directionless', 'Plain'),
+  arpeggioStyleOption('rasquedo_up', 'Rasquedo Up'),
+  arpeggioStyleOption('rasquedo_down', 'Rasquedo Down'),
+  arpeggioStyleOption('roll_up', 'Roll Up'),
+  arpeggioStyleOption('roll_down', 'Roll Down'),
+  arpeggioStyleOption('brush_up', 'Brush Up'),
+  arpeggioStyleOption('brush_down', 'Brush Down'),
+  arpeggioStyleOption('none', 'None')
+];
+/**
  * @category SuiMenu
  */
 const arpeggioMenuOption: SuiConfiguredMenuOption = {
-  handler: async (menu: SuiMenuBase) => {
-    SuiArpeggioDialog({
-      view: menu.view,
-      completeNotifier: menu.completeNotifier,
-      startPromise: menu.closePromise,
-      eventSource: menu.eventSource,
-      tracker: menu.tracker,
-      ctor: 'SuiArpeggioDialog',
-      id: 'insert-dialog',
-      modifier: null
-    });
-  }, display: (menu: SuiMenuBase) => true,
+  handler: async (menu: SuiMenuBase) => {},
+  display: (menu: SuiMenuBase) => true,
+  subMenu: arpeggioStyleOptions,
   menuChoice: {
     icon: 'bv tall oversize bv-arpeggiatoUp',
     text: 'Arpeggio',

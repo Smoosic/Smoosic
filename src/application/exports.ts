@@ -57,7 +57,6 @@ import { SuiStaffGroupDialogVue } from '../ui/dialogs/staffGroup';
 import { SuiOrnamentDialogVue } from '../ui/dialogs/ornament';
 import { SuiArticulationDialogVue } from '../ui/dialogs/articulation';
 import { SuiMicrotoneDialogVue } from '../ui/dialogs/microtones';
-import { SuiArpeggioDialog } from '../ui/dialogs/arpeggio';
 import { SuiClefChangeDialog } from '../ui/dialogs/clefChange';
 import { SuiPartInfoDialogVue } from '../ui/dialogs/partInfo';
 import { SuiNavigationDom } from '../ui/navigation';
@@ -232,7 +231,6 @@ export * from '../ui/common';
 export * from '../ui/configuration';
 export * from '../ui/dialogs/adapter';
 export * from '../ui/dialogs/addMeasure';
-export * from '../ui/dialogs/arpeggio';
 export * from '../ui/dialogs/articulation';
 export * from '../ui/dialogs/audioSettings';
 export * from '../ui/dialogs/chordChange';
@@ -366,7 +364,7 @@ export const Smo = {
   SuiFontComponent, SuiTextInPlace, SuiChordComponent, SuiDragText,
   SuiNoteTextComponent, SuiTextBlockComponent, SuiTextInputComponent, SuiReadOnlyTextComponent,
   SuiDynamicModifierDialog, CheckboxDropdownComponent, TieMappingComponent, StaffAddRemoveComponent,
-  StaffCheckComponent, TextCheckComponent, SuiArpeggioDialog, SuiClefChangeDialog,
+  StaffCheckComponent, TextCheckComponent, SuiClefChangeDialog,
   SuiPitchArrayComponent, SuiPitchArrayComponentTab, SuiPitchComponent,
 
 SuiPitchComposite, 
