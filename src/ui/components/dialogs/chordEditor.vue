@@ -105,11 +105,11 @@ const ChordGlyphShortcuts = Extension.create({
     const shortcuts: Record<string, () => boolean> = {
       Enter: () => true,
       'Shift-Enter': () => true,
-      '^': () => {
+      '%': () => {
         emit('textTypeChange', toggleTextType(SuiInlineText.textTypes.subScript));
         return true;
       },
-      '%': () => {
+      '^': () => {
         emit('textTypeChange', toggleTextType(SuiInlineText.textTypes.superScript));
         return true;
       }

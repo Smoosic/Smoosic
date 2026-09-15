@@ -199,7 +199,7 @@ const handleCommit = async () => {
     </div>
     <template v-else>
       <div v-if="mode === 'editing'">
-        <textGroupEditorComp ref="editorRef" :domId="getId('editor')" :textGroup="modifier.value"
+        <textGroupEditorComp ref="editorRef" :domId="getId('editor')" :textGroup="modifier.value" :view="view"
           @active-block-changed="onActiveBlockChanged" :rerender="rerender"/>
         <div class="row mb-2 ms-2 align-items-center">
           <div class="col col-6">

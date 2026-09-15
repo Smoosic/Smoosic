@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, Ref, computed } from 'vue';
+import { ref, Ref, computed, onBeforeUnmount } from 'vue';
 import { SmoSelector, SmoSelection } from '../../../smo/xform/selections';
 import { SmoLyric } from '../../../smo/data/noteModifiers';
+import { SmoScoreText } from '../../../smo/data/scoreText';
 import { FontInfo, getChordSymbolGlyphFromCode } from '../../../common/vex';
 import { SelectOption } from '../../common';
 import { SuiScoreViewOperations } from '../../../render/sui/scoreViewOperations';
+import { SvgHelpers } from '../../../render/sui/svgHelpers';
 import { SuiInlineText } from '../../../render/sui/textRender';
 import dialogContainer from './dialogContainer.vue';
 import numberInputApp from './numberInput.vue';
@@ -38,6 +40,60 @@ const fontInfo: Ref<FontInfo> = ref({ family: 'Roboto Slab', size: 14, weight: '
 const adjustWidth = ref(false);
 
 const chordText = computed(() => currentChord.value?.getText() ?? '');
+
+// Subtle position marker (012-lyric-live-preview-cursor's pattern, reused
+// for chord symbols): a plain-DOM element, not a Vue ref -- it's imperative
+// SVG state, not template-bound.
+let markerElement: SVGLineElement | null = null;
+
+// Mirrors the lyric dialog's computeMarkerPosition: if the chord symbol has
+// already been rendered (existing text), use its bounding box; otherwise
+// fall back to a position near the note itself.
+const computeMarkerPosition = (): { x: number, y: number, height: number } | null => {
+  const chord = currentChord.value;
+  if (!chord) {
+    return null;
+  }
+  if (chord.logicalBox) {
+    const box = chord.logicalBox;
+    return { x: box.x + box.width, y: box.y, height: box.height };
+  }
+  const selection = SmoSelection.noteFromSelector(score, currentSelector.value);
+  const note = selection?.note;
+  if (!note || !note.logicalBox) {
+    return null;
+  }
+  const height = SmoScoreText.fontPointSize(chord.fontInfo.size);
+  return {
+    x: note.logicalBox.x,
+    y: note.logicalBox.y + note.logicalBox.height + height,
+    height
+  };
+};
+const removeMarker = () => {
+  if (markerElement) {
+    markerElement.remove();
+    markerElement = null;
+  }
+};
+const updateMarker = () => {
+  removeMarker();
+  if (mode.value !== 'editing') {
+    return;
+  }
+  const pos = computeMarkerPosition();
+  if (!pos) {
+    return;
+  }
+  const context = props.view.tracker.renderer.pageMap.getRenderer({ x: pos.x, y: pos.y });
+  if (!context) {
+    return;
+  }
+  markerElement = SvgHelpers.renderLyricPositionMarker(
+    context.svg, pos.x - context.box.x, pos.y - context.box.y, pos.height
+  );
+};
+onBeforeUnmount(() => removeMarker());
 
 const ordinalityOptions: SelectOption[] = [
   { value: '0', label: '1' },
@@ -89,6 +145,7 @@ const loadNote = (selector: SmoSelector, ordinalityNum: number) => {
     style: chord.fontInfo.style ?? 'normal'
   };
   adjustWidth.value = chord.adjustNoteWidthChord;
+  updateMarker();
 };
 // Auto-start editing on the initially selected note, unconditionally,
 // matching SuiChordChangeDialog.bindElements()'s unconditional startEditSession().
@@ -143,6 +200,7 @@ const deleteCurrent = async () => {
 const enterDialogMode = async () => {
   await commitIfChanged();
   mode.value = 'dialog';
+  removeMarker();
 };
 const enterEditingMode = () => {
   mode.value = 'editing';
@@ -205,6 +263,7 @@ const onEditorTextTypeChange = (type: number) => {
 // pattern, reused for chords): commitIfChanged() is the same write navigation/finish use.
 const onEditorPreview = async () => {
   await commitIfChanged();
+  updateMarker();
 };
 
 // OK and Cancel behave identically: commit the note currently being
@@ -214,6 +273,7 @@ const finish = async () => {
   if (mode.value === 'editing') {
     await commitIfChanged();
   }
+  removeMarker();
 };
 const handleCommit = async () => {
   await finish();

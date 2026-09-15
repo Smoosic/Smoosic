@@ -7,6 +7,8 @@ import { SmoTextGroup, SmoScoreText } from '../../../smo/data/scoreText';
 import { FontInfo } from '../../../common/vex';
 import { RemoveElementLike, ElementLike } from '../../../smo/data/common';
 import { SelectOption } from '../../common';
+import { SuiScoreViewOperations } from '../../../render/sui/scoreViewOperations';
+import { SvgHelpers } from '../../../render/sui/svgHelpers';
 import { textGroupToHtml, htmlToTextGroup } from './textGroupHtml';
 import { TextBlockAtomNode } from './textBlockAtomNode';
 import selectComp from './select.vue';
@@ -28,6 +30,7 @@ const editorStyleTag = createStyleTag(BASE_EDITOR_CSS, undefined, 'text-group-ed
 interface Props {
   domId: string,
   textGroup: SmoTextGroup,
+  view: SuiScoreViewOperations,
   rerender: () => Promise<void>
 }
 const props = defineProps<Props>();
@@ -50,6 +53,45 @@ ensureActiveBlock(props.textGroup);
 // rendered as a read-only textBlockAtom node (see textGroupHtml.ts).
 const activeBlockId: Ref<string> = ref(props.textGroup.getActiveBlock().attrs.id);
 
+// Subtle position marker (012-lyric-live-preview-cursor's pattern, reused
+// here): a plain-DOM element, not a Vue ref -- it's imperative SVG state,
+// not template-bound. Marks where the active text block is being edited.
+let markerElement: SVGLineElement | null = null;
+
+// If the active block has already been rendered (existing text), use its
+// bounding box, same as the lyric dialog's computeMarkerPosition. Otherwise
+// fall back to the block's own (unrendered) x/y position.
+const computeMarkerPosition = (): { x: number, y: number, height: number } | null => {
+  const activeBlock = props.textGroup.getActiveBlock();
+  const height = SmoScoreText.fontPointSize(activeBlock.fontInfo.size);
+  if (activeBlock.logicalBox) {
+    const box = activeBlock.logicalBox;
+    return { x: box.x + box.width, y: box.y, height: box.height };
+  }
+  return { x: activeBlock.x, y: activeBlock.y, height };
+};
+const removeMarker = () => {
+  if (markerElement) {
+    markerElement.remove();
+    markerElement = null;
+  }
+};
+const updateMarker = () => {
+  removeMarker();
+  const pos = computeMarkerPosition();
+  if (!pos) {
+    return;
+  }
+  const context = props.view.tracker.renderer.pageMap.getRenderer({ x: pos.x, y: pos.y });
+  if (!context) {
+    return;
+  }
+  markerElement = SvgHelpers.renderLyricPositionMarker(
+    context.svg, pos.x - context.box.x, pos.y - context.box.y, pos.height
+  );
+};
+updateMarker();
+
 // Debounced live preview (spec: "periodically ... replace the contents of
 // the active text block ... so the user can see it in context"). Only real
 // keystrokes should trigger this -- programmatic content swaps (block
@@ -67,6 +109,7 @@ const pushPreview = async () => {
   props.textGroup.justification = updated.justification;
   props.textGroup.relativePosition = updated.relativePosition;
   await props.rerender();
+  updateMarker();
 };
 const schedulePreview = () => {
   if (previewTimer !== null) {
@@ -79,6 +122,7 @@ onBeforeUnmount(() => {
     clearTimeout(previewTimer);
     previewTimer = null;
   }
+  removeMarker();
 });
 
 const editor = useEditor({
@@ -146,6 +190,7 @@ watch(() => props.textGroup, (next) => {
   activeBlockId.value = next.getActiveBlock().attrs.id;
   rebuildContent();
   refreshActiveFont();
+  updateMarker();
 });
 
 const activeIndex = computed(() => {
@@ -176,6 +221,7 @@ const activateBlock = (scoreText: SmoScoreText) => {
   // forcing an extra click before the user can type.
   editor.value?.commands.focus();
   emit('active-block-changed', { ...scoreText.fontInfo });
+  updateMarker();
 };
 
 const addBlock = () => {
