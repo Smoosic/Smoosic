@@ -2,7 +2,6 @@
 // Copyright (c) Aaron David Newman 2026.
 import { SmoLyric } from '../../../smo/data/noteModifiers';
 import { SuiInlineText } from '../../../render/sui/textRender';
-import { SuiTextEditor } from '../../../render/sui/textEdit';
 
 /**
  * Pure encode/decode between a SmoLyric chord-parser text string (the
@@ -18,6 +17,22 @@ export type ChordSegment =
   | { kind: 'glyph', glyphKey: string, textType: TextType };
 
 /**
+ * 
+ */
+const   
+  textTypeTransitions: number[][] =
+  [
+    [1, 1, 0],
+    [1, 0, 1],
+    [1, 2, 2],
+    [2, 2, 0],
+    [2, 0, 2],
+    [2, 1, 1],
+    [0, 1, 1],
+    [0, 0, 0],
+    [0, 2, 2]
+  ];
+/**
  * Tokenize a raw chord-text string into ChordSegments, tracking the active
  * superscript/subscript state exactly as SuiChordEditor._setSymbolModifier does.
  */
@@ -29,7 +44,7 @@ export function decodeChordText(raw: string): ChordSegment[] {
   let glyphKey = '';
   tokens.forEach((token) => {
     if (token === '^' || token === '%') {
-      textType = SuiInlineText.getTextTypeResult(textType, SuiTextEditor.textTypeFromChar(token)) as TextType;
+      textType = SuiInlineText.getTextTypeResult(textType, SuiInlineText.textTypeFromChar(token)) as TextType;
     } else if (token === '@') {
       if (!isGlyph) {
         isGlyph = true;
@@ -59,7 +74,7 @@ export function encodeChordText(segments: ChordSegment[]): string {
   let previousType = SuiInlineText.textTypes.normal as TextType;
   segments.forEach((segment) => {
     if (segment.textType !== previousType) {
-      text += SuiTextEditor.textTypeToChar(SuiInlineText.getTextTypeTransition(previousType, segment.textType));
+      text += SuiInlineText.textTypeToChar(SuiInlineText.getTextTypeTransition(previousType, segment.textType));
       previousType = segment.textType;
     }
     if (segment.kind === 'glyph') {

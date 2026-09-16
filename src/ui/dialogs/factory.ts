@@ -13,16 +13,13 @@ import { SuiDynamicModifierDialog } from './dynamics';
 import { SuiDialogNotifier, SmoDynamicComponentCtor, SuiBaseComponentParams } from './components/baseComponent';
 import { SuiButtonComponent, SuiButtonComposite, SuiButtonCompositeParams, SuiButtonComponentParams } from './components/button';
 import { CheckboxDropdownComponent, CheckboxDropdownComponentParams } from './components/checkdrop';
-import { SuiDragText } from './components/dragText';
 import { SuiDropdownComponent, SuiDropdownComponentParams, SuiDropdownCompositeParams, SuiDropdownComposite } from './components/dropdown';
 import { SuiFileDownloadComponentParams, SuiFileDownloadComponent } from './components/fileDownload';
 import { SuiFontComponent, SuiFontComponentParams } from './components/fontComponent';
-import { SuiNoteTextParams, SuiLyricComponent, SuiChordComponent } from './components/noteText';
 import { SuiPitchComponentParams, SuiPitchComponent, SuiPitchComposite, SuiPitchCompositeParams, SuiPitchArrayComponentTab } from './components/pitch';
 import { SuiRockerComponentParams,SuiRockerComponent, SuiRockerComposite, SuiRockerCompositeParams } from './components/rocker';
 import { StaffAddRemoveComponentParams, StaffAddRemoveComponent,  StaffCheckComponentParams, StaffCheckComponent } from './components/staffComponents';
 import { TextCheckComponentParams, TextCheckComponent } from './components/textCheck';
-import { SuiTextInPlace, SuiTextInPlaceParams,  SuiTextBlockComponent, SuiTextBlockComponentParams } from './components/textInPlace';
 import { SuiTextInputComponentParams, SuiTextInputComponent, 
   SuiTextInputCompositeParams, SuiTextInputComposite, SuiReadOnlyTextComponent } from './components/textInput';
 import { TieMappingComponentParams, TieMappingComponent } from './components/tie';
@@ -143,8 +140,6 @@ export const initDialogConstructors = () => {
   (dialog: SuiDialogNotifier, params: SuiButtonCompositeParams) => new SuiButtonComposite(dialog, params);
   SmoDynamicComponentCtor['CheckboxDropdownComponent'] = 
   (dialog: SuiDialogNotifier, params: CheckboxDropdownComponentParams) => new CheckboxDropdownComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiDragText'] = 
-  (dialog: SuiDialogNotifier, params: SuiBaseComponentParams) => new SuiDragText(dialog, params);
   //SuiDropdownComponent, SuiDropdownComponentParams, SuiDropdownCompositeParams, SuiDropdownComposite
   SmoDynamicComponentCtor['SuiDropdownComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiDropdownComponentParams) => new SuiDropdownComponent(dialog, params);
@@ -154,10 +149,6 @@ export const initDialogConstructors = () => {
   (dialog: SuiDialogNotifier, params: SuiFileDownloadComponentParams) => new SuiFileDownloadComponent(dialog, params);
   SmoDynamicComponentCtor['SuiFontComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiFontComponentParams) => new SuiFontComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiLyricComponent'] = 
-  (dialog: SuiDialogNotifier, params: SuiNoteTextParams) => new SuiLyricComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiChordComponent'] = 
-  (dialog: SuiDialogNotifier, params: SuiNoteTextParams) => new SuiChordComponent(dialog, params);
   SmoDynamicComponentCtor['SuiPitchComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiPitchComponentParams) => new SuiPitchComponent(dialog, params);
   SmoDynamicComponentCtor['SuiPitchComposite'] = 
@@ -174,11 +165,7 @@ export const initDialogConstructors = () => {
   (dialog: SuiDialogNotifier, params: StaffCheckComponentParams) => new StaffCheckComponent(dialog, params);
   SmoDynamicComponentCtor['TextCheckComponent'] = 
   (dialog: SuiDialogNotifier, params: TextCheckComponentParams) => new TextCheckComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiTextInPlace'] = 
-  (dialog: SuiDialogNotifier, params: SuiTextInPlaceParams) => new SuiTextInPlace(dialog, params);
-  SmoDynamicComponentCtor['SuiTextBlockComponent'] = 
-  (dialog: SuiDialogNotifier, params: SuiTextBlockComponentParams) => new SuiTextBlockComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiTextInputComponent'] = 
+    SmoDynamicComponentCtor['SuiTextInputComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiTextInputComponentParams) => new SuiTextInputComponent(dialog, params);
   SmoDynamicComponentCtor['SuiTextInputComposite'] = 
   (dialog: SuiDialogNotifier, params: SuiTextInputCompositeParams) => new SuiTextInputComposite(dialog, params);

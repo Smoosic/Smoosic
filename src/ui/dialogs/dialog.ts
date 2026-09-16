@@ -17,7 +17,7 @@ import { SmoNote } from '../../smo/data/note';
 import { EventHandler } from '../eventSource';
 import { SmoUiConfiguration } from '../configuration';
 import { PromiseHelpers } from '../../common/promiseHelpers';
-import { createApp, ref, Ref, watch } from 'vue';
+import { createApp, ref, Ref, watch, App } from 'vue';
 import { SuiNavigationDom } from '../navigation';
 import { layoutDebug, SuiNavigation } from '../../../typedoc';
 
@@ -75,6 +75,14 @@ export const InstallDialog = async (params: DialogInstallParams) => {
     await params.dialogParams.startPromise;
   }
   const complete: Ref<boolean> = ref(false);
+  // Track the mounted app so we can explicitly unmount it on close (mirrors
+  // SuiMenuManager's menuApp handling). replaceVueRoot only detaches the DOM
+  // via jQuery .empty() the next time a dialog opens -- it never calls Vue's
+  // own unmount -- so without this, a dismissed dialog's component tree stays
+  // alive with its lifecycle hooks (onBeforeUnmount) never firing, letting
+  // things like the lyric/chord/text editors' debounced preview timers fire
+  // after close and redraw a cursor marker that never gets removed.
+  let dialogApp: App | null = null;
 
   const trapper = new InputTrapper('#vue-modal-container');
   trapper.trap();
@@ -83,12 +91,14 @@ export const InstallDialog = async (params: DialogInstallParams) => {
     await params.commitCb();
     trapper.close();
     params.dialogParams.view.navigation.hideDialogModal();
+    dialogApp?.unmount();
   }
   const cancelCb = async () => {
     complete.value = true;
     await params.cancelCb();
     trapper.close();
     params.dialogParams.view.navigation.hideDialogModal();
+    dialogApp?.unmount();
   }
   const removeCb = async () => {
     if (params.removeCb) {
@@ -97,6 +107,7 @@ export const InstallDialog = async (params: DialogInstallParams) => {
     trapper.close();
     params.dialogParams.view.navigation.hideDialogModal();
     complete.value = true;
+    dialogApp?.unmount();
   }
   $('#' + params.root).addClass('modal show fade');
   params.appParams.commitCb = commitCb;
@@ -104,7 +115,8 @@ export const InstallDialog = async (params: DialogInstallParams) => {
   if (params.removeCb) {
     params.appParams.removeCb = removeCb;
   }
-  createApp(params.app as any, params.appParams).mount('#' + params.root);
+  dialogApp = createApp(params.app as any, params.appParams);
+  dialogApp.mount('#' + params.root);
 
   // allow a dialog to be dismissed by esc.
   const evKey = async (evdata: any) => {

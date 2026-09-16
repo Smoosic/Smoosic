@@ -2,7 +2,6 @@
 // Copyright (c) Aaron David Newman 2021.
 import { SvgHelpers, OutlineInfo, SuiTextStrokes } from './svgHelpers';
 import { SmoTextGroup, SmoScoreText } from '../../smo/data/scoreText';
-import { SuiTextEditor } from './textEdit';
 import { SuiScroller } from './scroller';
 import { SmoAttrs, SvgBox, getId, ElementLike } from '../../smo/data/common';
 import { SvgPage, SvgPageMap } from './svgPageMap';
@@ -81,6 +80,24 @@ export class SuiInlineText {
   }
   static get textPurposes(): Record<string, string> {
     return {render: 'sui-inline-render', edit: 'sui-inline-edit' };
+  }
+  static textTypeFromChar(char: string): number {
+    if (char === '^') {
+      return SuiInlineText.textTypes.superScript;
+    }
+    if (char === '%') {
+      return SuiInlineText.textTypes.subScript;
+    }
+    return SuiInlineText.textTypes.normal;
+  }
+  static textTypeToChar(textType: number): string {
+    if (textType === SuiInlineText.textTypes.superScript) {
+      return '^';
+    }
+    if (textType === SuiInlineText.textTypes.subScript) {
+      return '%';
+    }
+    return '';
   }
 
   // ### textTypeTransitions
@@ -698,12 +715,6 @@ export class SuiTextBlock {
     });
   }
 
-  rescale(scale: number) {
-    this.inlineBlocks.forEach((block) => {
-      block.text.rescale(scale);
-    });
-  }
-
   get x(): number {
     return this.getLogicalBox().x;
   }
@@ -711,14 +722,6 @@ export class SuiTextBlock {
     return this.getLogicalBox().y;
   }
 
-  maxFontHeight(scale: number): number {
-    let rv = 0;
-    this.inlineBlocks.forEach((block) => {
-      const blockHeight = block.text.maxFontHeight(scale);
-      rv = blockHeight > rv ? blockHeight : rv;
-    });
-    return rv;
-  }
   static blockFromScoreText(scoreText: SmoScoreText, context: SvgPage, pageMap: SvgPageMap, position: number, scroller: SuiScroller): SuiTextBlockBlock {
     var inlineText = SuiInlineText.fromScoreText(scoreText, context, pageMap, scroller);
     return { text: inlineText, position, activeText: true };

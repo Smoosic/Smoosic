@@ -46,7 +46,6 @@ import { SuiTextBracketDialog } from '../ui/dialogs/textBracket';
 import { SuiScoreFontDialogVue } from '../ui/dialogs/fonts';
 import { SuiGlobalLayoutDialogVue } from '../ui/dialogs/globalLayout';
 import { SuiScoreViewDialogVue } from '../ui/dialogs/scoreView';import { SuiLibraryDialog } from '../ui/dialogs/library';
-import { SuiChordChangeDialog } from '../ui/dialogs/chordChange';
 import { SuiDynamicModifierDialog } from '../ui/dialogs/dynamics';
 import { SuiSlurAttributesDialog } from '../ui/dialogs/slur';
 import { SuiPedalMarkingDialog } from '../ui/dialogs/pedalMarking';
@@ -71,15 +70,9 @@ import { SuiToggleComponent, SuiToggleComposite } from '../ui/dialogs/components
 import { SuiFileDownloadComponent } from '../ui/dialogs/components/fileDownload';
 import { SuiRockerComponent, SuiRockerComposite } from '../ui/dialogs/components/rocker';
 import { SuiFontComponent } from '../ui/dialogs/components/fontComponent';
-import { SuiTextBlockComponent } from '../ui/dialogs/components/textInPlace';
 import { SuiTreeComponent } from '../ui/dialogs/components/tree';
 import { SuiPitchArrayComponent, SuiPitchArrayComponentTab, 
    SuiPitchComponent, SuiPitchComposite } from '../ui/dialogs/components/pitch';
-import {
-    SuiChordComponent,  SuiNoteTextComponent
-} from '../ui/dialogs/components/noteText';
-import { SuiDragText } from '../ui/dialogs/components/dragText';
-import { SuiTextInPlace } from '../ui/dialogs/components/textInPlace';
 import { CheckboxDropdownComponent } from '../ui/dialogs/components/checkdrop';
 import { TieMappingComponent } from '../ui/dialogs/components/tie';
 import { StaffAddRemoveComponent,
@@ -126,7 +119,7 @@ import { SmoNamespace, SmoDynamicCtor, IsPitchLetter } from '../smo/data/common'
 import { SmoScore, engravingFontTypes, isEngravingFont } from '../smo/data/score';
 import { UndoBuffer } from '../smo/xform/undo';
 import { SmoNote } from '../smo/data/note';
-// import { SmoDuration } from '../smo/xform/tickDuration';
+
 import { SmoStaffHairpin, StaffModifierBase, SmoInstrument, SmoSlur, SmoTie, SmoStaffTextBracket,
   SmoTabStave, SmoPedalMarking, staffModifierDynamicCtorInit
  } from '../smo/data/staffModifiers';
@@ -190,7 +183,6 @@ export * from '../render/sui/scoreViewOperations';
 export * from '../render/sui/scroller';
 export * from '../render/sui/svgHelpers';
 export * from '../render/sui/svgPageMap';
-export * from '../render/sui/textEdit';
 export * from '../render/sui/textRender';
 export * from '../render/sui/tracker';
 export * from '../render/vex/glyphDimensions';
@@ -233,22 +225,18 @@ export * from '../ui/dialogs/adapter';
 export * from '../ui/dialogs/addMeasure';
 export * from '../ui/dialogs/articulation';
 export * from '../ui/dialogs/audioSettings';
-export * from '../ui/dialogs/chordChange';
 export * from '../ui/dialogs/clefChange';
 export * from '../ui/dialogs/components/baseComponent';
 export * from '../ui/dialogs/components/button';
 export * from '../ui/dialogs/components/buttonArray';
 export * from '../ui/dialogs/components/checkdrop';
-export * from '../ui/dialogs/components/dragText';
 export * from '../ui/dialogs/components/dropdown';
 export * from '../ui/dialogs/components/fileDownload';
 export * from '../ui/dialogs/components/fontComponent';
-export * from '../ui/dialogs/components/noteText';
 export * from '../ui/dialogs/components/pitch';
 export * from '../ui/dialogs/components/rocker';
 export * from '../ui/dialogs/components/staffComponents';
 export * from '../ui/dialogs/components/textCheck';
-export * from '../ui/dialogs/components/textInPlace';
 export * from '../ui/dialogs/components/textInput';
 export * from '../ui/dialogs/components/tie';
 export * from '../ui/dialogs/components/toggle';
@@ -343,7 +331,7 @@ export const Smo = {
   GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
   SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
-  SuiTimeSignatureDialogVue, SuiChordChangeDialog,
+  SuiTimeSignatureDialogVue, 
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
   SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,
   SuiScorePreferencesDialogVue,
@@ -361,8 +349,8 @@ export const Smo = {
   SuiRockerComponent, SuiFileDownloadComponent, SuiButtonArrayComponent, SuiButtonArrayMSComponent,
   SuiToggleComponent, SuiButtonComponent, SuiDropdownComposite,
   SuiToggleComposite, SuiButtonComposite, SuiRockerComposite, SuiTextInputComposite,
-  SuiFontComponent, SuiTextInPlace, SuiChordComponent, SuiDragText,
-  SuiNoteTextComponent, SuiTextBlockComponent, SuiTextInputComponent, SuiReadOnlyTextComponent,
+  SuiFontComponent,  
+  SuiTextInputComponent, SuiReadOnlyTextComponent,
   SuiDynamicModifierDialog, CheckboxDropdownComponent, TieMappingComponent, StaffAddRemoveComponent,
   StaffCheckComponent, TextCheckComponent, SuiClefChangeDialog,
   SuiPitchArrayComponent, SuiPitchArrayComponentTab, SuiPitchComponent,
