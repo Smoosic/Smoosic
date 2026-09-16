@@ -442,6 +442,47 @@ export class SuiScoreViewOperations extends SuiScoreView {
   }
 
   /**
+   * @param selector the selector of the note with the annotation to remove
+   * @param annotation a copy of the annotation to remove.  We use the verse, parser to identify it
+   * @returns render promise
+   */
+  async removeAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void> {
+    const selection = SmoSelection.noteFromSelector(this.score, selector);
+    if (selection === null) {
+      return PromiseHelpers.emptyPromise();
+    }
+    this._undoSelection('remove annotation', selection);
+    selection.note!.removeAnnotations(annotation);
+    const equiv = this._getEquivalentSelection(selection);
+    const storeAnnotation = equiv!.note!.getLyricForVerse(annotation.verse, annotation.parser);
+    if (typeof (storeAnnotation) !== 'undefined') {
+      equiv!.note!.removeAnnotations(annotation);
+    }
+    this.renderer.addToReplaceQueue(selection);
+    annotation.deleted = true;
+    await this.renderer.updatePromise();
+  }
+
+  /**
+   * @param selector where to add or update the annotation
+   * @param annotation a copy of the annotation to add/update
+   * @returns
+   */
+  async addOrUpdateAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void> {
+    const selection = SmoSelection.noteFromSelector(this.score, selector);
+    if (selection === null) {
+      return;
+    }
+    this._undoSelection('update annotation', selection);
+    selection.note!.addAnnotation(annotation);
+    const equiv = this._getEquivalentSelection(selection);
+    const altAnnotation = SmoNoteModifierBase.deserialize(annotation.serialize() as any) as SmoLyric;
+    equiv!.note!.addAnnotation(altAnnotation);
+    this.renderer.addToReplaceQueue(selection);
+    await this.renderer.updatePromise();
+  }
+
+  /**
    * Delete all the notes for the currently selected voice
    * @returns 
    */

@@ -115,6 +115,17 @@ export class VxSystem {
       });
     }
   }
+  _updateAnnotationOffsets(note: SmoNote) {
+    const annotations = note.getAnnotations();
+    annotations.forEach((bannotation) => {
+      const annotation = bannotation as SmoLyric;
+      const dom = this.context.svg.getElementById('vf-' + annotation.attrs.id);
+      if (dom) {
+        dom.setAttributeNS('', 'transform',
+          'translate(' + annotation.translateX + ' ' + (-1 * annotation.translateY) + ')');
+      }
+    });
+  }
   _lowestYLowestVerse(lyrics: SmoLyric[], vxMeasures: VxMeasure[]) {
     // Move each verse down, according to the lowest lyric on that line/verse,
     // and the accumulation of the verses above it
@@ -185,6 +196,7 @@ export class VxSystem {
         smoMeasure.voices.forEach((voice) => {
           voice.notes.forEach((note) => {
             this._updateChordOffsets(note);
+            this._updateAnnotationOffsets(note);
             note.getTrueLyrics().forEach((ll: SmoLyric) => {
               const hasLyric = ll.getText().length > 0 || ll.isHyphenated();
               if (hasLyric && ll.logicalBox && !lyricVerseMap[ll.verse]) {

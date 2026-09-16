@@ -1,11 +1,12 @@
 import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShowOption, 
   SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SmoDynamicText } from '../../smo/data/noteModifiers';
+import { SmoDynamicText, SmoLyric } from '../../smo/data/noteModifiers';
 import { SuiChordChangeDialogVue } from '../dialogs/chordChangeVue';
 import { SuiLyricDialogVue } from '../dialogs/lyricVue';
 import { SuiDynamicModifierDialogVue } from '../dialogs/dynamicsVue';
 import { SuiTextBlockDialogVue } from '../dialogs/textBlockVue';
+import { SuiAnnotationDialogVue } from '../dialogs/annotationVue';
 
 declare var $: any;
 /**
@@ -149,10 +150,52 @@ const dynamicsDialogMenuOption: SuiConfiguredMenuOption = {
   }
 }
 /**
+ * Free-text annotation attached to selected note(s) (SmoLyric, parser 'annotation').
+ * Unlike lyrics/chords, a multi-note selection shares one annotation instance
+ * applied identically to every selected note -- modeled on dynamicsDialogMenuOption's
+ * multi-selection semantics. See specs/017-text-annotations.
+ * @category SuiMenu
+ */
+const annotationDialogMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    const sel = menu.view.tracker.selections;
+    if (!sel.length || !sel[0].note) {
+      return;
+    }
+    const existing = sel[0].note.getAnnotations();
+    let annotation: SmoLyric;
+    if (existing.length) {
+      annotation = existing[0] as SmoLyric;
+    } else {
+      annotation = new SmoLyric({ ...SmoLyric.defaults, parser: SmoLyric.parsers.annotation, text: '' });
+      for (let i = 0; i < sel.length; ++i) {
+        if (sel[i].note) {
+          await menu.view.addOrUpdateAnnotation(sel[i].selector, annotation);
+        }
+      }
+    }
+    SuiAnnotationDialogVue({
+      completeNotifier: menu.completeNotifier!,
+      view: menu.view,
+      eventSource: menu.eventSource,
+      id: 'annotationDialog',
+      ctor: 'SuiAnnotationDialog',
+      tracker: menu.view.tracker,
+      startPromise: menu.closePromise,
+      modifier: annotation
+    });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: 'mi comment',
+    text: 'Annotation',
+    value: 'annotationMenu'
+  }
+}
+/**
  * stuff you can do with text, or loosely related to text.
  * @category SuiMenu
  */
-const SuiTextMenuOptions: SuiConfiguredMenuOption[] = 
-[dynamicsDialogMenuOption, textBlockDialogMenuOption, 
-  chordChangeDialogMenuOption, lyricsDialogMenuOption, rehearsalLetterDialogMenuOption];
+const SuiTextMenuOptions: SuiConfiguredMenuOption[] =
+[dynamicsDialogMenuOption, textBlockDialogMenuOption,
+  chordChangeDialogMenuOption, lyricsDialogMenuOption, annotationDialogMenuOption, rehearsalLetterDialogMenuOption];
 
