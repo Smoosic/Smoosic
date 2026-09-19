@@ -16,11 +16,21 @@ export const SuiAnnotationDialogVue = (parameters: SuiDialogParams) => {
   const rootId = replaceVueRoot(modalContainerId);
   const view = parameters.view;
   const selections = view.tracker.selections;
-  const annotation = parameters.modifier as SmoLyric;
+  const modifier = parameters.modifier as SmoLyric;
+
+  // The menu handler (src/ui/menus/text.ts) already guarantees at least one
+  // annotation exists (modifier) before this dialog opens; read the note's
+  // full set here so the dialog can offer '+'/index-selection across every
+  // annotation, not just the one the menu handler happened to pass through.
+  const firstNote = selections[0]?.note;
+  const annotations: SmoLyric[] = firstNote
+    ? (firstNote.getAnnotations() as SmoLyric[])
+    : [modifier];
+  const initialIndex = Math.max(0, annotations.findIndex((a) => a.verse === modifier.verse));
 
   // A brand-new annotation (empty text) starts in the text-editing session;
   // reopening an existing one goes straight to the non-editing dialog (FR-007).
-  const startInEditingMode = annotation.getText().length === 0;
+  const startInEditingMode = annotations[initialIndex].getText().length === 0;
 
   const commitCb = async () => {};
   const cancelCb = async () => {};
@@ -30,7 +40,8 @@ export const SuiAnnotationDialogVue = (parameters: SuiDialogParams) => {
     label: 'Annotation',
     view,
     selections,
-    annotation,
+    annotations,
+    initialIndex,
     startInEditingMode
   };
 

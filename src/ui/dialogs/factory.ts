@@ -34,6 +34,7 @@ import { SuiSlurAttributesDialogVue } from './slurVue';
 import { SuiPedalMarkingDialogVue } from './pedalMarkingVue';
 import { SuiHairpinAttributesDialogVue } from './hairpinVue';
 import { SuiDynamicModifierDialogVue } from './dynamicsVue';
+import { SuiAnnotationDialogVue } from './annotationVue';
 
 export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 
 'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking';
@@ -103,6 +104,18 @@ export function isModifierWithDialog(modifier: SmoModifier) {
         eventSource: parameters.eventSource,
         id: 'textDialog',
         ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+        });
+        return null;
+      } else if (lModifier.parser == SmoLyric.parsers.annotation) {
+        SuiAnnotationDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'annotationDialog',
+        ctor: 'SuiAnnotationDialog',
         tracker: parameters.view.tracker,
         startPromise: parameters.startPromise,
         modifier: parameters.modifier
