@@ -7,7 +7,7 @@
 import { SmoMusic } from './music';
 import { Clef, SvgDimensions } from './common';
 import { SmoMeasure, SmoMeasureParams, ColumnMappedParams, SmoMeasureParamsSer } from './measure';
-import { SmoNoteModifierBase } from './noteModifiers';
+import { SmoNoteModifierBase, SmoLyric } from './noteModifiers';
 import {
   SmoTempo, SmoMeasureFormat, SmoMeasureModifierBase, SmoTimeSignature, TimeSignatureParameters,
   SmoMeasureFormatParamsSer
@@ -742,6 +742,12 @@ export class SmoScore {
         textGroups.push(SmoTextGroup.deserializePreserveId(tg));
       }
     });
+    // Text attached to a note is now an annotation on that note.  Convert the score's text first, so
+    // a part's copy of the same text (which the part list may hold) is recognized as a duplicate.
+    const scoreTextGroups = SmoScore.attachedTextToAnnotations(staves, textGroups);
+    staves.forEach((staff, staffIx) => {
+      staff.partInfo.textGroups = SmoScore.attachedTextToAnnotations(staves, staff.partInfo.textGroups, staffIx);
+    });
 
     const systemGroups: SmoSystemGroup[] = [];
     if (jsonObj.systemGroups) {
@@ -772,11 +778,79 @@ export class SmoScore {
       throw 'Bad score, missing params: ' + JSON.stringify(params, null, ' ');
     }
     const score = new SmoScore(params);
-    score.textGroups = textGroups;
+    score.textGroups = scoreTextGroups;
     score.systemGroups = systemGroups;
     score.scoreInfo.version += 1;
     score.updateCompoundTimeSignature();  // update index for alternating time signatures.
     return score;
+  }
+  /**
+   * Text groups used to be attachable to a note ({@link SmoTextGroup.attachToSelector}).  Notes now carry annotations
+   * (a {@link SmoLyric} with the annotation parser) instead, so convert each attached group: one annotation
+   * per non-empty text block, on the note the group's selector points at.  Attached groups are removed from
+   * the result whether or not the note was found.  Text groups that are not attached are returned as-is.
+   * Each annotation keeps the group's x and y offset (`musicXOffset`, `musicYOffset`) as its own
+   * `translateX` and `translateY`; the y offset changes sign because the two use opposite directions.
+   *
+   * Call it once for the score's text groups (no `ownerStaffIndex`, the selector's staff is used) and once
+   * for each staff's `partInfo.textGroups`, passing that staff's index.  A part's copy of the text stores a
+   * part-relative staff number, so the owning staff is the one that holds the note.  Call the score's list first:
+   * a part's text group is discarded, unconverted, if its note already has any annotation.  The text groups
+   * of the score and of a part are never shown together, but the annotations are on the note and show in both,
+   * so converting a part's copy of the text would duplicate it.
+   *
+   * If there are no staves (a score deserialized with `skipStaves`) nothing can be matched, so the groups
+   * are returned unchanged.
+   * See specs/019-attached-text-to-annotation.
+   * @param staves the staves of the score being deserialized
+   * @param textGroups the text groups to convert
+   * @param ownerStaffIndex the staff that holds the note, for a part's text groups
+   * @returns the text groups that remain
+   */
+  static attachedTextToAnnotations(staves: SmoSystemStaff[], textGroups: SmoTextGroup[],
+    ownerStaffIndex?: number): SmoTextGroup[] {
+    const maxAnnotations = 4;
+    if (staves.length === 0) {
+      return textGroups;
+    }
+    const remaining: SmoTextGroup[] = [];
+    textGroups.forEach((tg) => {
+      if (!tg.attachToSelector || !tg.selector) {
+        remaining.push(tg);
+        return;
+      }
+      const selector = tg.selector;
+      // Keep the group's offset.  The group's y offset is down-positive, but an annotation's
+      // translateY is up-positive (see VxSystem), so flip it to keep the same direction.
+      const translateX = tg.musicXOffset || 0;
+      const translateY = -tg.musicYOffset || 0;
+      const staffIndex = typeof (ownerStaffIndex) === 'number' ? ownerStaffIndex : selector.staff;
+      const note = staves[staffIndex]?.measures[selector.measure]?.voices[selector.voice]?.notes[selector.tick];
+      if (!note) {
+        return;
+      }
+      // A part's text is a copy of the score's, but only one set of annotations shows for both the score
+      // and its parts.  If the note already has any annotation, discard the whole group.
+      if (typeof (ownerStaffIndex) === 'number' && note.getAnnotations().length > 0) {
+        return;
+      }
+      tg.textBlocks.forEach((block) => {
+        const text = block.text.text;
+        const existing = note.getAnnotations();
+        if (!text.trim().length || existing.length >= maxAnnotations) {
+          return;
+        }
+        let verse = 0;
+        while (existing.some((annotation) => annotation.verse === verse)) {
+          verse += 1;
+        }
+        note.addAnnotation(new SmoLyric({
+          ...SmoLyric.defaults, parser: SmoLyric.parsers.annotation, text, verse,
+          fontInfo: { ...block.text.fontInfo }, translateX, translateY
+        }));
+      });
+    });
+    return remaining;
   }
   /**
   * Convert measure formatting from legacy scores, that had the formatting

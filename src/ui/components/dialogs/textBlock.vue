@@ -10,7 +10,6 @@ import selectComp from './select.vue';
 import fontPickerComp from './fontPicker.vue';
 import textGroupEditorComp from './textGroupEditor.vue';
 import textDraggerComp from './textDragger.vue';
-import toggle from './toggle.vue';
 
 interface Props {
   domId: string,
@@ -36,7 +35,6 @@ const xPosition = ref(0);
 const yPosition = ref(0);
 const fontInfo: Ref<FontInfo> = ref({ family: 'Arial', size: 12, weight: 'normal', style: 'normal' });
 const pagination = ref<number>(props.modifier.value.pagination);
-const attachToSelector = ref<boolean>(props.modifier.value.attachToSelector);
 
 const refreshFromModel = () => {
   const ul = props.modifier.value.ul();
@@ -44,7 +42,6 @@ const refreshFromModel = () => {
   yPosition.value = ul.y;
   fontInfo.value = { ...props.modifier.value.getActiveBlock().fontInfo };
   pagination.value = props.modifier.value.pagination;
-  attachToSelector.value = props.modifier.value.attachToSelector;
 };
 refreshFromModel();
 
@@ -131,55 +128,17 @@ const onActiveBlockChanged = (font: FontInfo) => {
   fontInfo.value = { ...font };
 };
 
-// --- Page behavior & attach-to-selection (User Story 4) ---
+// --- Page behavior (User Story 4) ---
 const paginationOptions: SelectOption[] = [
   { value: SmoTextGroup.paginations.ONCE.toString(), label: 'Once' },
   { value: SmoTextGroup.paginations.EVERY.toString(), label: 'Every' },
   { value: SmoTextGroup.paginations.ODD.toString(), label: 'Odd' },
   { value: SmoTextGroup.paginations.SUBSEQUENT.toString(), label: 'Subsequent' }
 ];
-const resetAttachToSelectorModel = () => {
-  props.modifier.value.attachToSelector = false;
-  props.modifier.value.selector = SmoTextGroup.defaults.selector;
-  props.modifier.value.musicXOffset = SmoTextGroup.defaults.musicXOffset;
-  props.modifier.value.musicYOffset = SmoTextGroup.defaults.musicYOffset;
-};
-const activateAttachToSelectorModel = () => {
-  props.modifier.value.attachToSelector = true;
-  const sel = props.view.tracker.selections[0];
-  if (sel) {
-    props.modifier.value.selector = JSON.parse(JSON.stringify(sel.selector));
-    if (props.modifier.value.logicalBox && sel.measure.svg.logicalBox) {
-      props.modifier.value.musicXOffset = props.modifier.value.logicalBox.x - sel.measure.svg.logicalBox.x;
-      props.modifier.value.musicYOffset = props.modifier.value.logicalBox.y - sel.measure.svg.logicalBox.y;
-    }
-  }
-};
-// These two controls are mutually exclusive (legacy _activateAttachToSelector /
-// _resetAttachToSelector). Handled as direct synchronous handlers, not watch()
-// pairs, since watch() callbacks are batched/async and a flag-based suppression
-// between two watchers of each other's refs cannot reliably prevent re-entrancy.
 const onPaginationSelect = async (value: string) => {
   const num = parseInt(value, 10);
   pagination.value = num;
   props.modifier.value.pagination = num;
-  if (attachToSelector.value) {
-    attachToSelector.value = false;
-    resetAttachToSelectorModel();
-  }
-  await rerender();
-};
-const onAttachToggle = async (checked: boolean) => {
-  attachToSelector.value = checked;
-  if (checked) {
-    activateAttachToSelectorModel();
-    if (pagination.value !== SmoTextGroup.paginations.ONCE) {
-      pagination.value = SmoTextGroup.paginations.ONCE;
-      props.modifier.value.pagination = SmoTextGroup.paginations.ONCE;
-    }
-  } else {
-    resetAttachToSelectorModel();
-  }
   await rerender();
 };
 
@@ -241,12 +200,6 @@ const handleCommit = async () => {
           <div class="col col-5">
             <selectComp :key="pagination" :domId="getId('pagination')" label="Page Behavior" :selections="paginationOptions"
               :initialValue="pagination.toString()" :changeCb="onPaginationSelect" />
-          </div>
-        </div>
-        <div class="row mb-2 ms-2 align-items-center">
-          <div class="checkbox-input-toggle-div">
-            <toggle :domId="getId('attach-to-selector')" :label="'Attach to Selection'" :initialValue="attachToSelector"
-              :changeCb="onAttachToggle" />
           </div>
         </div>
       </template>

@@ -27,7 +27,7 @@
     "ts-loader": "^9.2.5",
     "typedoc": "^0.28.14",
     "typescript": "^5.9.3",
-    "vexflow_smoosic": "4.2.16",
+    "vexflow_smoosic": "4.2.17",
     "vue": "^3.5.25",
     "vue-loader": "^17.4.2",
     "xmldom": "^0.6.0"
@@ -44,6 +44,7 @@
   },
   "scripts": {
     "test": "exit 0",
+    "test:attached-text": "ts-node -P tests/tsconfig.json tests/attachedTextMigration.ts",
     "server": "node ./build/index.js",
     "build": "node ./build/build.js",
     "types": "node ./build/build.js types",
