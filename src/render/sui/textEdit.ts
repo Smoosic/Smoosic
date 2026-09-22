@@ -154,3 +154,136 @@ export class SuiDragSession {
   }
 }
 
+export interface SuiAnnotationDragSessionParams {
+  context: SvgPageMap;
+  scroller: SuiScroller;
+  annotation: SmoLyric;
+  debug: layoutDebug;
+}
+/**
+ * Drags a single note annotation (`SmoLyric` with `parser === annotation`) directly on the
+ * score. Unlike `SuiDragSession` (which drags a `SmoTextGroup` and must build a temporary
+ * `SuiTextBlock` clone to have something to render), an annotation is always exactly one
+ * already-rendered VexFlow glyph, so the live preview here just re-points that same DOM
+ * element's `transform` attribute -- the same attribute/convention `VxSystem._updateAnnotationOffsets`
+ * already writes on every full render pass -- with no clone and no re-render mid-drag.
+ * @category SuiRender
+ */
+export class SuiAnnotationDragSession {
+  pageMap: SvgPageMap;
+  page: SvgPage;
+  scroller: SuiScroller;
+  annotation: SmoLyric;
+  debug: layoutDebug;
+  dragging: boolean = false;
+  originBox: SvgBox;
+  startTranslateX: number = 0;
+  startTranslateY: number = 0;
+  startMouse: { x: number, y: number } = { x: 0, y: 0 };
+  currentDx: number = 0;
+  currentDy: number = 0;
+  outlineRect: OutlineInfo | null = null;
+  constructor(params: SuiAnnotationDragSessionParams) {
+    this.annotation = params.annotation;
+    this.pageMap = params.context;
+    this.scroller = params.scroller;
+    this.debug = params.debug;
+    this.page = this.pageMap.getRendererFromModifier(this.annotation);
+    this.originBox = SvgHelpers.smoBox(this.annotation.logicalBox ?? SvgBox.default);
+  }
+  scrolledClientBox(x: number, y: number) {
+    return { x: x + this.scroller.scrollState.x, y: y + this.scroller.scrollState.y, width: 1, height: 1 };
+  }
+  _outlineBox(box: SvgBox) {
+    const outlineStroke = SuiTextStrokes['text-drag'];
+    const x = box.x - this.page.box.x;
+    const y = box.y - this.page.box.y;
+    if (!this.outlineRect) {
+      this.outlineRect = {
+        context: this.page,
+        box: SvgHelpers.boxPoints(x, y, box.width, box.height),
+        classes: 'text-drag',
+        stroke: outlineStroke, scroll: this.scroller.scrollState, timeOff: 1000
+      };
+    }
+    this.outlineRect.box = SvgHelpers.boxPoints(x, y, box.width, box.height);
+    SvgHelpers.outlineRect(this.outlineRect);
+  }
+  _eraseOutline() {
+    if (this.outlineRect) {
+      SvgHelpers.eraseOutline(this.outlineRect);
+      this.outlineRect = null;
+    }
+  }
+  // Clamp a candidate (dx, dy) so the annotation's origin box, shifted by it, stays within the page.
+  _clampedDelta(dx: number, dy: number): { dx: number, dy: number } {
+    const pageBox = this.page.box;
+    let x = this.originBox.x + dx;
+    let y = this.originBox.y + dy;
+    x = Math.max(pageBox.x, Math.min(x, pageBox.x + pageBox.width - this.originBox.width));
+    y = Math.max(pageBox.y, Math.min(y, pageBox.y + pageBox.height - this.originBox.height));
+    return { dx: x - this.originBox.x, dy: y - this.originBox.y };
+  }
+  startDrag(e: any) {
+    const evBox = this.scrolledClientBox(e.clientX, e.clientY);
+    const svgMouseBox = this.pageMap.clientToSvg(evBox);
+    if (this.debug.mask & layoutDebug.values['dragDebug']) {
+      this.debug.updateDragDebug(svgMouseBox, this.originBox, 'start');
+    }
+    if (!SvgHelpers.doesBox1ContainBox2(this.originBox, svgMouseBox)) {
+      return;
+    }
+    this.dragging = true;
+    this.startMouse = { x: svgMouseBox.x, y: svgMouseBox.y };
+    this.startTranslateX = this.annotation.translateX;
+    this.startTranslateY = this.annotation.translateY;
+    this.currentDx = 0;
+    this.currentDy = 0;
+    this._outlineBox(this.originBox);
+  }
+  mouseMove(e: any) {
+    if (!this.dragging) {
+      return;
+    }
+    const evBox = this.scrolledClientBox(e.clientX, e.clientY);
+    const svgMouseBox = this.pageMap.clientToSvg(evBox);
+    const rawDx = svgMouseBox.x - this.startMouse.x;
+    const rawDy = svgMouseBox.y - this.startMouse.y;
+    const { dx, dy } = this._clampedDelta(rawDx, rawDy);
+    this.currentDx = dx;
+    this.currentDy = dy;
+    const dom = this.page.svg.getElementById('vf-' + this.annotation.attrs.id);
+    if (dom) {
+      const liveX = this.startTranslateX + dx;
+      const liveY = this.startTranslateY - dy;
+      dom.setAttributeNS('', 'transform', 'translate(' + liveX + ' ' + (-1 * liveY) + ')');
+    }
+    const newBox = SvgHelpers.boxPoints(this.originBox.x + dx, this.originBox.y + dy, this.originBox.width, this.originBox.height);
+    this._eraseOutline();
+    this._outlineBox(newBox);
+    if (this.debug.mask & layoutDebug.values['dragDebug']) {
+      this.debug.updateDragDebug(svgMouseBox, newBox, 'drag');
+    }
+  }
+  endDrag() {
+    if (!this.dragging) {
+      return;
+    }
+    this.annotation.translateX = this.startTranslateX + this.currentDx;
+    this.annotation.translateY = this.startTranslateY - this.currentDy;
+    this.dragging = false;
+    if (this.debug.mask & layoutDebug.values['dragDebug']) {
+      const newBox = SvgHelpers.boxPoints(this.originBox.x + this.currentDx, this.originBox.y + this.currentDy,
+        this.originBox.width, this.originBox.height);
+      this.debug.updateDragDebug(this.originBox, newBox, 'end');
+    }
+    this._eraseOutline();
+  }
+  unrender() {
+    if (this.dragging) {
+      this.endDrag();
+    }
+    this._eraseOutline();
+  }
+}
+

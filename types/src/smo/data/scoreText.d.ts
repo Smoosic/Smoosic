@@ -252,6 +252,7 @@ export declare class SmoTextGroup extends SmoScoreModifierBase {
     textBlocks: SmoTextBlock[];
     edited: boolean;
     skipRender: boolean;
+    beingEdited: boolean;
     static deserialize(jObj: SmoTextGroupParamsSer): SmoTextGroup;
     static deserializePreserveId(jObj: any): SmoTextGroup;
     static getPagedTextGroups(tg: SmoTextGroup, pages: number, pageHeight: number): SmoTextGroup[];

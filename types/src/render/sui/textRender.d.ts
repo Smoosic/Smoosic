@@ -65,6 +65,8 @@ export declare class SuiInlineText {
         LINE: number;
     };
     static get textPurposes(): Record<string, string>;
+    static textTypeFromChar(char: string): number;
+    static textTypeToChar(textType: number): string;
     static get textTypeTransitions(): number[][];
     static getTextTypeResult(oldType: number, newType: number): number;
     static getTextTypeTransition(oldType: number, result: number): number;
@@ -140,7 +142,16 @@ export interface SuiTextBlockParams {
     context: SvgPage;
     skipRender: boolean;
     justification: number;
+    beingEdited?: boolean;
 }
+/**
+ * Fixed, non-configurable opacity used to visually mark the one text group
+ * currently open in the text edit dialog (SmoTextGroup.beingEdited), so it
+ * remains legible but is clearly distinguishable from full-opacity text
+ * elsewhere on the score.
+ * @category SuiRender
+ */
+export declare const TEXT_GROUP_EDITING_OPACITY = 0.55;
 /**
  * @category SuiRender
  */
@@ -171,15 +182,14 @@ export declare class SuiTextBlock {
     outlineRect: OutlineInfo | null;
     currentBlock: SuiTextBlockBlock | null;
     logicalBox: SvgBox;
+    beingEdited: boolean;
     constructor(params: SuiTextBlockParams);
     render(): void;
     _outlineBox(context: any, box: SvgBox): void;
     offsetStartX(offset: number): void;
     offsetStartY(offset: number): void;
-    rescale(scale: number): void;
     get x(): number;
     get y(): number;
-    maxFontHeight(scale: number): number;
     static blockFromScoreText(scoreText: SmoScoreText, context: SvgPage, pageMap: SvgPageMap, position: number, scroller: SuiScroller): SuiTextBlockBlock;
     getLogicalBox(): SvgBox;
     _calculateBoundingClientRect(): SvgBox;

@@ -55,6 +55,7 @@ export declare class VxSystem {
     getVxMeasure(smoMeasure: SmoMeasure): VxMeasure | null;
     getVxNote(smoNote: SmoNote): Note | null;
     _updateChordOffsets(note: SmoNote): void;
+    _updateAnnotationOffsets(note: SmoNote): void;
     _lowestYLowestVerse(lyrics: SmoLyric[], vxMeasures: VxMeasure[]): void;
     updateLyricOffsets(): void;
     renderModifier(scroller: SuiScroller, modifier: StaffModifierBase, vxStart: Note | null, vxEnd: Note | null, smoStart: SmoSelection, smoEnd: SmoSelection): void;

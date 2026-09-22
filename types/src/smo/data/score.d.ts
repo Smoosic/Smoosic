@@ -268,6 +268,30 @@ export declare class SmoScore {
      */
     static deserialize(jsonString: string): SmoScore;
     /**
+     * Text groups used to be attachable to a note ({@link SmoTextGroup.attachToSelector}).  Notes now carry annotations
+     * (a {@link SmoLyric} with the annotation parser) instead, so convert each attached group: one annotation
+     * per non-empty text block, on the note the group's selector points at.  Attached groups are removed from
+     * the result whether or not the note was found.  Text groups that are not attached are returned as-is.
+     * Each annotation keeps the group's x and y offset (`musicXOffset`, `musicYOffset`) as its own
+     * `translateX` and `translateY`; the y offset changes sign because the two use opposite directions.
+     *
+     * Call it once for the score's text groups (no `ownerStaffIndex`, the selector's staff is used) and once
+     * for each staff's `partInfo.textGroups`, passing that staff's index.  A part's copy of the text stores a
+     * part-relative staff number, so the owning staff is the one that holds the note.  Call the score's list first:
+     * a part's text group is discarded, unconverted, if its note already has any annotation.  The text groups
+     * of the score and of a part are never shown together, but the annotations are on the note and show in both,
+     * so converting a part's copy of the text would duplicate it.
+     *
+     * If there are no staves (a score deserialized with `skipStaves`) nothing can be matched, so the groups
+     * are returned unchanged.
+     * See specs/019-attached-text-to-annotation.
+     * @param staves the staves of the score being deserialized
+     * @param textGroups the text groups to convert
+     * @param ownerStaffIndex the staff that holds the note, for a part's text groups
+     * @returns the text groups that remain
+     */
+    static attachedTextToAnnotations(staves: SmoSystemStaff[], textGroups: SmoTextGroup[], ownerStaffIndex?: number): SmoTextGroup[];
+    /**
     * Convert measure formatting from legacy scores, that had the formatting
     * per measure, to the new way that has a separate formatting object.
     * **/

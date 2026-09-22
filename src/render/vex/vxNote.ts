@@ -191,7 +191,7 @@ export class VxNote {
     vexL.setAttribute('id', annotation.attrs.id);
     vexL.setFont(annotation.fontInfo.family, annotation.fontInfo.size, annotation.fontInfo.weight);
     vexL.setVerticalJustification(annotation.verticalJustify);
-    vexL.setWidth(0);  // ignore width for formatting
+    vexL.setReportWidth(false);  // ignore width for formatting
     vexNote.addModifier(vexL);
     vexL.addClass(classString);
   }

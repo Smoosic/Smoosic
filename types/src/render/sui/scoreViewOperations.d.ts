@@ -123,6 +123,18 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      */
     addOrUpdateLyric(selector: SmoSelector, lyric: SmoLyric): Promise<void>;
     /**
+     * @param selector the selector of the note with the annotation to remove
+     * @param annotation a copy of the annotation to remove.  We use the verse, parser to identify it
+     * @returns render promise
+     */
+    removeAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void>;
+    /**
+     * @param selector where to add or update the annotation
+     * @param annotation a copy of the annotation to add/update
+     * @returns
+     */
+    addOrUpdateAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void>;
+    /**
      * Delete all the notes for the currently selected voice
      * @returns
      */

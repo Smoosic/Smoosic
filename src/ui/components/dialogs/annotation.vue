@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, Ref, computed } from 'vue';
+import { ref, Ref, computed, nextTick, watch } from 'vue';
 import { SmoSelection } from '../../../smo/xform/selections';
 import { SmoLyric } from '../../../smo/data/noteModifiers';
 import { FontInfo } from '../../../common/vex';
@@ -10,6 +10,7 @@ import numberInputApp from './numberInput.vue';
 import selectComp from './select.vue';
 import fontPickerComp from './fontPicker.vue';
 import annotationEditorComp from './annotationEditor.vue';
+import annotationDraggerComp from './annotationDragger.vue';
 
 interface Props {
   domId: string,
@@ -25,7 +26,7 @@ interface Props {
 const props = defineProps<Props>();
 const getId = (str: string) => `${props.domId}-${str}`;
 
-type DialogMode = 'editing' | 'dialog';
+type DialogMode = 'editing' | 'dialog' | 'moving';
 const mode: Ref<DialogMode> = ref(props.startInEditingMode ? 'editing' : 'dialog');
 
 // The note's full set of annotations (up to 4), sorted by verse -- always
@@ -108,6 +109,27 @@ const syncModifiers = async () => {
 };
 
 const annotationEditorRef = ref<InstanceType<typeof annotationEditorComp> | null>(null);
+
+// --- Move annotation (drag tool) ---
+const draggerRef = ref<InstanceType<typeof annotationDraggerComp> | null>(null);
+const enterMoving = () => {
+  mode.value = 'moving';
+};
+const onDragEnd = async () => {
+  loadCurrent();
+  await syncModifiers();
+};
+const onDragStop = async () => {
+  mode.value = 'dialog';
+  loadCurrent();
+  await syncModifiers();
+};
+watch(mode, async (m) => {
+  if (m === 'moving') {
+    await nextTick();
+    draggerRef.value?.start();
+  }
+});
 
 // Removes the annotation at verseIndex from every original selection, then
 // shifts every remaining annotation at a higher verse down by one so
@@ -278,11 +300,20 @@ const handleCancel = async () => {
         </div>
       </div>
     </template>
+    <template v-else-if="mode === 'moving'">
+      <annotationDraggerComp ref="draggerRef" :domId="getId('dragger')" altLabel="Done Dragging Annotation"
+        :annotation="currentAnnotation" :pageMap="view.renderer.pageMap" :scroller="view.tracker.scroller"
+        :debug="view.debug" @stop="onDragStop" @dragend="onDragEnd" />
+    </template>
     <template v-else>
       <div class="row mb-2 ms-2 align-items-center">
         <div class="col-auto">
           <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('edit-text')"
             @click.prevent="enterEditingMode"><span class="icon-pencil"></span> Edit Text</button>
+        </div>
+        <div class="col-auto" v-if="currentAnnotation">
+          <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('move-annotation')"
+            @click.prevent="enterMoving"><span class="icon icon-move"></span> Move</button>
         </div>
         <div class="col-auto" v-if="canAddMore">
           <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('add-annotation')"
