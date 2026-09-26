@@ -24,8 +24,16 @@ interface Props {
 const props = defineProps<Props>();
 const getId = (str: string) => `${props.domId}-${str}`;
 
+// A landmark (purpose !== NONE) has content derived from score/part metadata rather
+// than freely typed, and must not have its pagination type changed by hand -- see
+// specs/021-landmark-text-menu.
+const isLandmark = props.modifier.value.purpose !== SmoTextGroup.purposes.NONE;
+
 type DialogMode = 'idle' | 'editing' | 'moving';
-const mode: Ref<DialogMode> = ref(props.modifier.value.edited ? 'idle' : 'editing');
+// A landmark never starts (or re-enters) the free-text editing session, regardless of
+// its 'edited' flag -- this also covers text groups whose purpose was set outside this
+// dialog (e.g. MusicXML-imported Title/Subtitle/Composer), not just ones created here.
+const mode: Ref<DialogMode> = ref((props.modifier.value.edited || isLandmark) ? 'idle' : 'editing');
 if (mode.value === 'editing') {
   props.modifier.value.edited = true;
 }
@@ -173,7 +181,7 @@ const handleCommit = async () => {
       </div>
       <template v-else>
         <div class="row mb-2 ms-2">
-          <div class="col col-6">
+          <div v-if="!isLandmark" class="col col-6">
             <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('edit-text')"
               @click.prevent="enterEditing"><span class="icon icon-pencil"></span></button>
           </div>
@@ -195,7 +203,7 @@ const handleCommit = async () => {
       </template>
       <template v-if="mode !== 'editing'">
         <fontPickerComp :domId="getId('font')" label="Font" :font="fontInfo" :changeCb="onFontChange" />
-        <div class="row mb-2 ms-2 align-items-center">
+        <div v-if="!isLandmark" class="row mb-2 ms-2 align-items-center">
           <div class="col col-3">Page Behavior</div>
           <div class="col col-5">
             <selectComp :key="pagination" :domId="getId('pagination')" label="Page Behavior" :selections="paginationOptions"

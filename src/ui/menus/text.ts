@@ -1,7 +1,9 @@
-import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShowOption, 
+import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShowOption,
   SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { createAndDisplayDialog } from '../dialogs/dialog';
 import { SmoDynamicText, SmoLyric } from '../../smo/data/noteModifiers';
+import { SmoTextGroup } from '../../smo/data/scoreText';
+import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SuiChordChangeDialogVue } from '../dialogs/chordChangeVue';
 import { SuiLyricDialogVue } from '../dialogs/lyricVue';
 import { SuiDynamicModifierDialogVue } from '../dialogs/dynamicsVue';
@@ -192,10 +194,204 @@ const annotationDialogMenuOption: SuiConfiguredMenuOption = {
   }
 }
 /**
+ * Looks up an existing landmark text group of the given purpose, checking the same
+ * collection `SuiScoreViewOperations.addTextGroup` would have written a new one to,
+ * so "does this landmark already exist" and "where would a new one be stored" always
+ * agree. See specs/021-landmark-text-menu.
+ * @category SuiMenu
+ */
+const findLandmark = (purpose: number, view: SuiScoreViewOperations): SmoTextGroup | undefined => {
+  const partInfo = view.score.staves[0].partInfo;
+  const groups = (view.isPartExposed() && partInfo.preserveTextGroups) ?
+    partInfo.textGroups : view.score.getTextGroups();
+  return groups.find((tg) => tg.purpose === purpose);
+};
+/**
+ * Top-anchored landmarks are stacked in these columns (top-center: Title/Subtitle;
+ * upper-right: Composer/Page number/Part). See findAboveLandmark. Bottom-anchored
+ * purposes (Copyright, Date) are not columns -- each keeps its own fixed offset
+ * from the page's bottom edge.
+ * @category SuiMenu
+ */
+const LANDMARK_COLUMNS: number[][] = [
+  [SmoTextGroup.purposes.TITLE, SmoTextGroup.purposes.SUBTITLE],
+  [SmoTextGroup.purposes.COMPOSER, SmoTextGroup.purposes.PAGE, SmoTextGroup.purposes.PART]
+];
+/**
+ * For a top-anchored landmark purpose, finds the already-existing landmark in its
+ * column with the lowest (furthest down) rendered bottom edge, so a newly created
+ * landmark can be stacked directly below the current bottom of that column instead
+ * of using the top-of-page base position. Deliberately order-independent -- it does
+ * not matter which of the column's purposes was created first (e.g. Page number
+ * before Composer); whichever already-existing member currently sits lowest is what
+ * the new one stacks below. Returns undefined if the purpose isn't in a column, or
+ * no other member of its column exists yet.
+ * @category SuiMenu
+ */
+const findAboveLandmark = (purpose: number, view: SuiScoreViewOperations): SmoTextGroup | undefined => {
+  const column = LANDMARK_COLUMNS.find((col) => col.includes(purpose));
+  if (!column) {
+    return undefined;
+  }
+  let lowest: SmoTextGroup | undefined;
+  let lowestBottom = -Infinity;
+  column.forEach((columnPurpose) => {
+    if (columnPurpose === purpose) {
+      return;
+    }
+    const existing = findLandmark(columnPurpose, view);
+    if (existing && existing.logicalBox) {
+      const bottom = existing.logicalBox.y + existing.logicalBox.height;
+      if (bottom > lowestBottom) {
+        lowestBottom = bottom;
+        lowest = existing;
+      }
+    }
+  });
+  return lowest;
+};
+/**
+ * Whether the given landmark purpose's underlying source currently has content
+ * (score info field defined, or a part is exposed for the Part purpose).
+ * @category SuiMenu
+ */
+const sourceTextDefined = (purpose: number, view: SuiScoreViewOperations): boolean => {
+  const scoreInfo = view.score.scoreInfo;
+  if (purpose === SmoTextGroup.purposes.TITLE) {
+    return scoreInfo.title.trim() !== '';
+  }
+  if (purpose === SmoTextGroup.purposes.SUBTITLE) {
+    return scoreInfo.subTitle.trim() !== '';
+  }
+  if (purpose === SmoTextGroup.purposes.COMPOSER) {
+    return scoreInfo.composer.trim() !== '';
+  }
+  if (purpose === SmoTextGroup.purposes.COPYRIGHT) {
+    return scoreInfo.copyright.trim() !== '';
+  }
+  if (purpose === SmoTextGroup.purposes.PART) {
+    return view.isPartExposed();
+  }
+  // DATE and PAGE are always available.
+  return true;
+};
+/**
+ * Produces the text to populate a newly-created landmark of the given purpose.
+ * @category SuiMenu
+ */
+const resolveLandmarkText = (purpose: number, view: SuiScoreViewOperations): string => {
+  const scoreInfo = view.score.scoreInfo;
+  if (purpose === SmoTextGroup.purposes.TITLE) {
+    return scoreInfo.title;
+  }
+  if (purpose === SmoTextGroup.purposes.SUBTITLE) {
+    return scoreInfo.subTitle;
+  }
+  if (purpose === SmoTextGroup.purposes.COMPOSER) {
+    return scoreInfo.composer;
+  }
+  if (purpose === SmoTextGroup.purposes.COPYRIGHT) {
+    return scoreInfo.copyright;
+  }
+  if (purpose === SmoTextGroup.purposes.PART) {
+    return view.score.staves[0].partInfo.partName;
+  }
+  if (purpose === SmoTextGroup.purposes.PAGE) {
+    return 'Page ### of @@@';
+  }
+  // DATE: reuse the zero-padded YYYY-MM-DD convention already used for MusicXML export
+  // (src/smo/mxml/smoToXml.ts).
+  const today = new Date();
+  const dd = (n: number) => n < 10 ? '0' + n.toString() : n.toString();
+  return today.getFullYear() + '-' + dd(today.getMonth() + 1) + '-' + dd(today.getDate());
+};
+/**
+ * A representative, already-substituted version of a landmark's text, used only to
+ * estimate its width/height for positioning (SmoTextGroup.createLandmarkText's
+ * measureText parameter). Needed for Page number, whose stored text is the literal
+ * '###'/'@@@' marker template -- those markers are 3 characters each, almost always
+ * wider than the real page/total-page numbers they're substituted with at render
+ * time, so estimating width from the literal template overstates it and throws off
+ * right-justification. Every other purpose's stored text has no markers, so this
+ * just returns the same text resolveLandmarkText already produced for it.
+ * @category SuiMenu
+ */
+const resolveLandmarkMeasureText = (purpose: number, view: SuiScoreViewOperations, resolvedText: string): string => {
+  if (purpose === SmoTextGroup.purposes.PAGE) {
+    const pageCount = view.score.layoutManager!.pageLayouts.length;
+    return `Page 1 of ${pageCount}`;
+  }
+  return resolvedText;
+};
+/**
+ * One choice per landmark purpose, shown as a submenu of landmarkTextMenuOption.
+ * Selecting a purpose that has no existing landmark creates one automatically
+ * (SmoTextGroup.createLandmarkText) and adds it to the score/part; selecting a
+ * purpose that already has one just opens its dialog. See specs/021-landmark-text-menu.
+ * @category SuiMenu
+ */
+const landmarkOption = (purpose: number, label: string, icon: string): SuiConfiguredMenuOption => ({
+  handler: async (menu: SuiMenuBase) => {
+    let group = findLandmark(purpose, menu.view);
+    if (!group) {
+      const text = resolveLandmarkText(purpose, menu.view);
+      const measureText = resolveLandmarkMeasureText(purpose, menu.view, text);
+      const layout = menu.view.score.layoutManager!.getScaledPageLayout(0);
+      const above = findAboveLandmark(purpose, menu.view);
+      group = SmoTextGroup.createLandmarkText(purpose, text, layout, above, measureText);
+      await menu.view.addTextGroup(group);
+    }
+    SuiTextBlockDialogVue({
+      completeNotifier: menu.completeNotifier!,
+      view: menu.view,
+      eventSource: menu.eventSource,
+      id: 'textDialog',
+      ctor: 'SuiTextBlockDialog',
+      tracker: menu.view.tracker,
+      startPromise: menu.closePromise,
+      modifier: group
+    });
+  },
+  display: (menu: SuiMenuBase) => sourceTextDefined(purpose, menu.view)
+    || (purpose !== SmoTextGroup.purposes.PART && typeof (findLandmark(purpose, menu.view)) !== 'undefined'),
+  menuChoice: {
+    icon,
+    text: label,
+    value: `landmark-${label}`
+  }
+});
+/**
+ * @category SuiMenu
+ */
+const landmarkOptions: SuiConfiguredMenuOption[] = [
+  landmarkOption(SmoTextGroup.purposes.TITLE, 'Title', 'mi title'),
+  landmarkOption(SmoTextGroup.purposes.SUBTITLE, 'Subtitle', 'mi title'),
+  landmarkOption(SmoTextGroup.purposes.COMPOSER, 'Composer', 'mi title'),
+  landmarkOption(SmoTextGroup.purposes.COPYRIGHT, 'Copyright', 'mi title'),
+  landmarkOption(SmoTextGroup.purposes.DATE, 'Date', 'mi title'),
+  landmarkOption(SmoTextGroup.purposes.PAGE, 'Page Number', 'mi title'),
+  landmarkOption(SmoTextGroup.purposes.PART, 'Part', 'mi title')
+];
+/**
+ * Submenu of landmark text choices, one per SmoTextGroup.purposes value (Title,
+ * Subtitle, Composer, Copyright, Date, Page Number, Part). See specs/021-landmark-text-menu.
+ * @category SuiMenu
+ */
+const landmarkTextMenuOption: SuiConfiguredMenuOption = {
+  handler: async () => {}, // unreachable -- subMenu takes precedence over handler
+  display: (menu: SuiMenuBase) => true,
+  subMenu: landmarkOptions,
+  menuChoice: {
+    icon: 'mi title',
+    text: 'Landmark Text',
+    value: 'landmarkTextMenu'
+  }
+}
+/**
  * stuff you can do with text, or loosely related to text.
  * @category SuiMenu
  */
 const SuiTextMenuOptions: SuiConfiguredMenuOption[] =
-[dynamicsDialogMenuOption, textBlockDialogMenuOption,
+[dynamicsDialogMenuOption, textBlockDialogMenuOption, landmarkTextMenuOption,
   chordChangeDialogMenuOption, lyricsDialogMenuOption, annotationDialogMenuOption, rehearsalLetterDialogMenuOption];
 
