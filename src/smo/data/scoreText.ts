@@ -787,6 +787,22 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     });
   }
   /**
+   * Reposition this group so it keeps the same position relative to the page when the page's
+   * width and/or height changes, e.g. text at 10% of the old page width ends up at 10% of the
+   * new page width.  Unlike scaleText, x and y are adjusted independently since page width and
+   * height can change by different amounts (or only one of them can change).
+   * @param xRatio newPageWidth / oldPageWidth (1 if page width didn't change)
+   * @param yRatio newPageHeight / oldPageHeight (1 if page height didn't change)
+   */
+  rescalePosition(xRatio: number, yRatio: number) {
+    this.musicXOffset *= xRatio;
+    this.musicYOffset *= yRatio;
+    this.textBlocks.forEach((block: SmoTextBlock) => {
+      block.text.x *= xRatio;
+      block.text.y *= yRatio;
+    });
+  }
+  /**
    * Remove empty text blocks introduced when editing
    */
   trimEmptyBlocks() {

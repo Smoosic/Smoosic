@@ -426,9 +426,13 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
     /**
      * set global page for score, zoom etc.
      * @param layout global SVG settings
+     * @param previousLayout the layout as it was immediately before this change.  Callers must
+     * pass a snapshot taken before `layout` was mutated -- `this.score.layoutManager`'s current
+     * value cannot be used for this, because dialogs (e.g. globalLayout.ts) bind directly to that
+     * live object, so by the time this method runs it may already equal `layout`.
      * @returns
      */
-    setGlobalLayout(layout: SmoGlobalLayout): Promise<void>;
+    setGlobalLayout(layout: SmoGlobalLayout, previousLayout: SmoGlobalLayout): Promise<void>;
     /**
      * Set the layout of a single page
      * @param layout page layout

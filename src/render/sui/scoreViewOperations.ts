@@ -1724,14 +1724,49 @@ export class SuiScoreViewOperations extends SuiScoreView {
   /**
    * set global page for score, zoom etc.
    * @param layout global SVG settings
-   * @returns 
+   * @param previousLayout the layout as it was immediately before this change.  Callers must
+   * pass a snapshot taken before `layout` was mutated -- `this.score.layoutManager`'s current
+   * value cannot be used for this, because dialogs (e.g. globalLayout.ts) bind directly to that
+   * live object, so by the time this method runs it may already equal `layout`.
+   * @returns
    */
-  async setGlobalLayout(layout: SmoGlobalLayout): Promise<void> {
+  async setGlobalLayout(layout: SmoGlobalLayout, previousLayout: SmoGlobalLayout): Promise<void> {
+    const scaleChanged = previousLayout.svgScale !== layout.svgScale;
+    const widthChanged = previousLayout.pageWidth !== layout.pageWidth;
+    const heightChanged = previousLayout.pageHeight !== layout.pageHeight;
+    if (!scaleChanged && !widthChanged && !heightChanged) {
+      return;
+    }
     this._undoScore('Set Global Layout');
-    const original = this.score.layoutManager!.getGlobalLayout().svgScale;
-    this.score.layoutManager!.updateGlobalLayout(layout);
-    this.score.scaleTextGroups(original / layout.svgScale);
-    this.storeScore.layoutManager!.updateGlobalLayout(layout);
+    const scaleRatio = previousLayout.svgScale / layout.svgScale;
+    const widthRatio = widthChanged ? layout.pageWidth / previousLayout.pageWidth : 1;
+    const heightRatio = heightChanged ? layout.pageHeight / previousLayout.pageHeight : 1;
+    const repositionGroups = (textGroups: SmoTextGroup[]) => {
+      if (scaleChanged) {
+        textGroups.forEach((tg) => tg.scaleText(scaleRatio));
+      }
+      if (widthChanged || heightChanged) {
+        textGroups.forEach((tg) => tg.rescalePosition(widthRatio, heightRatio));
+      }
+    };
+    if (this.isPartExposed()) {
+      // A part has its own layoutManager/textGroups (see SuiScoreView._mapPartFormatting,
+      // which aliases this.score.layoutManager/textGroups to staves[0].partInfo's copies), so
+      // only the exposed part's text is repositioned here -- the score's own text groups and
+      // other parts' text groups are untouched.
+      this.score.staves.forEach((staff, staffIx) => {
+        staff.partInfo.layoutManager.updateGlobalLayout(layout);
+        repositionGroups(staff.partInfo.textGroups);
+        const altStaff = this.storeScore.staves[this.staffMap[staffIx]];
+        altStaff.partInfo.layoutManager.updateGlobalLayout(layout);
+        repositionGroups(altStaff.partInfo.textGroups);
+      });
+    } else {
+      this.score.layoutManager!.updateGlobalLayout(layout);
+      repositionGroups(this.score.textGroups);
+      this.storeScore.layoutManager!.updateGlobalLayout(layout);
+      repositionGroups(this.storeScore.textGroups);
+    }
     this.renderer.rerenderAll();
     return this.renderer.preserveScroll();
   }

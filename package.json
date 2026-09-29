@@ -45,6 +45,7 @@
   "scripts": {
     "test": "exit 0",
     "test:attached-text": "ts-node -P tests/tsconfig.json tests/attachedTextMigration.ts",
+    "test:global-layout-reposition": "ts-node -P tests/tsconfig.json tests/globalLayoutTextReposition.ts",
     "server": "node ./build/index.js",
     "build": "node ./build/build.js",
     "types": "node ./build/build.js types",
