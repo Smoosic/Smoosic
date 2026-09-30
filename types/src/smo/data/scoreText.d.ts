@@ -319,4 +319,16 @@ export declare class SmoTextGroup extends SmoScoreModifierBase {
     removeBlock(scoreText: SmoScoreText): void;
     offsetX(offset: number): void;
     offsetY(offset: number): void;
+    /**
+     * Horizontally center this group between the page's left/right margins, using the same
+     * margin math as {@link SmoTextGroup.createLandmarkText}'s 'center' xJustify branch. Vertical
+     * position is unchanged. Requires `this.logicalBox` to already be populated by a render pass.
+     */
+    centerOnPage(layout: ScaledPageLayout): void;
+    /**
+     * Horizontally right-justify this group against the page's right margin, using the same
+     * margin math as {@link SmoTextGroup.createLandmarkText}'s 'right' xJustify branch. Vertical
+     * position is unchanged. Requires `this.logicalBox` to already be populated by a render pass.
+     */
+    rightJustifyOnPage(layout: ScaledPageLayout): void;
 }

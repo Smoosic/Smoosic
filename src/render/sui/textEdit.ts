@@ -40,6 +40,13 @@ export class SuiDragSession {
   outlineRect: OutlineInfo | null = null;
   textGroup: SmoTextGroup;
   debug: layoutDebug;
+  // Drag control settings (023-text-drag-controls), toggled live by textDragger.vue's checkboxes.
+  lockHorizontal: boolean = false;
+  lockVertical: boolean = false;
+  snapEnabled: boolean = false;
+  // Snapshot of the drag's starting box, used to pin a locked axis to a single value
+  // for the life of the drag rather than re-deriving it from the mutable outlineBox.
+  dragOriginBox: SvgBox = SvgBox.default;
   constructor(params: SuiDragSessionParams) {
     this.textGroup = params.textGroup;
     this.pageMap = params.context;
@@ -103,6 +110,7 @@ export class SuiDragSession {
     }
     this.dragging = true;
     this.outlineBox = svgMouseBox;
+    this.dragOriginBox = { ...svgMouseBox };
     const currentBox = this.textObject.getLogicalBox();
     this.outlineBox.width = currentBox.width;
     this.outlineBox.height = currentBox.height;
@@ -118,6 +126,20 @@ export class SuiDragSession {
     const evBox = this.scrolledClientBox(e.clientX, e.clientY);
     const svgMouseBox = this.pageMap.clientToSvg(evBox);
     svgMouseBox.y -= this.outlineBox.height;
+    if (this.snapEnabled) {
+      // Snap to a grid that looks like 10 real screen pixels regardless of zoom: divide only
+      // by svgScale (renderScale), not zoomScale, so the grid stays fixed in model space
+      // instead of changing spacing as the user zooms (specs/023-text-drag-controls/research.md §2).
+      const gridStep = 10 / this.pageMap.renderScale;
+      svgMouseBox.x = Math.round(svgMouseBox.x / gridStep) * gridStep;
+      svgMouseBox.y = Math.round(svgMouseBox.y / gridStep) * gridStep;
+    }
+    if (this.lockHorizontal) {
+      svgMouseBox.x = this.dragOriginBox.x;
+    }
+    if (this.lockVertical) {
+      svgMouseBox.y = this.dragOriginBox.y;
+    }
     this.outlineBox = SvgHelpers.smoBox(svgMouseBox);
     const currentBox = this.textObject.getLogicalBox();
     this.outlineBox.width = currentBox.width;

@@ -26,6 +26,10 @@ export declare class SuiDragSession {
     outlineRect: OutlineInfo | null;
     textGroup: SmoTextGroup;
     debug: layoutDebug;
+    lockHorizontal: boolean;
+    lockVertical: boolean;
+    snapEnabled: boolean;
+    dragOriginBox: SvgBox;
     constructor(params: SuiDragSessionParams);
     _outlineBox(): void;
     unrender(): void;

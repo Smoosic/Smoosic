@@ -544,7 +544,6 @@ h2.sec {
   align-items: center;
   justify-content: center;
   padding: 0 9px;
-  background: var(--dlg-field);
   border: 1px solid var(--dlg-line);
   border-radius: var(--dlg-radius-btn);
   color: var(--color-text);

@@ -44,6 +44,11 @@ const yPosition = ref(0);
 const fontInfo: Ref<FontInfo> = ref({ family: 'Arial', size: 12, weight: 'normal', style: 'normal' });
 const pagination = ref<number>(props.modifier.value.pagination);
 
+// Scaled page layout (margins, page width) for the page this text group is on -- used by
+// textDragger.vue's Center/Right Justify buttons (specs/023-text-drag-controls).
+const pageIndex = props.view.renderer.pageMap.getRendererFromModifier(props.modifier.value).pageNumber;
+const pageLayout = props.view.score.layoutManager!.getScaledPageLayout(pageIndex);
+
 const refreshFromModel = () => {
   const ul = props.modifier.value.ul();
   xPosition.value = ul.x;
@@ -95,6 +100,10 @@ const enterMoving = () => {
 };
 const onDragStop = async () => {
   mode.value = 'idle';
+  refreshFromModel();
+  await rerender();
+};
+const onReposition = async () => {
   refreshFromModel();
   await rerender();
 };
@@ -162,7 +171,7 @@ const handleCommit = async () => {
     <div v-if="mode === 'moving'">
       <textDraggerComp ref="draggerRef" :domId="getId('dragger')" altLabel="Done Dragging Text"
         :textGroup="modifier.value" :pageMap="view.renderer.pageMap" :scroller="view.tracker.scroller" :debug="view.debug"
-        @stop="onDragStop" />
+        :pageLayout="pageLayout" @stop="onDragStop" @reposition="onReposition" />
     </div>
     <template v-else>
       <div v-if="mode === 'editing'">
