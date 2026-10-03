@@ -108,7 +108,14 @@ const start = () => {
   });
   bindWindowHandlers();
 };
-const stop = () => {
+// Tears down any live drag session -- including its temporary drag-preview clone
+// (session.textObject), which is only ever tracked by this component, never by
+// SmoTextGroup.elements. Must run on every teardown path, not just the explicit
+// "Done Dragging Text" button: the dialog's own OK/Cancel/Remove buttons (outside
+// this component, in dialogContainer.vue) can unmount this component directly while
+// a drag session is still live, and without this, the preview clone's rendered
+// elements are never reachable again -- a permanently-orphaned duplicate on screen.
+const cleanupSession = () => {
   if (session) {
     if (session.dragging) {
       session.endDrag();
@@ -117,10 +124,13 @@ const stop = () => {
   }
   session = null;
   unbindWindowHandlers();
+};
+const stop = () => {
+  cleanupSession();
   emit('stop');
 };
 onBeforeUnmount(() => {
-  unbindWindowHandlers();
+  cleanupSession();
 });
 defineExpose({ start, stop });
 </script>
