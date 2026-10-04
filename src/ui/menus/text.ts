@@ -324,6 +324,39 @@ const resolveLandmarkMeasureText = (purpose: number, view: SuiScoreViewOperation
   return resolvedText;
 };
 /**
+ * Finds purpose's existing landmark, or creates and adds one if it's missing (does not open
+ * any dialog). Shared by landmarkOption's single-purpose handler and allLandmarksOption's bulk
+ * handler, so both paths create a landmark identically. See specs/024-all-landmarks-menu.
+ * @category SuiMenu
+ */
+const ensureLandmark = async (purpose: number, menu: SuiMenuBase): Promise<SmoTextGroup> => {
+  let group = findLandmark(purpose, menu.view);
+  if (!group) {
+    const text = resolveLandmarkText(purpose, menu.view);
+    const measureText = resolveLandmarkMeasureText(purpose, menu.view, text);
+    const layout = menu.view.score.layoutManager!.getScaledPageLayout(0);
+    const above = findAboveLandmark(purpose, menu.view);
+    group = SmoTextGroup.createLandmarkText(purpose, text, layout, above, measureText);
+    await menu.view.addTextGroup(group);
+  }
+  return group;
+};
+/**
+ * The purpose/label/icon triples shown as individual landmark submenu choices, and also the
+ * order allLandmarksOption creates them in (so same-column stacking via findAboveLandmark sees
+ * earlier purposes in the same bulk pass already added). See specs/024-all-landmarks-menu/research.md §3.
+ * @category SuiMenu
+ */
+const LANDMARK_PURPOSE_LIST: { purpose: number, label: string, icon: string }[] = [
+  { purpose: SmoTextGroup.purposes.TITLE, label: 'Title', icon: 'mi title' },
+  { purpose: SmoTextGroup.purposes.SUBTITLE, label: 'Subtitle', icon: 'mi title' },
+  { purpose: SmoTextGroup.purposes.COMPOSER, label: 'Composer', icon: 'mi title' },
+  { purpose: SmoTextGroup.purposes.COPYRIGHT, label: 'Copyright', icon: 'mi title' },
+  { purpose: SmoTextGroup.purposes.DATE, label: 'Date', icon: 'mi title' },
+  { purpose: SmoTextGroup.purposes.PAGE, label: 'Page Number', icon: 'mi title' },
+  { purpose: SmoTextGroup.purposes.PART, label: 'Part', icon: 'mi title' }
+];
+/**
  * One choice per landmark purpose, shown as a submenu of landmarkTextMenuOption.
  * Selecting a purpose that has no existing landmark creates one automatically
  * (SmoTextGroup.createLandmarkText) and adds it to the score/part; selecting a
@@ -332,15 +365,7 @@ const resolveLandmarkMeasureText = (purpose: number, view: SuiScoreViewOperation
  */
 const landmarkOption = (purpose: number, label: string, icon: string): SuiConfiguredMenuOption => ({
   handler: async (menu: SuiMenuBase) => {
-    let group = findLandmark(purpose, menu.view);
-    if (!group) {
-      const text = resolveLandmarkText(purpose, menu.view);
-      const measureText = resolveLandmarkMeasureText(purpose, menu.view, text);
-      const layout = menu.view.score.layoutManager!.getScaledPageLayout(0);
-      const above = findAboveLandmark(purpose, menu.view);
-      group = SmoTextGroup.createLandmarkText(purpose, text, layout, above, measureText);
-      await menu.view.addTextGroup(group);
-    }
+    const group = await ensureLandmark(purpose, menu);
     SuiTextBlockDialogVue({
       completeNotifier: menu.completeNotifier!,
       view: menu.view,
@@ -361,16 +386,37 @@ const landmarkOption = (purpose: number, label: string, icon: string): SuiConfig
   }
 });
 /**
+ * Creates every currently-available landmark that doesn't already exist, in LANDMARK_PURPOSE_LIST
+ * order; already-existing landmarks are left untouched. Unlike landmarkOption's handler, never
+ * opens SuiTextBlockDialogVue -- the menu framework already closes the menu after any leaf
+ * option's handler returns (SuiConfiguredMenu.selection / menuLevel selectItem), so no additional
+ * "close the menu" step is needed here. See specs/024-all-landmarks-menu.
+ * @category SuiMenu
+ */
+const allLandmarksOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    for (const { purpose } of LANDMARK_PURPOSE_LIST) {
+      if (findLandmark(purpose, menu.view)) {
+        continue;
+      }
+      if (sourceTextDefined(purpose, menu.view)) {
+        await ensureLandmark(purpose, menu);
+      }
+    }
+  },
+  display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: 'mi title',
+    text: 'All',
+    value: 'landmark-All'
+  }
+};
+/**
  * @category SuiMenu
  */
 const landmarkOptions: SuiConfiguredMenuOption[] = [
-  landmarkOption(SmoTextGroup.purposes.TITLE, 'Title', 'mi title'),
-  landmarkOption(SmoTextGroup.purposes.SUBTITLE, 'Subtitle', 'mi title'),
-  landmarkOption(SmoTextGroup.purposes.COMPOSER, 'Composer', 'mi title'),
-  landmarkOption(SmoTextGroup.purposes.COPYRIGHT, 'Copyright', 'mi title'),
-  landmarkOption(SmoTextGroup.purposes.DATE, 'Date', 'mi title'),
-  landmarkOption(SmoTextGroup.purposes.PAGE, 'Page Number', 'mi title'),
-  landmarkOption(SmoTextGroup.purposes.PART, 'Part', 'mi title')
+  ...LANDMARK_PURPOSE_LIST.map(({ purpose, label, icon }) => landmarkOption(purpose, label, icon)),
+  allLandmarksOption
 ];
 /**
  * Submenu of landmark text choices, one per SmoTextGroup.purposes value (Title,
