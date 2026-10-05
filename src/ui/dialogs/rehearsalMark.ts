@@ -31,6 +31,10 @@ export class SuiRehearsalMarkAdapter {
   }
   set cardinality(value: string) {
     this.mark.cardinality = value;
+    // a measure-number mark is not part of a series, so turn auto-increment off
+    if (value === SmoRehearsalMark.cardinalities.measureNumber) {
+      this.mark.increment = false;
+    }
     this.updateMark();
   }
   get increment(): boolean {

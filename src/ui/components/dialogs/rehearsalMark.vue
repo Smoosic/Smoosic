@@ -2,6 +2,7 @@
 import dialogContainer from './dialogContainer.vue';
 import selectComp from './select.vue';
 import toggleComp from './toggle.vue';
+import { ref } from 'vue';
 import { SelectOption } from '../../common';
 
 interface Props {
@@ -24,8 +25,24 @@ const getId = (str: string) => {
 const cardinalityOptions: SelectOption[] = [
   { value: 'capitals', label: 'Capitals' },
   { value: 'lowerCase', label: 'Lower case' },
-  { value: 'numbers', label: 'Numbers' }
+  { value: 'numbers', label: 'Numbers' },
+  { value: 'measureNumber', label: 'Measure number' }
 ];
+// The toggle only reads its initial value on creation.  When choosing measure numbers turns
+// auto-increment off (the adapter does that in the model), re-key the toggle so it shows 'off'.
+const incrementValue = ref(props.increment);
+const incrementKey = ref(0);
+const onCardinalityChange = (value: string) => {
+  props.updateFieldCb('cardinality', value);
+  if (value === 'measureNumber' && incrementValue.value) {
+    incrementValue.value = false;
+    incrementKey.value += 1;
+  }
+};
+const onIncrementChange = (value: boolean) => {
+  incrementValue.value = value;
+  props.updateFieldCb('increment', value);
+};
 </script>
 <template>
   <dialogContainer :domId="domId" :label="label" :commitCb="commitCb" :cancelCb="cancelCb" :removeCb="removeCb"
@@ -40,13 +57,13 @@ const cardinalityOptions: SelectOption[] = [
     <div class="group">
       <div class="grow-row">
         <selectComp :domId="getId('cardinality')" label="Numbering" :selections="cardinalityOptions"
-          :initialValue="cardinality" :changeCb="(value: string) => updateFieldCb('cardinality', value)" />
+          :initialValue="cardinality" :changeCb="onCardinalityChange" />
       </div>
     </div>
     <div class="group">
       <div class="grow-row">
-        <toggleComp :domId="getId('increment')" label="Auto increment" :initialValue="increment"
-          :changeCb="(value: boolean) => updateFieldCb('increment', value)" />
+        <toggleComp :key="incrementKey" :domId="getId('increment')" label="Auto increment"
+          :initialValue="incrementValue" :changeCb="onIncrementChange" />
       </div>
     </div>
   </dialogContainer>

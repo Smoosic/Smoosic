@@ -600,7 +600,8 @@ export class VxSystem {
     for (let j = 0; j < this.smoMeasures.length; ++j) {
       const smoMeasure = this.smoMeasures[j];
       const rm = smoMeasure.getRehearsalMark() as SmoRehearsalMark | undefined;
-      if (!rm || smoMeasure.svg.rowInSystem !== 0) {
+      const rmText = smoMeasure.getRehearsalMarkText();
+      if (!rm || rmText === undefined || smoMeasure.svg.rowInSystem !== 0) {
         continue;
       }
       const vxMeasure = this.getVxMeasure(smoMeasure);
@@ -609,9 +610,9 @@ export class VxSystem {
       }
       const stave = vxMeasure.stave;
       const formatter = VexTextMetrics.create(StaveSection.TEXT_FONT);
-      const textY = formatter.getYForStringInPx(rm.symbol);
+      const textY = formatter.getYForStringInPx(rmText);
       const padding = 2;
-      const width = formatter.getWidthForTextInPx(rm.symbol) + 2 * padding;
+      const width = formatter.getWidthForTextInPx(rmText) + 2 * padding;
       const height = textY.height + 2 * padding;
       const headroom = -1 * textY.yMin;
       // Stave coordinates are relative to this page's svg; logicalBox is absolute, as offsetBbox produces.

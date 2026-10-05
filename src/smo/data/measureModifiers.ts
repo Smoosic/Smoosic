@@ -610,7 +610,7 @@ export interface SmoRehearsalMarkParamsSer extends SmoRehearsalMarkParams {
  */
 export class SmoRehearsalMark extends SmoMeasureModifierBase {
   static readonly cardinalities: Record<string, string> = {
-    capitals: 'capitals', lowerCase: 'lowerCase', numbers: 'numbers'
+    capitals: 'capitals', lowerCase: 'lowerCase', numbers: 'numbers', measureNumber: 'measureNumber'
   }
   static readonly positions: Record<string, number> = {
     above: 0, below: 1, left: 2, right: 3
