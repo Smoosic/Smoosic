@@ -180,6 +180,7 @@ export class SuiRenderState implements SuiRendererBase {
         const obj = staffMap[key];
         this.renderer.renderModifiers(obj.staff, obj.system);
         obj.system.renderEndings(this.measureMapper!.scroller);
+        obj.system.renderRehearsalMarks();
         obj.system.updateLyricOffsets();
       });
       this.replaceQ = [];

@@ -1,6 +1,6 @@
 import { SmoModifier } from '../../smo/data/score';
 import { SuiDialogBase, SuiDialogParams } from './dialog';
-export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking';
+export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking' | 'SmoRehearsalMark';
 export declare var ModifiersWithDialogNames: string[];
 export declare function isModifierWithDialog(modifier: SmoModifier): boolean;
 /**

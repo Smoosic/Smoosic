@@ -163,6 +163,10 @@ export abstract class SuiMapper {
         this.localModifiers.push({ index, selection: sel, modifier: tempo, box: tempo.logicalBox ?? SvgBox.default });
         index += 1;
       });
+      sel.measure.getModifiersByType('SmoRehearsalMark').forEach((rm) => {
+        this.localModifiers.push({ index, selection: sel, modifier: rm, box: rm.logicalBox ?? SvgBox.default });
+        index += 1;
+      });
       sel.staff.renderableModifiers.forEach((mod) => {
         if (SmoSelector.gteq(sel.selector, mod.startSelector) &&
           SmoSelector.lteq(sel.selector, mod.endSelector) && mod.logicalBox)  {

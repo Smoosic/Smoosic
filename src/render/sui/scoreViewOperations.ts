@@ -1527,6 +1527,60 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this._renderChangedMeasures([selection]);
     return this.renderer.updatePromise();
   }
+  /**
+   * Finds the measure whose rehearsal mark has the given id, as a selection on the live score.
+   * Rehearsal marks are column-wide, so the first staff holding it identifies the measure.
+   * See specs/025-rehearsal-mark-dialog.
+   */
+  _findRehearsalMarkSelection(id: string): SmoSelection | null {
+    for (let i = 0; i < this.score.staves.length; ++i) {
+      const staff = this.score.staves[i];
+      for (let j = 0; j < staff.measures.length; ++j) {
+        const measure = staff.measures[j];
+        if (measure.getRehearsalMark()?.attrs.id === id) {
+          return SmoSelection.measureSelection(this.score, staff.staffId, measure.measureNumber.measureIndex);
+        }
+      }
+    }
+    return null;
+  }
+  /**
+   * Replaces an existing rehearsal mark's settings on its measure, on every staff and in the
+   * undo-copy store. Does nothing if the mark is no longer present (e.g. removed while its dialog
+   * was open). See specs/025-rehearsal-mark-dialog.
+   * @param mark the edited rehearsal mark
+   */
+  async updateRehearsalMark(mark: SmoRehearsalMark): Promise<void> {
+    const selection = this._findRehearsalMarkSelection(mark.attrs.id);
+    if (!selection) {
+      return;
+    }
+    const altSelection = this._getEquivalentSelection(selection);
+    this._undoColumn('Change Rehearsal Mark', selection.selector.measure);
+    SmoOperation.removeRehearsalMark(this.score, selection);
+    SmoOperation.addRehearsalMark(this.score, selection, mark);
+    SmoOperation.removeRehearsalMark(this.storeScore, altSelection!);
+    SmoOperation.addRehearsalMark(this.storeScore, altSelection!, mark);
+    this._renderChangedMeasures([selection]);
+    return this.renderer.updatePromise();
+  }
+  /**
+   * Removes an existing rehearsal mark from its measure on every staff and in the undo-copy store.
+   * Does nothing if the mark is no longer present. See specs/025-rehearsal-mark-dialog.
+   * @param mark the rehearsal mark to remove
+   */
+  async removeRehearsalMark(mark: SmoRehearsalMark): Promise<void> {
+    const selection = this._findRehearsalMarkSelection(mark.attrs.id);
+    if (!selection) {
+      return;
+    }
+    const altSelection = this._getEquivalentSelection(selection);
+    this._undoColumn('Remove Rehearsal Mark', selection.selector.measure);
+    SmoOperation.removeRehearsalMark(this.score, selection);
+    SmoOperation.removeRehearsalMark(this.storeScore, altSelection!);
+    this._renderChangedMeasures([selection]);
+    return this.renderer.updatePromise();
+  }
   _removeStaffModifier(modifier: StaffModifierBase) {
     this.score.staves[modifier.associatedStaff].removeStaffModifier(modifier);
     const altModifier = StaffModifierBase.deserialize(modifier.serialize());

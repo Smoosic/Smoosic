@@ -8,7 +8,7 @@ import { SmoRenderConfiguration } from './configuration';
 import { SmoSystemGroup, SmoPageLayout, SmoGlobalLayout, SmoAudioPlayerSettings, SmoScorePreferences, SmoScoreInfo } from '../../smo/data/scoreModifiers';
 import { SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoDynamicText, SmoArticulation, SmoOrnament, SmoLyric, SmoArpeggioType, SmoClefChange, SmoTabNote } from '../../smo/data/noteModifiers';
-import { SmoTempo, SmoVolta, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
+import { SmoTempo, SmoVolta, SmoRehearsalMark, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
 import { BatchSelectionOperation } from '../../smo/xform/operations';
@@ -369,6 +369,25 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @returns
      */
     toggleRehearsalMark(): Promise<void>;
+    /**
+     * Finds the measure whose rehearsal mark has the given id, as a selection on the live score.
+     * Rehearsal marks are column-wide, so the first staff holding it identifies the measure.
+     * See specs/025-rehearsal-mark-dialog.
+     */
+    _findRehearsalMarkSelection(id: string): SmoSelection | null;
+    /**
+     * Replaces an existing rehearsal mark's settings on its measure, on every staff and in the
+     * undo-copy store. Does nothing if the mark is no longer present (e.g. removed while its dialog
+     * was open). See specs/025-rehearsal-mark-dialog.
+     * @param mark the edited rehearsal mark
+     */
+    updateRehearsalMark(mark: SmoRehearsalMark): Promise<void>;
+    /**
+     * Removes an existing rehearsal mark from its measure on every staff and in the undo-copy store.
+     * Does nothing if the mark is no longer present. See specs/025-rehearsal-mark-dialog.
+     * @param mark the rehearsal mark to remove
+     */
+    removeRehearsalMark(mark: SmoRehearsalMark): Promise<void>;
     _removeStaffModifier(modifier: StaffModifierBase): void;
     /**
      * Remove selected modifier

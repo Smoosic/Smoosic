@@ -29,6 +29,7 @@ import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SuiExceptionHandler } from '../exceptions';
 import { SuiTextBlockDialogVue } from './textBlockVue';
 import { SuiVoltaAttributeDialogVue } from './voltaVue';
+import { SuiRehearsalMarkDialogVue } from './rehearsalMarkVue';
 import { SuiTextBracketDialogVue } from './textBracketVue';
 import { SuiSlurAttributesDialogVue } from './slurVue';
 import { SuiPedalMarkingDialogVue } from './pedalMarkingVue';
@@ -37,9 +38,9 @@ import { SuiDynamicModifierDialogVue } from './dynamicsVue';
 import { SuiAnnotationDialogVue } from './annotationVue';
 
 export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 
-'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking';
+'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking' | 'SmoRehearsalMark';
 export var ModifiersWithDialogNames = ['SmoStaffHairpin', 'SmoTie', 'SmoSlur', 'SmoDynamicText', 'SmoVolta',
-  'SmoScoreText', 'SmoLoadScore', 'SmoLyric', 'SmoTextGroup', 'SmoStaffTextBracket', 'SmoPedalMarking'];
+  'SmoScoreText', 'SmoLoadScore', 'SmoLyric', 'SmoTextGroup', 'SmoStaffTextBracket', 'SmoPedalMarking', 'SmoRehearsalMark'];
 
 export function isModifierWithDialog(modifier: SmoModifier) {
   return ModifiersWithDialogNames.indexOf(modifier.attrs.type) >= 0;
@@ -72,6 +73,9 @@ export function isModifierWithDialog(modifier: SmoModifier) {
       return null;
     } else if (ctor === 'SmoVolta') {
       SuiVoltaAttributeDialogVue(parameters);
+      return null;
+    } else if (ctor === 'SmoRehearsalMark') {
+      SuiRehearsalMarkDialogVue(parameters);
       return null;
     } else if (ctor === 'SmoTextGroup') {
       SuiTextBlockDialogVue({

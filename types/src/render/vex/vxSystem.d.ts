@@ -60,6 +60,12 @@ export declare class VxSystem {
     updateLyricOffsets(): void;
     renderModifier(scroller: SuiScroller, modifier: StaffModifierBase, vxStart: Note | null, vxEnd: Note | null, smoStart: SmoSelection, smoEnd: SmoSelection): void;
     renderEndings(scroller: SuiScroller): void;
+    /**
+     * Computes SmoRehearsalMark.logicalBox for the first-row measures of this system, replicating
+     * VexFlow's StaveSection.draw() geometry (stave.setSection in vxMeasure.ts), so mouse hit-testing
+     * matches where the rehearsal mark glyph is actually drawn. See specs/025-rehearsal-mark-dialog.
+     */
+    renderRehearsalMarks(): void;
     getMeasureByIndex(measureIndex: number, staffId: number): SmoMeasure | null;
     renderMeasure(smoMeasure: SmoMeasure, printing: boolean, firstInColumn: boolean): void;
 }

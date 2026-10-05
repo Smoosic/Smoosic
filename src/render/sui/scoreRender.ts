@@ -345,6 +345,7 @@ export class SuiScoreRender {
     });
     if (this.measureMapper !== null) {
       vxSystem.renderEndings(this.measureMapper.scroller);
+      vxSystem.renderRehearsalMarks();
     }
     this.measuresToMap.push({vxSystem, measuresToBox, modifiersToBox, printing });
     // this.measureRenderedElements(vxSystem, measuresToBox, modifiersToBox, printing);
