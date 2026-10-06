@@ -745,6 +745,11 @@ export class SmoOperation {
   static addRehearsalMark(score: SmoScore, selection: SmoSelection, rehearsalMark: SmoRehearsalMark) {
     score.staves.forEach((staff) => {
       const mt = new SmoRehearsalMark(rehearsalMark.serialize());
+      // Keep the id on the selected staff's copy so a caller that holds on to 'rehearsalMark' (the
+      // properties dialog) can find it again for later edits.  Other staves keep unique ids.
+      if (staff.staffId === selection.selector.staff) {
+        mt.attrs.id = rehearsalMark.attrs.id;
+      }
       staff.addRehearsalMark(selection.selector.measure, mt);
     });
   }

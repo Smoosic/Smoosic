@@ -18,6 +18,8 @@ export class SuiRehearsalMarkAdapter {
     this.view = view;
     this.mark = mark;
     this.backup = new SmoRehearsalMark(mark.serialize());
+    // the view finds the mark in the score by id, so the backup must carry the live mark's id
+    this.backup.attrs.id = mark.attrs.id;
   }
   get symbol(): string {
     return this.mark.symbol;

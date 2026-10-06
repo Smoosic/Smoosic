@@ -818,6 +818,10 @@ export class SmoSystemStaff implements SmoObjectParams {
     let i = 0;
     let symbol = '';
     var mark = new SmoRehearsalMark(parameters);
+    // if we are given an existing mark, keep its id so whoever holds it can find this copy
+    if (parameters instanceof SmoRehearsalMark) {
+      mark.attrs.id = parameters.attrs.id;
+    }
     // marks that show the measure number are not part of any letter/number series
     if (!mark.increment || mark.cardinality === SmoRehearsalMark.cardinalities.measureNumber) {
       this.measures[index].addRehearsalMark(mark);

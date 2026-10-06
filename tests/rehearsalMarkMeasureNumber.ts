@@ -9,6 +9,8 @@
 import { SmoScore } from '../src/smo/data/score';
 import { SmoMeasure } from '../src/smo/data/measure';
 import { SmoSystemStaff } from '../src/smo/data/systemStaff';
+import { SmoSelection } from '../src/smo/xform/selections';
+import { SmoOperation } from '../src/smo/xform/operations';
 import { SmoRehearsalMark, SmoRehearsalMarkParams, measureModifierDynamicCtorInit } from '../src/smo/data/measureModifiers';
 import { noteModifierDynamicCtorInit } from '../src/smo/data/noteModifiers';
 import { staffModifierDynamicCtorInit } from '../src/smo/data/staffModifiers';
@@ -146,6 +148,38 @@ const markAt = (staff: SmoSystemStaff, index: number) => staff.measures[index].g
   check('mark stays attached to its measure when a measure is inserted before it', moved === 4, `index ${moved}`);
   check('text increments when a measure is inserted before the mark',
     parseInt(textAt(staff2, moved) as string, 10) === before + 1, `got ${textAt(staff2, moved)}`);
+}
+
+// --- Repeated edits from the dialog: the score's copy must stay findable by the dialog's mark id ---
+{
+  const score = SmoScore.getDefaultScore(SmoScore.defaults, null);
+  while (score.staves[0].measures.length < 4) {
+    score.addMeasure(score.staves[0].measures.length);
+  }
+  const selection = SmoSelection.measureSelection(score, 0, 2)!;
+  const findById = (id: string) => score.staves[0].measures.find((mm) => mm.getRehearsalMark()?.attrs.id === id);
+
+  // what SuiScoreViewOperations.updateRehearsalMark does: remove, then add a copy of the dialog's mark
+  const apply = (mark: SmoRehearsalMark) => {
+    SmoOperation.removeRehearsalMark(score, selection);
+    SmoOperation.addRehearsalMark(score, selection, mark);
+  };
+  apply(new SmoRehearsalMark(markParams('capitals', 'A')));
+  const dialogMark = score.staves[0].measures[2].getRehearsalMark() as SmoRehearsalMark;
+  const backup = new SmoRehearsalMark(dialogMark.serialize());
+  backup.attrs.id = dialogMark.attrs.id;
+
+  dialogMark.increment = false;
+  apply(dialogMark);
+  check('mark is still found by id after the first edit', findById(dialogMark.attrs.id) !== undefined);
+  dialogMark.symbol = 'Z';
+  apply(dialogMark);
+  check('second edit still finds the mark', findById(dialogMark.attrs.id) !== undefined);
+  check('second edit is saved', (markAt(score.staves[0], 2)).symbol === 'Z' && markAt(score.staves[0], 2).increment === false);
+
+  apply(backup);
+  check('backup restores the original settings', markAt(score.staves[0], 2).symbol === 'A' && markAt(score.staves[0], 2).increment === true);
+  check('backup is findable by the dialog id', findById(backup.attrs.id) !== undefined);
 }
 
 if (failures > 0) {

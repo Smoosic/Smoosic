@@ -1517,7 +1517,12 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
 
   addRehearsalMark(parameters: SmoRehearsalMarkParams) {
     this._removeSingletonModifier('SmoRehearsalMark');
-    this.modifiers.push(new SmoRehearsalMark(parameters));
+    const mark = new SmoRehearsalMark(parameters);
+    // if we are given an existing mark, keep its id so whoever holds it can find this copy
+    if (parameters instanceof SmoRehearsalMark) {
+      mark.attrs.id = parameters.attrs.id;
+    }
+    this.modifiers.push(mark);
   }
   removeRehearsalMark() {
     this._removeSingletonModifier('SmoRehearsalMark');
