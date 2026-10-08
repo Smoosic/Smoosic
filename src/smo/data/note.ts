@@ -527,13 +527,29 @@ export class SmoNote implements Transposable {
     tms.push(lyric);
     this.textModifiers = tms;
   }
-
+  addAnnotation(annotation: SmoLyric) {
+    const tms = this.textModifiers.filter((mod: SmoNoteModifierBase) =>
+      mod.attrs.type !== 'SmoLyric' || (mod as SmoLyric).parser !== annotation.parser ||
+        (mod as SmoLyric).verse !== annotation.verse
+    );
+    tms.push(annotation);
+    this.textModifiers = tms;
+  }
   /**
    * @returns array of lyrics that are lyrics
    */
   getTrueLyrics(): SmoLyric[] {
     const ms = this.textModifiers.filter((mod) =>
       mod.attrs.type === 'SmoLyric' && (mod as SmoLyric).parser === SmoLyric.parsers.lyric);
+    ms.sort((a, b) => (a as SmoLyric).verse - (b as SmoLyric).verse);
+    return (ms as SmoLyric[]);
+  }
+ /**
+   * @returns array of lyrics that are annotations
+   */
+  getAnnotations(): SmoLyric[] {
+    const ms = this.textModifiers.filter((mod) =>
+      mod.attrs.type === 'SmoLyric' && (mod as SmoLyric).parser === SmoLyric.parsers.annotation);
     ms.sort((a, b) => (a as SmoLyric).verse - (b as SmoLyric).verse);
     return (ms as SmoLyric[]);
   }
@@ -554,6 +570,22 @@ export class SmoNote implements Transposable {
   removeLyric(lyric: SmoLyric) {
     const tms = this.textModifiers.filter((mod: SmoNoteModifierBase) =>
       mod.attrs.type !== 'SmoLyric' || (mod as SmoLyric).verse !== lyric.verse || (mod as SmoLyric).parser !== lyric.parser
+    );
+    this.textModifiers = tms;
+  }
+  /**
+   * 
+   * @param lyric lyric to remove, find the best match if there are multiples
+   */
+  removeAnnotations(annotation: SmoLyric) {
+    const tms = this.textModifiers.filter((mod: SmoNoteModifierBase) =>
+      mod.attrs.type !== 'SmoLyric' || (mod as SmoLyric).verse !== annotation.verse || (mod as SmoLyric).parser !== annotation.parser
+    );
+    this.textModifiers = tms;
+  }
+  removeAllAnnotations() {
+    const tms = this.textModifiers.filter((mod: SmoNoteModifierBase) =>
+      mod.attrs.type !== 'SmoLyric' && (mod as SmoLyric).parser !== SmoLyric.parsers.annotation
     );
     this.textModifiers = tms;
   }

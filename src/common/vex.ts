@@ -1,7 +1,8 @@
 import { Vex as SmoVex, Note as VexNote, StaveNote as VexStaveNote, StemmableNote as VexStemmableNote, Beam as VexBeam, Tuplet as VexTuplet, 
   Voice as VexVoice, Formatter as VexFormatter, Accidental as VexAccidental, 
   Annotation as VexAnnotation, StaveNoteStruct as VexStaveNoteStruct, 
-  StaveText as VexStaveText, StaveModifier as VexStaveModifier,
+  StaveText as VexStaveText, StaveModifier as VexStaveModifier, StaveSection as VexStaveSection,
+  TextFormatter as VexTextFormatter,
   TextNote as VexTextNote,
 Stave as VexStave, StaveModifierPosition as VexStaveModifierPosition,
 Font as VexFont, FontInfo as VexFontInfo, FontStyle as VexFontStyle, FontWeight as VexFontWeight,
@@ -66,6 +67,8 @@ export type StaveNoteStruct = VexStaveNoteStruct;
 export type StaveModifier = VexStaveModifier;
 // @internal
 export type StaveText = VexStaveText;
+export const StaveSection = VexStaveSection;
+export const VexTextMetrics = VexTextFormatter;
 // @internal
 export type Stave = VexStave;
 // @internal

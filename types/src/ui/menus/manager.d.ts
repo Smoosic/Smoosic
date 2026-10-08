@@ -1,4 +1,4 @@
-import { SvgBox } from '../../smo/data/common';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { layoutDebug } from '../../render/sui/layoutDebug';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
@@ -6,7 +6,8 @@ import { SuiTracker } from '../../render/sui/tracker';
 import { CompleteNotifier } from '../common';
 import { BrowserEventSource, EventHandler } from '../eventSource';
 import { KeyBinding } from '../../application/common';
-import { SuiMenuBase } from './menu';
+import { App } from 'vue';
+import { SuiConfiguredMenu } from './menu';
 /**
  * @category SuiMenu
  */
@@ -28,9 +29,9 @@ export declare class SuiMenuManager {
     undoBuffer: UndoBuffer;
     menuContainer: HTMLElement;
     bound: boolean;
-    hotkeyBindings: Record<string, string>;
     closeMenuPromise: Promise<void> | null;
-    menu: SuiMenuBase | null;
+    menu: SuiConfiguredMenu | null;
+    menuApp: App | null;
     keydownHandler: EventHandler | null;
     menuPosition: SvgBox;
     tracker: SuiTracker;
@@ -45,14 +46,12 @@ export declare class SuiMenuManager {
     setController(c: CompleteNotifier): void;
     get score(): import("../../application/exports").SmoScore;
     static get menuKeyBindingDefaults(): KeyBinding[];
-    get optionElements(): any;
-    _advanceSelection(inc: number): void;
     unattach(): void;
     attach(): void;
     captureMenuEvents(completeNotifier: CompleteNotifier): void;
     dismiss(): void;
-    displayMenu(menu: SuiMenuBase | null): void;
-    createMenu(action: string, notifier: CompleteNotifier): void;
+    displayMenu(menu: SuiConfiguredMenu): void;
+    createMenu(action: string, notifier: CompleteNotifier, anchor?: SvgPoint): Promise<void | null>;
     evKey(event: any): void;
     bindEvents(): void;
 }

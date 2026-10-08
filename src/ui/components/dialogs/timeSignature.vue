@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, toRef, Ref, watch, reactive, computed, toDisplayString } from 'vue';
-import numberInputApp from './numberInput.vue';
 import { default as tsComponent } from './tsComponent.vue';
 import {
   TimeSignatureTime, SmoTimeSignature
 } from '../../../smo/data/measureModifiers';
 import dialogContainer from './dialogContainer.vue';
+import toggle from './toggle.vue';
 import { SelectOption } from '../../common';
 import selectComp from './select.vue';
 
@@ -116,51 +116,34 @@ const getId = (str: string) => {
 
 <template>
   <dialogContainer :domId="domId" :label="label" :cancelCb="cancelCb" :commitCb="commitCb"
-    :classes="'text-center mw-40 nw-40'">
-    <div class="row justify-content-start">
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" 
-        :disabled="!supportsSymbol"
-          v-model="useSymbol" :id="getId('use-symbol')">
-        </input>
+    class="mw-40 nw-40">
+    <div class="toggles">
+      <div class="tgl-row">
+        <toggle :domId="getId('use-symbol')" :label="'Use Symbol'" :disabled="!supportsSymbol" :initialValue="useSymbol"
+          :changeCb="(value: boolean) => { useSymbol = value }" />
       </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('use-symbol')">Use Symbol</span>
+      <div class="tgl-row">
+        <toggle :domId="getId('display-ts')" :label="'Display Time Signature'" :initialValue="display"
+          :changeCb="(value: boolean) => { display = value }" />
       </div>
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" v-model="display" :id="getId('display-ts')">
-        </input>
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('display-cs')">Display Time Signature</span>
-      </div>
-    </div>
-    <div class="row justify-content-start mb-2">
-      <div class="checkbox-input-column-div">
-        <input class="form-check-input" type="checkbox" :id="getId('display-compound')" v-model="isCompound">
-      </div>
-      <div class="checkbox-input-label-div">
-        <span class="form-check-label" :for="getId('display-compound')">Compound Time Signature</span>
+      <div class="tgl-row">
+        <toggle :domId="getId('display-compound')" :label="'Compound Time Signature'" :initialValue="isCompound"
+          :changeCb="(value: boolean) => { isCompound = value }" />
       </div>
     </div>
     <div class="row justify-content-center">
-      <div class="col col-4" v-for="(time, index) in timeSignature.times">
+      <div class="col col-2" v-for="(time, index) in timeSignature.times">
         <tsComponent :domId="getId(`tscomp-${index}`)" :index="index" :label="getTsLabel(index)"
           :timeSignature="time" :updateTimeSignatureCb="updateTime"></tsComponent>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <div class="col col-4">
+    <div class="sect">
+      <div class="sect-body">
+        <div>
+          <span class="spec-name">Alternate display string (for pickups)</span>
         <input type="text" class="form-control form-control-sm" v-model="displayString" :id="getId('display-string')" />
-      </div>
-      <div class="number-input-label-div col col-8">
-        <span class="form-check-lable">Alternate Display String (for pickups)</span>
-      </div>
-    </div>
-    <div class="row mb-2">
-      <div class="col col-3 text-end">Apply To</div>
-      <div class="col col-6">
-        <selectComp :domId="getId('page-size-select')" :label="''" :selections="applyToOptions" :initialValue="applyTo"
+        </div>
+        <selectComp :domId="getId('page-size-select')" :label="'Apply To:'" :selections="applyToOptions" :initialValue="applyTo"
           :changeCb="props.updateApplyTo" />
       </div>
     </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import buttonComp from './buttonComp.vue';
+import buttonComp from './ribbonButtons.vue';
 import{ ButtonDefinition } from '../../buttons/button'
 interface Props {
   domId: string,
@@ -12,8 +12,11 @@ const getId = (str: string) => `${domId}-${str}`;
 
 </script>
 <template>
-  <div class="row ribbonButtonContainer" :id="domId">
+  <div class="ribbon-host" :id="domId">
+    <div class="ribbon">
     <buttonComp v-for="props in buttonProps" :buttonProps="props" :domId="getId(props.id)" :key="props.id">
     </buttonComp>
+    <span class="ribbon-spacer"></span>
+    </div>
   </div>
 </template>

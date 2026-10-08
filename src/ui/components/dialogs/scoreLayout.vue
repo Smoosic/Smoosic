@@ -80,28 +80,16 @@ const getId = (str: string) => {
 </script>
 <template>
   <dialogContainer :domId="domId" :commitCb="props.commitCb" :cancelCb="props.cancelCb" :label="props.label">
-    <div class="row mb-2">
-      <div class="col col-3 text-end">Page Size</div>
-      <div class="col col-6">
-        <selectComp :domId="getId('page-size-select')" :label="''" :selections="pageSizes" :initialValue="pageSize"
+    <div class="group">
+      <div class="group-label">Page Dimensions</div>
+      <div class="mb-2">
+        <selectComp :domId="getId('page-size-select')" :label="'Paper Size'" :selections="pageSizes" :initialValue="pageSize"
           :changeCb="pageChange" />
-      </div>
-    </div>
-    <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+        </div>
         <numberInputApp :domId="getId('page-width-input')" :initialValue="currentLayout.pageWidth" :precision="0"
-          :changeCb="updateNumberType('pageWidth')" :disabled="lockDimensions" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Page Width</span>
-      </div>
-      <div class="col col-4 ms-n4">
+          :changeCb="updateNumberType('pageWidth')" :disabled="lockDimensions" label="Page Width" />
         <numberInputApp :domId="getId('page-height-input')" :initialValue="currentLayout.pageHeight" :precision="0"
-          :changeCb="updateNumberType('pageHeight')" :disabled="lockDimensions" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Page Height</span>
-      </div>
+          :changeCb="updateNumberType('pageHeight')" :disabled="lockDimensions" label="Page Height"/>
     </div>
     <div class="row mb-2 align-items-center">
       <div class="col col-4">
@@ -109,7 +97,7 @@ const getId = (str: string) => {
           :percent=true :changeCb="updateNumberType('zoomScale')" :minValue="0.25" :maxValue="8" />
       </div>
       <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Zoom Scale (%)</span>
+        <span class="form-check-label">Zoom (%)</span>
       </div>
       <div class="col col-4 ms-n4">
         <numberInputApp :domId="getId('svg-scale-input')" :initialValue="currentLayout.svgScale" :precision="0"

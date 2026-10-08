@@ -1,5 +1,6 @@
 import { Transposable, SvgBox, SvgPoint, ElementLike } from '../../smo/data/common';
 import { SvgPage } from './svgPageMap';
+export type SuiTextStrokeName = 'text-suggestion' | 'text-selection' | 'text-highlight' | 'text-drag' | 'inactive-text';
 /**
  * @internal
  */
@@ -11,6 +12,7 @@ export interface StrokeInfo {
     fill: string;
     opacity: number;
 }
+export declare const SuiTextStrokes: Record<SuiTextStrokeName, StrokeInfo>;
 /**
  * @internal
  */
@@ -61,6 +63,7 @@ export declare class SvgHelpers {
     static get namespace(): string;
     static gradient(svg: SVGSVGElement, id: string, orientation: string, stops: GradientInfo[]): void;
     static renderCursor(svg: ElementLike, x: number, y: number, height: number): void;
+    static renderLyricPositionMarker(svg: SVGSVGElement, x: number, y: number, height: number): SVGLineElement;
     static updateArtifactBox(context: SvgPage, element: ElementLike, artifact: Transposable): void;
     static eraseOutline(params: OutlineInfo): void;
     static outlineRect(params: OutlineInfo): void;

@@ -68,6 +68,8 @@ export declare class SuiRenderState implements SuiRendererBase {
     renderPromise(): Promise<void>;
     updatePromise(): Promise<void>;
     handleRedrawTimer(): Promise<void>;
+    delay2: () => Promise<void>;
+    pollRedrawTask(): Promise<void>;
     pollRedraw(): void;
     startDemon(): void;
     renderTextGroup(gg: SmoTextGroup): void;

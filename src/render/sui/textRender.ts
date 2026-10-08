@@ -1,8 +1,7 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SvgHelpers, OutlineInfo } from './svgHelpers';
+import { SvgHelpers, OutlineInfo, SuiTextStrokes } from './svgHelpers';
 import { SmoTextGroup, SmoScoreText } from '../../smo/data/scoreText';
-import { SuiTextEditor } from './textEdit';
 import { SuiScroller } from './scroller';
 import { SmoAttrs, SvgBox, getId, ElementLike } from '../../smo/data/common';
 import { SvgPage, SvgPageMap } from './svgPageMap';
@@ -81,6 +80,24 @@ export class SuiInlineText {
   }
   static get textPurposes(): Record<string, string> {
     return {render: 'sui-inline-render', edit: 'sui-inline-edit' };
+  }
+  static textTypeFromChar(char: string): number {
+    if (char === '^') {
+      return SuiInlineText.textTypes.superScript;
+    }
+    if (char === '%') {
+      return SuiInlineText.textTypes.subScript;
+    }
+    return SuiInlineText.textTypes.normal;
+  }
+  static textTypeToChar(textType: number): string {
+    if (textType === SuiInlineText.textTypes.superScript) {
+      return '^';
+    }
+    if (textType === SuiInlineText.textTypes.subScript) {
+      return '%';
+    }
+    return '';
   }
 
   // ### textTypeTransitions
@@ -591,7 +608,16 @@ export interface SuiTextBlockParams {
   context: SvgPage;
   skipRender: boolean;
   justification: number;
+  beingEdited?: boolean;
 }
+/**
+ * Fixed, non-configurable opacity used to visually mark the one text group
+ * currently open in the text edit dialog (SmoTextGroup.beingEdited), so it
+ * remains legible but is clearly distinguishable from full-opacity text
+ * elsewhere on the score.
+ * @category SuiRender
+ */
+export const TEXT_GROUP_EDITING_OPACITY = 0.55;
 /**
  * @category SuiRender
  */
@@ -621,12 +647,14 @@ export class SuiTextBlock {
   outlineRect: OutlineInfo | null = null;
   currentBlock: SuiTextBlockBlock | null = null;
   logicalBox: SvgBox = SvgBox.default;
+  beingEdited: boolean = false;
   constructor(params: SuiTextBlockParams) {
     this.inlineBlocks = [];
     this.scroller = params.scroller;
     this.spacing = params.spacing;
     this.context = params.context;
     this.skipRender = false; // used when editing the text
+    this.beingEdited = params.beingEdited ?? false;
     if (params.blocks.length < 1) {
       const inlineParams = SuiInlineText.defaults;
       inlineParams.scroller = this.scroller;
@@ -645,9 +673,12 @@ export class SuiTextBlock {
       SmoTextGroup.justifications.LEFT;
   }
   render() {
-    this.unrender();    
+    this.unrender();
     this.inlineBlocks.forEach((block) => {
       block.text.render();
+      if (block.text.element) {
+        block.text.element.style.opacity = this.beingEdited ? String(TEXT_GROUP_EDITING_OPACITY) : '';
+      }
       if (block.activeText) {
         this._outlineBox(this.context, block.text.logicalBox);
       }
@@ -659,7 +690,7 @@ export class SuiTextBlock {
     });
   }
   _outlineBox(context: any, box: SvgBox) {
-    const outlineStroke = SuiTextEditor.strokes['text-highlight'];
+    const outlineStroke = SuiTextStrokes['text-highlight'];
     if (!this.outlineRect) {
       this.outlineRect = {
         context, box, classes: 'text-drag',
@@ -684,12 +715,6 @@ export class SuiTextBlock {
     });
   }
 
-  rescale(scale: number) {
-    this.inlineBlocks.forEach((block) => {
-      block.text.rescale(scale);
-    });
-  }
-
   get x(): number {
     return this.getLogicalBox().x;
   }
@@ -697,14 +722,6 @@ export class SuiTextBlock {
     return this.getLogicalBox().y;
   }
 
-  maxFontHeight(scale: number): number {
-    let rv = 0;
-    this.inlineBlocks.forEach((block) => {
-      const blockHeight = block.text.maxFontHeight(scale);
-      rv = blockHeight > rv ? blockHeight : rv;
-    });
-    return rv;
-  }
   static blockFromScoreText(scoreText: SmoScoreText, context: SvgPage, pageMap: SvgPageMap, position: number, scroller: SuiScroller): SuiTextBlockBlock {
     var inlineText = SuiInlineText.fromScoreText(scoreText, context, pageMap, scroller);
     return { text: inlineText, position, activeText: true };
@@ -737,7 +754,7 @@ export class SuiTextBlock {
     });
     const rv = new SuiTextBlock({
       blocks, justification: tg.justification, spacing: tg.spacing, context, scroller,
-      skipRender: false
+      skipRender: false, beingEdited: tg.beingEdited
     });
     rv._justify();
     return rv;

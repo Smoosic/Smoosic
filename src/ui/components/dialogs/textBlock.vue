@@ -1,0 +1,225 @@
+<script setup lang="ts">
+import { ref, Ref, nextTick, watch, computed } from 'vue';
+import { SmoTextGroup } from '../../../smo/data/scoreText';
+import { FontInfo } from '../../../common/vex';
+import { SelectOption } from '../../common';
+import { SuiScoreViewOperations } from '../../../render/sui/scoreViewOperations';
+import dialogContainer from './dialogContainer.vue';
+import numberInputApp from './numberInput.vue';
+import selectComp from './select.vue';
+import fontPickerComp from './fontPicker.vue';
+import textGroupEditorComp from './textGroupEditor.vue';
+import textDraggerComp from './textDragger.vue';
+
+interface Props {
+  domId: string,
+  label: string,
+  modifier: Ref<SmoTextGroup>,
+  view: SuiScoreViewOperations,
+  markEdited: () => void,
+  commitCb: () => Promise<void>,
+  cancelCb: () => Promise<void>,
+  removeCb: () => Promise<void>
+}
+const props = defineProps<Props>();
+const getId = (str: string) => `${props.domId}-${str}`;
+
+// A landmark (purpose !== NONE) has content derived from score/part metadata rather
+// than freely typed, and must not have its pagination type changed by hand -- see
+// specs/021-landmark-text-menu.
+const isLandmark = props.modifier.value.purpose !== SmoTextGroup.purposes.NONE;
+
+type DialogMode = 'idle' | 'editing' | 'moving';
+// A landmark never starts (or re-enters) the free-text editing session, regardless of
+// its 'edited' flag -- this also covers text groups whose purpose was set outside this
+// dialog (e.g. MusicXML-imported Title/Subtitle/Composer), not just ones created here.
+const mode: Ref<DialogMode> = ref((props.modifier.value.edited || isLandmark) ? 'idle' : 'editing');
+if (mode.value === 'editing') {
+  props.modifier.value.edited = true;
+}
+const isEditing = computed(() => mode.value === 'editing')
+
+const xPosition = ref(0);
+const yPosition = ref(0);
+const fontInfo: Ref<FontInfo> = ref({ family: 'Arial', size: 12, weight: 'normal', style: 'normal' });
+const pagination = ref<number>(props.modifier.value.pagination);
+
+// Scaled page layout (margins, page width) for the page this text group is on -- used by
+// textDragger.vue's Center/Right Justify buttons (specs/023-text-drag-controls).
+const pageIndex = props.view.renderer.pageMap.getRendererFromModifier(props.modifier.value).pageNumber;
+const pageLayout = props.view.score.layoutManager!.getScaledPageLayout(pageIndex);
+
+const refreshFromModel = () => {
+  const ul = props.modifier.value.ul();
+  xPosition.value = ul.x;
+  yPosition.value = ul.y;
+  fontInfo.value = { ...props.modifier.value.getActiveBlock().fontInfo };
+  pagination.value = props.modifier.value.pagination;
+};
+refreshFromModel();
+
+const rerender = async () => {
+  props.markEdited();
+  await props.view.updateTextGroup(props.modifier.value);
+};
+
+// --- Text editing (User Story 1) ---
+const editorRef = ref<InstanceType<typeof textGroupEditorComp> | null>(null);
+const insertOptions: SelectOption[] = [
+  { value: '@@@', label: 'Pages' },
+  { value: '###', label: 'Page Number' }
+];
+const syncEditorIfActive = () => {
+  if (mode.value === 'editing' && editorRef.value) {
+    // getTextGroup() already carries the correct activeText flags (whichever
+    // block the user last navigated to inside the editor) -- unlike the old
+    // per-run editor, there is no need to re-pick an active block here.
+    const updated = editorRef.value.getTextGroup();
+    props.modifier.value.textBlocks = updated.textBlocks;
+    props.modifier.value.justification = updated.justification;
+    props.modifier.value.relativePosition = updated.relativePosition;
+  }
+};
+const enterEditing = () => {
+  mode.value = 'editing';
+};
+const exitEditing = async () => {
+  syncEditorIfActive();
+  mode.value = 'idle';
+  refreshFromModel();
+  await rerender();
+};
+const insertSpecial = (value: string) => {
+  editorRef.value?.insertAtCursor(value);
+};
+
+// --- Move text (User Story 2) ---
+const draggerRef = ref<InstanceType<typeof textDraggerComp> | null>(null);
+const enterMoving = () => {
+  mode.value = 'moving';
+};
+const onDragStop = async () => {
+  mode.value = 'idle';
+  refreshFromModel();
+  await rerender();
+};
+const onReposition = async () => {
+  refreshFromModel();
+  await rerender();
+};
+watch(mode, async (m) => {
+  if (m === 'moving') {
+    await nextTick();
+    draggerRef.value?.start();
+  }
+});
+
+// --- Precise position & font (User Story 3) ---
+const onXChange = async (value: number) => {
+  const pos = props.modifier.value.ul();
+  props.modifier.value.offsetX(value - pos.x);
+  xPosition.value = value;
+  await rerender();
+};
+const onYChange = async (value: number) => {
+  const pos = props.modifier.value.ul();
+  props.modifier.value.offsetY(value - pos.y);
+  yPosition.value = value;
+  await rerender();
+};
+const onFontChange = async (font: FontInfo) => {
+  const activeText = props.modifier.value.getActiveBlock();
+  activeText.fontInfo.family = font.family;
+  activeText.fontInfo.size = font.size;
+  activeText.fontInfo.weight = font.weight;
+  activeText.fontInfo.style = font.style;
+  if (mode.value === 'editing') {
+    editorRef.value?.refreshActiveFont();
+  }
+  await rerender();
+};
+// The active block can change while the text editor is open (add/remove/
+// previous/next controls inside textGroupEditorComp); keep this dialog's
+// font picker in sync with whichever block just became active.
+const onActiveBlockChanged = (font: FontInfo) => {
+  fontInfo.value = { ...font };
+};
+
+// --- Page behavior (User Story 4) ---
+const paginationOptions: SelectOption[] = [
+  { value: SmoTextGroup.paginations.ONCE.toString(), label: 'Once' },
+  { value: SmoTextGroup.paginations.EVERY.toString(), label: 'Every' },
+  { value: SmoTextGroup.paginations.ODD.toString(), label: 'Odd' },
+  { value: SmoTextGroup.paginations.SUBSEQUENT.toString(), label: 'Subsequent' }
+];
+const onPaginationSelect = async (value: string) => {
+  const num = parseInt(value, 10);
+  pagination.value = num;
+  props.modifier.value.pagination = num;
+  await rerender();
+};
+
+// --- OK / Cancel / Remove ---
+const handleCommit = async () => {
+  syncEditorIfActive();
+  await props.commitCb();
+};
+</script>
+
+<template>
+  <dialogContainer :domId="domId" :label="label" :commitCb="handleCommit" :cancelCb="cancelCb" :removeCb="removeCb" classes="text-left">
+    <div v-if="mode === 'moving'">
+      <textDraggerComp ref="draggerRef" :domId="getId('dragger')" altLabel="Done Dragging Text"
+        :textGroup="modifier.value" :pageMap="view.renderer.pageMap" :scroller="view.tracker.scroller" :debug="view.debug"
+        :pageLayout="pageLayout" @stop="onDragStop" @reposition="onReposition" />
+    </div>
+    <template v-else>
+      <div v-if="mode === 'editing'">
+        <textGroupEditorComp ref="editorRef" :domId="getId('editor')" :textGroup="modifier.value" :view="view"
+          @active-block-changed="onActiveBlockChanged" :rerender="rerender"/>
+        <div class="row mb-2 ms-2 align-items-center">
+          <div class="col col-6">
+            <selectComp :domId="getId('insert-special')" label="Insert Special" :selections="insertOptions"
+              :initialValue="''" :changeCb="insertSpecial" />
+          </div>
+          <div class="col col-6">
+            <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('done-editing')"
+              @click.prevent="exitEditing">Done Editing Text</button>
+          </div>
+        </div>
+      </div>
+      <template v-else>
+        <div class="row mb-2 ms-2">
+          <div v-if="!isLandmark" class="col col-6">
+            <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('edit-text')"
+              @click.prevent="enterEditing"><span class="icon icon-pencil"></span></button>
+          </div>
+          <div class="col col-6">
+            <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('move-text')"
+              @click.prevent="enterMoving"><span class="icon icon-move"></span></button>
+          </div>
+        </div>
+        <div class="row mb-2 ms-2 align-items-center">
+          <div class="col col-6">
+            <numberInputApp :domId="getId('x-position')" :precision="0" :initialValue="xPosition" :changeCb="onXChange" />
+            <span class="d-inline-block ps-1">X Pos</span>
+          </div>
+          <div class="col col-6">
+            <numberInputApp :domId="getId('y-position')" :precision="0" :initialValue="yPosition" :changeCb="onYChange" />
+          <span class="d-inline-block ps-1">Y Pos</span>
+          </div>
+        </div>
+      </template>
+      <template v-if="mode !== 'editing'">
+        <fontPickerComp :domId="getId('font')" label="Font" :font="fontInfo" :changeCb="onFontChange" />
+        <div v-if="!isLandmark" class="row mb-2 ms-2 align-items-center">
+          <div class="col col-3">Page Behavior</div>
+          <div class="col col-5">
+            <selectComp :key="pagination" :domId="getId('pagination')" label="Page Behavior" :selections="paginationOptions"
+              :initialValue="pagination.toString()" :changeCb="onPaginationSelect" />
+          </div>
+        </div>
+      </template>
+    </template>
+  </dialogContainer>
+</template>

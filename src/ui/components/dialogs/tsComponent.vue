@@ -28,8 +28,8 @@ const denCb =  (async  (newValue: number) => {
 });
 </script>
 <template>
-  <div class="row justify-content-center">
-    <div class="btn border-0 m-0 p-0 flex-column">
+  <div class="row justify-content-center my-1">
+    <div class="btn border-0 m-0 p-0 flex-column ts-num">
       <tsNumberInput :domId="id('num')" :minValue="1" :maxValue="24" :initialValue="numerator" :denominator="false"
         :changeCb="numCb" />
       <tsNumberInput :domId="id('den')" :minValue="1" :maxValue="16" :initialValue="denominator" :denominator="true"

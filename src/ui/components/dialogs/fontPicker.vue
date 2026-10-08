@@ -6,11 +6,13 @@ import { SourceSansProFont } from '../../../styles/font_metrics/ssp-sans-metrics
 import selectComp from './select.vue';
 
 import numberInputApp from './numberInput.vue';
+import toggle from './toggle.vue';
 import { ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
   label: string,
-  font: FontInfo
+  font: FontInfo,
+  changeCb?: (font: FontInfo) => void
 };
 const props = defineProps<Props>();
 const fontFamilies: SelectOption[] = [
@@ -43,48 +45,62 @@ if (!isNaN(fontCopy.size as number)) {
   fontSize.value = fontCopy.size as number;
 }
 const isBold = ref(fontCopy.weight === 'bold');
+const isItalic = ref(fontCopy.style === 'italic');
+let suppressNotify = false;
 watch(isBold, (newVal) => {
   fontCopy.weight = newVal ? 'bold' : 'normal';
+  if (!suppressNotify) {
+    props.changeCb?.({ ...fontCopy });
+  }
 });
-const isItalic = ref(fontCopy.style === 'italic');
 watch(isItalic, (newVal) => {
   fontCopy.style = newVal ? 'italic' : 'normal';
+  if (!suppressNotify) {
+    props.changeCb?.({ ...fontCopy });
+  }
 });
 const changeSizeCb = async (size: number) => {
   fontCopy.size = size;
+  props.changeCb?.({ ...fontCopy });
 };
 const changeFamilyCb = async (family: string) => {
   fontCopy.family = family;
+  props.changeCb?.({ ...fontCopy });
 };
+// Resync from the parent when the underlying font changes externally
+// (e.g. the active text block changes after a rich-text edit session).
+watch(() => props.font, (next) => {
+  suppressNotify = true;
+  fontCopy.family = next.family ?? 'Arial';
+  fontCopy.size = next.size ?? 12;
+  fontCopy.weight = next.weight ?? 'normal';
+  fontCopy.style = next.style ?? 'normal';
+  if (!isNaN(fontCopy.size as number)) {
+    fontSize.value = fontCopy.size as number;
+  }
+  isBold.value = fontCopy.weight === 'bold';
+  isItalic.value = fontCopy.style === 'italic';
+  suppressNotify = false;
+});
 </script>
 <template>
+  <div class="group">
+    <div class="group-label">{{ label }}</div>    
+    <div class="grow-row mb-2">
+      <selectComp :domId="getId('font-family-select')" :label="'Family'" :selections="fontFamilies"
+        :initialValue="fontCopy.family" :changeCb="changeFamilyCb" :inline="true" />
+      <numberInputApp :domId="getId('page-width-input')" :initialValue="fontSize" :precision="1"
+        :changeCb="changeSizeCb" :disabled="false" label="Size" :inline="true" />
+    </div>
   <div class="row mb-2 ms-2">
-    <div class="col col-3">
-      <label class="form-label fw-bolder" :for="getId('size-label')">{{ label }}</label>
+    <div class="col col-6 ps-0">
+      <toggle :domId="getId('font-weight')" :label="'Bold'" :initialValue="isBold"
+        :changeCb="(value: boolean) => { isBold = value }" />
     </div>
-    <div class="col col-5 pe-0">
-      <selectComp :domId="getId('font-family-select')" :label="''" :selections="fontFamilies"
-        :initialValue="fontCopy.family" :changeCb="changeFamilyCb" />
-    </div>
-    <div class="col col-3">
-      <label class="form-label" :for="getId('family-label')">Font Family</label>
+    <div class="col col-6 ps-0">
+      <toggle :domId="getId('font-style')" :label="'Italic'" :initialValue="isItalic"
+        :changeCb="(value: boolean) => { isItalic = value }" />
     </div>
   </div>
-  <div class="row mb-2 ms-2">
-    <div class="col col-4 pe-0">
-      <numberInputApp :domId="getId('page-width-input')" :initialValue="fontSize" :precision="1"
-        :changeCb="changeSizeCb" :disabled="false" />
-    </div>
-    <div class="col col-2 text-start ps-0 pe-0">
-      <label class="form-label" :for="getId('size-label')">Size</label>
-    </div>
-    <div class="col col-3 ps-0">
-      <input class="form-check-input me-2" type="checkbox" v-model="isBold" :id="getId('font-weight')"></input>
-      <label class="form-check-label" :for="getId('font-weight')">Bold</label>
-    </div>
-    <div class="col col-3 ps-0">
-      <input class="form-check-input me-2" type="checkbox" v-model="isItalic" :id="getId('font-style')"></input>
-      <label class="form-check-label" :for="getId('font-style')">Italic</label>
-    </div>
   </div>
 </template>

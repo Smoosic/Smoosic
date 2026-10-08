@@ -12,14 +12,20 @@ export const SuiGlobalLayoutDialogVue = (parameters: SuiDialogParams) => {
   const currentValue = reactive(parameters.view.score.layoutManager!.globalLayout);
   const getLayout = () => currentValue;
   const backup = JSON.parse(JSON.stringify(currentValue));
+  // `currentValue` is a reactive wrapper around the score's live layout object, so by the
+  // time this watcher fires, the mutation has already happened. `previousValue` is the only
+  // reliable record of what the layout was before that mutation.
+  let previousValue = JSON.parse(JSON.stringify(currentValue));
   let changed = false;
   watch(currentValue, async (newValue) => {
-    await parameters.view.setGlobalLayout(newValue);
+    const oldValue = previousValue;
+    await parameters.view.setGlobalLayout(newValue, oldValue);
+    previousValue = JSON.parse(JSON.stringify(newValue));
     changed = true;
   });
   const cancelCb = async () => {
     if (changed) {
-      await parameters.view.setGlobalLayout(backup);
+      await parameters.view.setGlobalLayout(backup, previousValue);
     }
   }
   const commitCb = async () => {};

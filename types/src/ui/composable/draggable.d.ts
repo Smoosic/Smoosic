@@ -9,4 +9,7 @@ export interface DraggableSession {
     };
     getLocString: () => string;
 }
-export declare const draggableSession: (domId: string, cssClass?: string) => DraggableSession;
+export declare const draggableSession: (domId: string, cssClass?: string, initialPosition?: {
+    top: number;
+    left: number;
+}) => DraggableSession;

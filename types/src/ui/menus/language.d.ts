@@ -1,12 +1,7 @@
-import { SuiMenuBase, SuiMenuParams, MenuDefinition } from './menu';
+import { SuiMenuParams, SuiConfiguredMenu } from './menu';
 /**
  * @category SuiMenu
  */
-export declare class SuiLanguageMenu extends SuiMenuBase {
+export declare class SuiLanguageMenu extends SuiConfiguredMenu {
     constructor(params: SuiMenuParams);
-    static get ctor(): string;
-    static defaults: MenuDefinition;
-    getDefinition(): MenuDefinition;
-    selection(ev: any): Promise<void>;
-    keydown(): void;
 }

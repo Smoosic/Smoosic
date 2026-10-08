@@ -818,7 +818,12 @@ export class SmoSystemStaff implements SmoObjectParams {
     let i = 0;
     let symbol = '';
     var mark = new SmoRehearsalMark(parameters);
-    if (!mark.increment) {
+    // if we are given an existing mark, keep its id so whoever holds it can find this copy
+    if (parameters instanceof SmoRehearsalMark) {
+      mark.attrs.id = parameters.attrs.id;
+    }
+    // marks that show the measure number are not part of any letter/number series
+    if (!mark.increment || mark.cardinality === SmoRehearsalMark.cardinalities.measureNumber) {
       this.measures[index].addRehearsalMark(mark);
       return;
     }
@@ -865,7 +870,8 @@ export class SmoSystemStaff implements SmoObjectParams {
     this.measures.forEach((measure) => {
       if (ix === index) {
         const mark: SmoRehearsalMark = measure.getRehearsalMark() as SmoRehearsalMark;
-        if (mark) {
+        // a measure-number mark is not in a series, so removing it doesn't resequence the others
+        if (mark && mark.cardinality !== SmoRehearsalMark.cardinalities.measureNumber) {
           symbol = mark.symbol;
           card = mark.cardinality;
         }
@@ -873,7 +879,7 @@ export class SmoSystemStaff implements SmoObjectParams {
       }
       if (ix > index && symbol && card) {
         const mark: SmoRehearsalMark = measure.getRehearsalMark() as SmoRehearsalMark;
-        if (mark && mark.increment) {
+        if (mark && mark.increment && mark.cardinality !== SmoRehearsalMark.cardinalities.measureNumber) {
           mark.symbol = symbol;
           symbol = mark.getIncrement();
         }

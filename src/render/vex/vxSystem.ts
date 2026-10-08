@@ -12,13 +12,13 @@ import { SmoMeasure, SmoVoice } from '../../smo/data/measure';
 import { SvgBox, ElementLike, RemoveElementLike } from '../../smo/data/common';
 import { SmoNote } from '../../smo/data/note';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
-import { SmoVolta } from '../../smo/data/measureModifiers';
+import { SmoVolta, SmoRehearsalMark } from '../../smo/data/measureModifiers';
 import { SmoMeasureFormat } from '../../smo/data/measureModifiers';
 import { SmoScoreText } from '../../smo/data/scoreText'
 import { SvgPage } from '../sui/svgPageMap';
 import { SuiScroller } from '../sui/scroller';
 import { VexFlow, Voice, Note, createHairpin, createSlur, createTie, PedalMarking, StaveNote,
-  Beam, Stem
+  Beam, Stem, StaveSection, VexTextMetrics
  } from '../../common/vex';
 import { toVexVolta, vexOptions } from './smoAdapter';
 const VF = VexFlow;
@@ -115,6 +115,17 @@ export class VxSystem {
       });
     }
   }
+  _updateAnnotationOffsets(note: SmoNote) {
+    const annotations = note.getAnnotations();
+    annotations.forEach((bannotation) => {
+      const annotation = bannotation as SmoLyric;
+      const dom = this.context.svg.getElementById('vf-' + annotation.attrs.id);
+      if (dom) {
+        dom.setAttributeNS('', 'transform',
+          'translate(' + annotation.translateX + ' ' + (-1 * annotation.translateY) + ')');
+      }
+    });
+  }
   _lowestYLowestVerse(lyrics: SmoLyric[], vxMeasures: VxMeasure[]) {
     // Move each verse down, according to the lowest lyric on that line/verse,
     // and the accumulation of the verses above it
@@ -185,6 +196,7 @@ export class VxSystem {
         smoMeasure.voices.forEach((voice) => {
           voice.notes.forEach((note) => {
             this._updateChordOffsets(note);
+            this._updateAnnotationOffsets(note);
             note.getTrueLyrics().forEach((ll: SmoLyric) => {
               const hasLyric = ll.getText().length > 0 || ll.isHyphenated();
               if (hasLyric && ll.logicalBox && !lyricVerseMap[ll.verse]) {
@@ -576,6 +588,36 @@ export class VxSystem {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Computes SmoRehearsalMark.logicalBox for the first-row measures of this system, replicating
+   * VexFlow's StaveSection.draw() geometry (stave.setSection in vxMeasure.ts), so mouse hit-testing
+   * matches where the rehearsal mark glyph is actually drawn. See specs/025-rehearsal-mark-dialog.
+   */
+  renderRehearsalMarks() {
+    for (let j = 0; j < this.smoMeasures.length; ++j) {
+      const smoMeasure = this.smoMeasures[j];
+      const rm = smoMeasure.getRehearsalMark() as SmoRehearsalMark | undefined;
+      const rmText = smoMeasure.getRehearsalMarkText();
+      if (!rm || rmText === undefined || smoMeasure.svg.rowInSystem !== 0) {
+        continue;
+      }
+      const vxMeasure = this.getVxMeasure(smoMeasure);
+      if (!vxMeasure || !vxMeasure.stave) {
+        continue;
+      }
+      const stave = vxMeasure.stave;
+      const formatter = VexTextMetrics.create(StaveSection.TEXT_FONT);
+      const textY = formatter.getYForStringInPx(rmText);
+      const padding = 2;
+      const width = formatter.getWidthForTextInPx(rmText) + 2 * padding;
+      const height = textY.height + 2 * padding;
+      const headroom = -1 * textY.yMin;
+      // Stave coordinates are relative to this page's svg; logicalBox is absolute, as offsetBbox produces.
+      const y = stave.getYForTopText(1.5) + this.context.box.y;
+      rm.logicalBox = { x: stave.getX() + this.context.box.x, y: y - height + headroom, width, height };
     }
   }
 

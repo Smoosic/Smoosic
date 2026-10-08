@@ -649,7 +649,7 @@ export class SmoToXml {
       if (mark) {
         const rmtype = nn(directionElement, 'direction-type', null, '');
         const xmark = (mark as SmoRehearsalMark);
-        const rElement = nn(rmtype, 'rehearsal', { mark: xmark.symbol }, 'mark');
+        const rElement = nn(rmtype, 'rehearsal', { mark: measure.getRehearsalMarkText() ?? xmark.symbol }, 'mark');
         XmlHelpers.createAttribute(rElement, 'enclosure', 'square');
         XmlHelpers.createAttribute(directionElement, 'placement', 'above');
         addDirection = true;

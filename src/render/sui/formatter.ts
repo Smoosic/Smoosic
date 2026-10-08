@@ -731,8 +731,8 @@ export class SuiLayoutFormatter {
             (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
             / columnCount);
         } else {
-          justifyX = Math.round((scoreLayout.pageWidth - (scoreLayout.leftMargin + scoreLayout.rightMargin + 
-            (rightStaff.staffX - pageLeftMargin) + rightStaff.staffWidth + missingOffset))
+          justifyX = Math.round((scoreLayout.pageWidth - scoreLayout.rightMargin - 
+            (rightStaff.staffX + rightStaff.staffWidth + missingOffset))
             / columnCount);
         }
       }

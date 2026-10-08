@@ -1,23 +1,24 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { buildDom, createTopDomContainer } from '../../common/htmlHelpers';
-import { SvgBox } from '../../smo/data/common';
+import { createTopDomContainer } from '../../common/htmlHelpers';
+import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { SuiBeamMenu, SuiBeamMenuOptions } from './beams';
 import { layoutDebug } from '../../render/sui/layoutDebug';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
-import { SuiKeySignatureDialog } from '../dialogs/keySignature';
+import { SuiKeySignatureDialogVue } from '../dialogs/keySignatureVue';
 import { SuiTracker } from '../../render/sui/tracker';
-import { CompleteNotifier, ModalComponent } from '../common';
+import { CompleteNotifier, ModalComponent, replaceVueRoot } from '../common';
 import { BrowserEventSource, EventHandler } from '../eventSource';
-import { createAndDisplayDialog } from '../dialogs/dialog';
 import { KeyBinding } from '../../application/common';
 import { Qwerty } from '../qwerty';
 import { SuiLanguageMenu } from './language';
 import { SuiFileMenu } from './file';
+import { App, createApp } from 'vue';
+import menuComponent from '../components/menus/menu.vue';
 
-import { SuiMenuBase, SuiMenuParams, suiMenuTranslation, 
-  MenuTranslations, suiConfiguredMenuTranslate } from './menu';
+import { SuiMenuParams, 
+  SuiConfiguredMenu, MenuTranslations, suiConfiguredMenuTranslate } from './menu';
 import { SuiScoreMenu } from './score';
 import { SuiStaffModifierMenu } from './staffModifier';
 import { SuiMeasureMenu } from './measure';
@@ -53,9 +54,9 @@ export class SuiMenuManager {
   undoBuffer: UndoBuffer;
   menuContainer: HTMLElement;
   bound: boolean = false;
-  hotkeyBindings: Record<string, string> = {};
   closeMenuPromise: Promise<void> | null = null;
-  menu: SuiMenuBase | null = null;
+  menu: SuiConfiguredMenu | null = null;
+  menuApp: App | null = null;
   keydownHandler: EventHandler | null = null;
   menuPosition: SvgBox = { x: 250, y: 40, width: 1, height: 1 };
   tracker: SuiTracker;
@@ -148,20 +149,9 @@ export class SuiMenuManager {
       }
     ];
   }
-  get optionElements() {
-    return $('.menuContainer ul.menuElement li.menuOption');
-  }
-  _advanceSelection(inc: number) {
-    if (!this.menu) {
-      return;
-    }
-    const options = this.optionElements;
-    inc = inc < 0 ? options.length - 1 : 1;
-    this.menu.focusIndex = (this.menu.focusIndex + inc) % options.length;
-    $(options[this.menu.focusIndex]).find('a').trigger('focus');
-  }
-
   unattach() {
+    this.menuApp?.unmount();
+    this.menuApp = null;
     if (!this.keydownHandler) {
       return;
     }
@@ -177,39 +167,39 @@ export class SuiMenuManager {
     if (!this.menu) {
       return;
     }
-    let hotkey = 0;
-
-    $(this.menuContainer).html('');
+    this.menuApp?.unmount();
+    if (!this.menuContainer.id) {
+      this.menuContainer.id = 'menuContainer';
+    }
     $(this.menuContainer).attr('z-index', '12');
-    const b = buildDom;
-    const r = b('ul').classes('menuElement dropdown-menu rounded-3 shadow w-220px show').attr('size', this.menu.menuItems.length.toString())
-       .attr('role', 'menu')
-      .css('left', '' + this.menuPosition.x + 'px')
-      .css('top', '' + this.menuPosition.y + 'px');
-    this.menu.menuItems.forEach((item) => {
-      var vkey = (hotkey < 10) ? String.fromCharCode(48 + hotkey) :
-        String.fromCharCode(87 + hotkey);
-
-      r.append(
-        b('li').classes('menuOption').append(
-          b('a').attr('data-value', item.value).attr('href','#')
-            .attr('role', 'menuItem').classes('dropdown-item').append(
-            b('span').classes('menuText').text(item.text))
-            .append(b('span').classes('icon icon-' + item.icon))
-            .append(b('span').classes('menu-key').text('' + vkey))));
-      item.hotkey = vkey;
-      hotkey += 1;
+    $(this.menuContainer).css('left', '' + this.menuPosition.x + 'px');
+    $(this.menuContainer).css('top', '' + this.menuPosition.y + 'px');
+    const domId = replaceVueRoot(this.menuContainer);
+    const menuParams: SuiMenuParams = {
+      ctor: this.menu.ctor,
+      tracker: this.menu.tracker,
+      score: this.menu.score,
+      completeNotifier: this.menu.completeNotifier,
+      closePromise: this.menu.closePromise,
+      view: this.menu.view,
+      eventSource: this.menu.eventSource,
+      undoBuffer: this.menu.undoBuffer
+    };
+    this.menuApp = createApp(menuComponent, {
+      domId,
+      menuParams,
+      menuStructure: this.menu
     });
-    $(this.menuContainer).append(r.dom());
+    this.menuApp.mount('#' + domId);
     $('body').addClass('modal');
     this.bindEvents();
   }
 
   captureMenuEvents(completeNotifier: CompleteNotifier) {
     var self = this;
-    if (this.closeMenuPromise) {
-      console.log('menu already open, skipping');
-      return;
+    if (this.closeMenuPromise) {  // close already-open menu
+      this.dismiss();
+      completeNotifier.unbindKeyboardForModal(this as ModalComponent);
     }
     this.bindEvents();
     this.debug.addDialogDebug('slash menu creating closeMenuPromise');
@@ -232,32 +222,23 @@ export class SuiMenuManager {
   dismiss() {
     $('body').trigger('menuDismiss');
   }
-  displayMenu(menu: SuiMenuBase | null) {
+  displayMenu(menu: SuiConfiguredMenu) {
     this.menu = menu;
     if (!this.menu) {
       return;
     }
     this.menu.preAttach();
     this.attach();
-    this.menu!.menuItems.forEach((item) => {
-      if (typeof(item.hotkey) !== 'undefined') {
-        this.hotkeyBindings[item.hotkey] = item.value;
-      }
-    });
-    setTimeout(() => {
-      const options = this.optionElements;
-      if (options.length > 0) {
-        $(options[options.length - 1]).find('a').trigger('focus');
-      }  
-    }, 1);
   }
 
-  createMenu(action: string, notifier: CompleteNotifier) {
+  async createMenu(action: string, notifier: CompleteNotifier, anchor?: SvgPoint) {
     this.captureMenuEvents(notifier);
     if (!this.completeNotifier) {
       return;
     }
-    this.menuPosition = { x: 250, y: 40, width: 1, height: 1 };
+    this.menuPosition = anchor ?
+      { x: anchor.x, y: anchor.y, width: 1, height: 1 } :
+      { x: 250, y: 40, width: 1, height: 1 };
     // If we were called from the ribbon, we notify the controller that we are
     // taking over the keyboard.  If this was a key-based command we already did.
     this.debug.addDialogDebug('createMenu creating ' + action);
@@ -302,6 +283,7 @@ export class SuiMenuManager {
     } else if (action === 'SuiTextMenu') {
       this.displayMenu(new SuiTextMenu(params));
     }
+    return this.closeMenuPromise;
   }
   // ### evKey
   // We have taken over menu commands from controller.  If there is a menu active, send the key
@@ -316,15 +298,6 @@ export class SuiMenuManager {
       this.dismiss();
     }
     if (this.menu) {
-      if (event.code === 'ArrowUp') {
-        this._advanceSelection(-1);
-      } else if (event.code === 'ArrowDown') {
-        this._advanceSelection(1);
-      } else  if (this.hotkeyBindings[event.key]) {
-        $('a[data-value="' + this.hotkeyBindings[event.key] + '"]').click();
-      } else {
-        this.menu.keydown();
-      }
       return;
     }
     const binding = this.menuBind.find((ev) =>
@@ -333,7 +306,7 @@ export class SuiMenuManager {
     if (!binding) {
       // TODO: find a better place for the slash menus
       if (event.key === 'k') {
-        createAndDisplayDialog(SuiKeySignatureDialog, {
+        SuiKeySignatureDialogVue({
           view: this.view,
           completeNotifier: this.completeNotifier,
           startPromise: null,
@@ -351,7 +324,6 @@ export class SuiMenuManager {
   }
 
   bindEvents() {
-    this.hotkeyBindings = { };
     $('body').addClass('slash-menu d-block');
     // We need to keep track of is bound, b/c the menu can be created from
     // different sources.
@@ -360,13 +332,6 @@ export class SuiMenuManager {
       this.keydownHandler = this.eventSource.bindKeydownHandler(evkey);
       this.bound = true;
     }
-    $(this.menuContainer).find('a.dropdown-item').off('click').on('click', async (ev: any) => {
-      if ($(ev.currentTarget).attr('data-value') === 'cancel') {
-        this.menu!.complete();
-        return;
-      }
-      await this.menu!.selection(ev);
-    });
   }
 }
 export const menuTranslationsInit = () => {  

@@ -47,6 +47,7 @@ export declare class VxNote {
     createJazzOrnaments(): void;
     createOrnaments(): void;
     addLyricAnnotationToNote(vexNote: Note, lyric: SmoLyric): void;
+    addAnnotationToNote(vexNote: Note, annotation: SmoLyric): void;
     addChordChangeToNote(vexNote: Note, lyric: SmoLyric): void;
     createLyric(): void;
     createGraceNotes(): void;

@@ -40,57 +40,38 @@ const getId = (str: string) => {
 <template>
   <dialogContainer :domId="domId" label="Page Layout" :commitCb="props.commitCb" :cancelCb="props.cancelCb">
     <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+      <div class="col col-6">
         <numberInputApp :domId="getId('page-width-input')" :initialValue="currentLayout.leftMargin" :precision="0"
-          :changeCb="updateLayout('leftMargin')" />
+          :changeCb="updateLayout('leftMargin')" label="Left Margin" />
       </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Left Margin</span>
-      </div>
-      <div class="col col-4 ms-n4">
+      <div class="col col-6">
         <numberInputApp :domId="getId('page-height-input')" :initialValue="currentLayout.rightMargin" :precision="0"
-          :changeCb="updateLayout('rightMargin')" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Right Margin</span>
+          :changeCb="updateLayout('rightMargin')" label="Right Margin"/>
       </div>
     </div>
     <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+      <div class="col col-6">
         <numberInputApp :domId="getId('zoom-scale-input')" :initialValue="currentLayout.topMargin" :precision="0"
-          :changeCb="updateLayout('topMargin')" />
+          :changeCb="updateLayout('topMargin')" label="Top Margin"/>
       </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Top Margin</span>
-      </div>
-      <div class="col col-4 ms-n4">
+      <div class="col col-6">
         <numberInputApp :domId="getId('zoom-scale-input')" :initialValue="currentLayout.bottomMargin" :precision="0"
-          :changeCb="updateLayout('bottomMargin')" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Bottom Margin</span>
+          :changeCb="updateLayout('bottomMargin')" label="Bottom Margin"/>
       </div>
     </div>
     <div class="row mb-2 align-items-center">
-      <div class="col col-4">
+      <div class="col col-6">
         <numberInputApp :domId="getId('svg-scale-input')" :initialValue="currentLayout.interGap" :precision="0"
-          :changeCb="updateLayout('interGap')" />
+          :changeCb="updateLayout('interGap')" label="Inter-System Gap"/>
       </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Inter-System Gap</span>
-      </div>
-      <div class="col col-4 ms-n4">
+      <div class="col col-6">
         <numberInputApp :domId="getId('note-spacing-input')" :initialValue="currentLayout.intraGap" :precision="0"
-          :changeCb="updateLayout('intraGap')" />
-      </div>
-      <div class="col col-2 fs-7 ms-n4 ps-0 text-start">
-        <span class="form-check-label">Intra-System Gap</span>
+          :changeCb="updateLayout('intraGap')" label="Intra-System Gap" />
       </div>
     </div>
     <div class="row mb-2">
-      <div class="col col-3 text-end">Apply To</div>
-      <div class="col col-6">
-        <selectComp :domId="getId('page-size-select')" :label="''" :selections="applyToOptions" :initialValue="applyTo"
+      <div class="col col-12">
+        <selectComp :domId="getId('page-size-select')" label="Apply To" :selections="applyToOptions" :initialValue="applyTo"
           :changeCb="updateApplyTo" />
       </div>
     </div>

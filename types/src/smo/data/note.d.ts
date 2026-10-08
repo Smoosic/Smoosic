@@ -330,10 +330,15 @@ export declare class SmoNote implements Transposable {
     longestLyric(): SmoLyric | null;
     /** Add a lyric to this note, replacing another in the same verse */
     addLyric(lyric: SmoLyric): void;
+    addAnnotation(annotation: SmoLyric): void;
     /**
      * @returns array of lyrics that are lyrics
      */
     getTrueLyrics(): SmoLyric[];
+    /**
+      * @returns array of lyrics that are annotations
+      */
+    getAnnotations(): SmoLyric[];
     /**
      *
      * @returns array of SmoLyric whose parsers are chord
@@ -344,6 +349,12 @@ export declare class SmoNote implements Transposable {
      * @param lyric lyric to remove, find the best match if there are multiples
      */
     removeLyric(lyric: SmoLyric): void;
+    /**
+     *
+     * @param lyric lyric to remove, find the best match if there are multiples
+     */
+    removeAnnotations(annotation: SmoLyric): void;
+    removeAllAnnotations(): void;
     /**
      *
      * @param verse

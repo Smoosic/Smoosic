@@ -1,0 +1,9 @@
+hooks:
+  after_plan:
+    - command: speckit.tasks
+      description: "Auto-generate tasks.md from the plan that was just created"
+      optional: false
+  after_tasks:
+    - command: speckit.implement
+      description: "Auto-implement the tasks that were just generated"
+      optional: false

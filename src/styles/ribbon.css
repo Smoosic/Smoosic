@@ -1,12 +1,61 @@
 :root {
-  --button-border-color: #221191;
-  --button-shadow-color: #346;
+--color-bg: #f3f2f2;
+    --color-surface: #eae9e9;
+    --color-text: #201e1d;
+    --color-accent: #0088b0;
+    --color-accent-2: #d6006c;
+    --color-divider: 
+color-mix(in srgb, #201e1d 16%, transparent);
+    --color-neutral-100: #f8f4f4;
+    --color-neutral-200: #eae7e7;
+    --color-neutral-300: #d7d3d3;
+    --color-neutral-400: #bab6b6;
+    --color-neutral-500: #9b9797;
+    --color-neutral-600: #7d7979;
+    --color-neutral-700: #605d5d;
+    --color-neutral-800: #444141;
+    --color-neutral-900: #2d2b2b;
+    --color-accent-100: #e9f8ff;
+    --color-accent-200: #cbeeff;
+    --color-accent-300: #99e0ff;
+    --color-accent-400: #62c5ee;
+    --color-accent-500: #38a6cf;
+    --color-accent-600: #1186ac;
+    --color-accent-700: #006786;
+    --color-accent-800: #004961;
+    --color-accent-900: #0a303e;
+    --color-accent-2-100: #fff1f4;
+    --color-accent-2-200: #ffdee6;
+    --color-accent-2-300: #ffc0d0;
+    --color-accent-2-400: #ff90b1;
+    --color-accent-2-500: #ff458e;
+    --color-accent-2-600: #d82071;
+    --color-accent-2-700: #aa0b56;
+    --color-accent-2-800: #790e3d;
+    --color-accent-2-900: #4b1528;
+    --color-process-yellow: #edbb00;
+    --font-heading: "Source Serif 4", system-ui, sans-serif;
+    --font-heading-weight: 600;
+    --font-body: "Source Serif 4", system-ui, sans-serif;
+    --space-1: 5.0px;
+    --space-2: 10.0px;
+    --space-3: 15.0px;
+    --space-4: 20.0px;
+    --space-6: 30.0px;
+    --space-8: 40.0px;
+    --radius-sm: 1px;
+    --radius-md: 2px;
+    --radius-lg: 4px;
+    --shadow-sm: 0 1px 2px 
+color-mix(in srgb, #2d2b2b 14%, transparent);
+    --shadow-md: 0 3px 10px 
+color-mix(in srgb, #2d2b2b 16%, transparent);
+    --shadow-lg: 0 12px 32px 
+color-mix(in srgb, #2d2b2b 22%, transparent);
+  --ribbon-h: 48px;
+  --rbtn: 34px;
 }
 
-.control-bar {
-  display:flex;
-  flex:1 1 auto;
-}
 .controls-top .ribbonButtonContainer {
   margin-left: 1rem;
 	margin-bottom: 0.5rem;
@@ -19,12 +68,6 @@
   background-color: #212935;
   color: #fff;
   border-color: #212935;
-}
-.control-bar .titleText {
-  display:flex;
-  flex:60px;
-  justify-content:center;
-  align-self:center;
 }
 
 @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
@@ -467,4 +510,93 @@ button.hover-text .ribbon-button-hotkey {
 
 .control-bar .collapsed {
 	display:none;
+}
+
+.ribbon-host {
+    container-type: inline-size;
+    min-width: 0;
+    background: #fff
+}
+
+.ribbon {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--ribbon-h);
+    padding: 0 10px;
+    background: var(--color-neutral-100);
+    border-bottom: 1px solid var(--dlg-rule);
+    font-family: var(--font-body);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.rbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex: none;
+    width: var(--rbtn);
+    height: var(--rbtn);
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--dlg-radius-btn);
+    color: var(--color-text);
+    font: 400 13px / 1 var(--font-body);
+    cursor: pointer;
+}
+.rbtn.is-on {
+    background: var(--color-accent);
+    border-color: var(--color-accent-700);
+    color: #fff;
+}
+.ribbon-sep {
+    flex: none;
+    width: 1px;
+    height: 22px;
+    margin: 0 4px;
+    background: var(--dlg-rule);
+    display:block;
+}
+.rbtn.has-text {
+    width: auto;
+    padding: 0 8px 0 6px;
+    gap: 6px;
+}
+.rbtn-label {
+    white-space: nowrap;
+}
+.ribbon-spacer {
+    flex: 1 1 auto;
+    min-width: 8px;
+    display:block;
+}
+.rpart {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    height: var(--rbtn);
+    min-width: 140px;
+    padding: 0 8px 0 9px;
+    background: var(--dlg-field);
+    border: 1px solid var(--dlg-line);
+    border-radius: var(--dlg-radius-btn);
+    color: var(--color-text);
+    font: 400 13px / 1 var(--font-body);
+    cursor: pointer;
+}
+.rpart-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+.rpart-count {
+    font: 400 11px / 1 var(--font-body);
+    color: var(--color-neutral-500);
+    font-variant-numeric: tabular-nums;
 }

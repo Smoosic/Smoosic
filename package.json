@@ -10,6 +10,13 @@
   },
   "types": "./types/src/application/exports.ts",
   "dependencies": {
+    "@tiptap/extension-subscript": "^3.30.0",
+    "@tiptap/extension-superscript": "^3.30.0",
+    "@tiptap/extension-text-align": "^3.30.0",
+    "@tiptap/extension-text-style": "^3.30.0",
+    "@tiptap/pm": "^3.30.0",
+    "@tiptap/starter-kit": "^3.30.0",
+    "@tiptap/vue-3": "^3.30.0",
     "@types/qunit": "^2.19.11",
     "express": "^5.1.0",
     "midi-parser-js": "^4.0.4",
@@ -20,7 +27,7 @@
     "ts-loader": "^9.2.5",
     "typedoc": "^0.28.14",
     "typescript": "^5.9.3",
-    "vexflow_smoosic": "4.2.16",
+    "vexflow_smoosic": "4.2.17",
     "vue": "^3.5.25",
     "vue-loader": "^17.4.2",
     "xmldom": "^0.6.0"
@@ -37,6 +44,10 @@
   },
   "scripts": {
     "test": "exit 0",
+    "test:attached-text": "ts-node -P tests/tsconfig.json tests/attachedTextMigration.ts",
+    "test:global-layout-reposition": "ts-node -P tests/tsconfig.json tests/globalLayoutTextReposition.ts",
+    "test:text-drag-placement": "ts-node -P tests/tsconfig.json tests/textDragPlacement.ts",
+    "test:rehearsal-measure-number": "ts-node -P tests/tsconfig.json tests/rehearsalMarkMeasureNumber.ts",
     "server": "node ./build/index.js",
     "build": "node ./build/build.js",
     "types": "node ./build/build.js types",

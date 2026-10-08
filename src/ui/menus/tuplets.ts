@@ -1,7 +1,6 @@
 import { SuiMenuBase, SuiMenuParams, MenuDefinition, SuiMenuHandler, SuiMenuShowOption,
     SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
-import {createAndDisplayDialog} from "../dialogs/dialog";
-import {SuiCustomTupletDialog} from "../dialogs/customTuplets";
+import {SuiCustomTupletDialogVue} from "../dialogs/customTupletsVue";
 
 declare var $: any;
 /**
@@ -23,7 +22,7 @@ const tripletMenuOption: SuiConfiguredMenuOption = {
         menu.view.makeTuplet({numNotes: 3, notesOccupied: 2, bracketed: true, ratioed: false});
     }, display: shouldDisplayCreateTuplet,
     menuChoice: {
-        icon: ' icon icon-smo icon-triplet',
+        icon: ' smoi icon-smo icon-triplet',
         text: 'Make Triplet',
         hotkey: 'Ctrl-3',
         value: 'tripletMenuOption'
@@ -38,7 +37,7 @@ const quintupletMenuOption: SuiConfiguredMenuOption = {
     },
     display: shouldDisplayCreateTuplet,
     menuChoice: {
-        icon: 'icon-smo icon-quint',
+        icon: 'smoi oversize icon-smo icon-quint',
         text: 'Make 5-tuplet',
         hotkey: 'Ctrl-5',
         value: 'quintupletMenuOption'
@@ -53,7 +52,7 @@ const sevenTupletMenuOption: SuiConfiguredMenuOption = {
     },
     display: shouldDisplayCreateTuplet,
     menuChoice: {
-        icon: 'icon-smo icon icon-septuplet',
+        icon: 'icon-smo oversize smoi icon-septuplet',
         hotkey: 'Ctrl-7',
         text: 'Make 7-tuplet',
         value: 'sevenTupletMenuOption'
@@ -64,7 +63,7 @@ const sevenTupletMenuOption: SuiConfiguredMenuOption = {
  */
 const customTupletDialogMenuOption: SuiConfiguredMenuOption = {
     handler: async (menu: SuiMenuBase) => {
-        createAndDisplayDialog(SuiCustomTupletDialog, {
+        SuiCustomTupletDialogVue({
             view: menu.view,
             completeNotifier: menu.completeNotifier,
             startPromise: menu.closePromise,

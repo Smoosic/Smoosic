@@ -442,6 +442,47 @@ export class SuiScoreViewOperations extends SuiScoreView {
   }
 
   /**
+   * @param selector the selector of the note with the annotation to remove
+   * @param annotation a copy of the annotation to remove.  We use the verse, parser to identify it
+   * @returns render promise
+   */
+  async removeAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void> {
+    const selection = SmoSelection.noteFromSelector(this.score, selector);
+    if (selection === null) {
+      return PromiseHelpers.emptyPromise();
+    }
+    this._undoSelection('remove annotation', selection);
+    selection.note!.removeAnnotations(annotation);
+    const equiv = this._getEquivalentSelection(selection);
+    const storeAnnotation = equiv!.note!.getLyricForVerse(annotation.verse, annotation.parser);
+    if (typeof (storeAnnotation) !== 'undefined') {
+      equiv!.note!.removeAnnotations(annotation);
+    }
+    this.renderer.addToReplaceQueue(selection);
+    annotation.deleted = true;
+    await this.renderer.updatePromise();
+  }
+
+  /**
+   * @param selector where to add or update the annotation
+   * @param annotation a copy of the annotation to add/update
+   * @returns
+   */
+  async addOrUpdateAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void> {
+    const selection = SmoSelection.noteFromSelector(this.score, selector);
+    if (selection === null) {
+      return;
+    }
+    this._undoSelection('update annotation', selection);
+    selection.note!.addAnnotation(annotation);
+    const equiv = this._getEquivalentSelection(selection);
+    const altAnnotation = SmoNoteModifierBase.deserialize(annotation.serialize() as any) as SmoLyric;
+    equiv!.note!.addAnnotation(altAnnotation);
+    this.renderer.addToReplaceQueue(selection);
+    await this.renderer.updatePromise();
+  }
+
+  /**
    * Delete all the notes for the currently selected voice
    * @returns 
    */
@@ -1486,6 +1527,60 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this._renderChangedMeasures([selection]);
     return this.renderer.updatePromise();
   }
+  /**
+   * Finds the measure whose rehearsal mark has the given id, as a selection on the live score.
+   * Rehearsal marks are column-wide, so the first staff holding it identifies the measure.
+   * See specs/025-rehearsal-mark-dialog.
+   */
+  _findRehearsalMarkSelection(id: string): SmoSelection | null {
+    for (let i = 0; i < this.score.staves.length; ++i) {
+      const staff = this.score.staves[i];
+      for (let j = 0; j < staff.measures.length; ++j) {
+        const measure = staff.measures[j];
+        if (measure.getRehearsalMark()?.attrs.id === id) {
+          return SmoSelection.measureSelection(this.score, staff.staffId, measure.measureNumber.measureIndex);
+        }
+      }
+    }
+    return null;
+  }
+  /**
+   * Replaces an existing rehearsal mark's settings on its measure, on every staff and in the
+   * undo-copy store. Does nothing if the mark is no longer present (e.g. removed while its dialog
+   * was open). See specs/025-rehearsal-mark-dialog.
+   * @param mark the edited rehearsal mark
+   */
+  async updateRehearsalMark(mark: SmoRehearsalMark): Promise<void> {
+    const selection = this._findRehearsalMarkSelection(mark.attrs.id);
+    if (!selection) {
+      return;
+    }
+    const altSelection = this._getEquivalentSelection(selection);
+    this._undoColumn('Change Rehearsal Mark', selection.selector.measure);
+    SmoOperation.removeRehearsalMark(this.score, selection);
+    SmoOperation.addRehearsalMark(this.score, selection, mark);
+    SmoOperation.removeRehearsalMark(this.storeScore, altSelection!);
+    SmoOperation.addRehearsalMark(this.storeScore, altSelection!, mark);
+    this._renderChangedMeasures([selection]);
+    return this.renderer.updatePromise();
+  }
+  /**
+   * Removes an existing rehearsal mark from its measure on every staff and in the undo-copy store.
+   * Does nothing if the mark is no longer present. See specs/025-rehearsal-mark-dialog.
+   * @param mark the rehearsal mark to remove
+   */
+  async removeRehearsalMark(mark: SmoRehearsalMark): Promise<void> {
+    const selection = this._findRehearsalMarkSelection(mark.attrs.id);
+    if (!selection) {
+      return;
+    }
+    const altSelection = this._getEquivalentSelection(selection);
+    this._undoColumn('Remove Rehearsal Mark', selection.selector.measure);
+    SmoOperation.removeRehearsalMark(this.score, selection);
+    SmoOperation.removeRehearsalMark(this.storeScore, altSelection!);
+    this._renderChangedMeasures([selection]);
+    return this.renderer.updatePromise();
+  }
   _removeStaffModifier(modifier: StaffModifierBase) {
     this.score.staves[modifier.associatedStaff].removeStaffModifier(modifier);
     const altModifier = StaffModifierBase.deserialize(modifier.serialize());
@@ -1683,14 +1778,49 @@ export class SuiScoreViewOperations extends SuiScoreView {
   /**
    * set global page for score, zoom etc.
    * @param layout global SVG settings
-   * @returns 
+   * @param previousLayout the layout as it was immediately before this change.  Callers must
+   * pass a snapshot taken before `layout` was mutated -- `this.score.layoutManager`'s current
+   * value cannot be used for this, because dialogs (e.g. globalLayout.ts) bind directly to that
+   * live object, so by the time this method runs it may already equal `layout`.
+   * @returns
    */
-  async setGlobalLayout(layout: SmoGlobalLayout): Promise<void> {
+  async setGlobalLayout(layout: SmoGlobalLayout, previousLayout: SmoGlobalLayout): Promise<void> {
+    const scaleChanged = previousLayout.svgScale !== layout.svgScale;
+    const widthChanged = previousLayout.pageWidth !== layout.pageWidth;
+    const heightChanged = previousLayout.pageHeight !== layout.pageHeight;
+    if (!scaleChanged && !widthChanged && !heightChanged) {
+      return;
+    }
     this._undoScore('Set Global Layout');
-    const original = this.score.layoutManager!.getGlobalLayout().svgScale;
-    this.score.layoutManager!.updateGlobalLayout(layout);
-    this.score.scaleTextGroups(original / layout.svgScale);
-    this.storeScore.layoutManager!.updateGlobalLayout(layout);
+    const scaleRatio = previousLayout.svgScale / layout.svgScale;
+    const widthRatio = widthChanged ? layout.pageWidth / previousLayout.pageWidth : 1;
+    const heightRatio = heightChanged ? layout.pageHeight / previousLayout.pageHeight : 1;
+    const repositionGroups = (textGroups: SmoTextGroup[]) => {
+      if (scaleChanged) {
+        textGroups.forEach((tg) => tg.scaleText(scaleRatio));
+      }
+      if (widthChanged || heightChanged) {
+        textGroups.forEach((tg) => tg.rescalePosition(widthRatio, heightRatio));
+      }
+    };
+    if (this.isPartExposed()) {
+      // A part has its own layoutManager/textGroups (see SuiScoreView._mapPartFormatting,
+      // which aliases this.score.layoutManager/textGroups to staves[0].partInfo's copies), so
+      // only the exposed part's text is repositioned here -- the score's own text groups and
+      // other parts' text groups are untouched.
+      this.score.staves.forEach((staff, staffIx) => {
+        staff.partInfo.layoutManager.updateGlobalLayout(layout);
+        repositionGroups(staff.partInfo.textGroups);
+        const altStaff = this.storeScore.staves[this.staffMap[staffIx]];
+        altStaff.partInfo.layoutManager.updateGlobalLayout(layout);
+        repositionGroups(altStaff.partInfo.textGroups);
+      });
+    } else {
+      this.score.layoutManager!.updateGlobalLayout(layout);
+      repositionGroups(this.score.textGroups);
+      this.storeScore.layoutManager!.updateGlobalLayout(layout);
+      repositionGroups(this.storeScore.textGroups);
+    }
     this.renderer.rerenderAll();
     return this.renderer.preserveScroll();
   }

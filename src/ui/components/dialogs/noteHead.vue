@@ -2,7 +2,7 @@
 import dialogContainer from './dialogContainer.vue';
 import { DialogButtonDefinition } from '../../buttons/button';
 import buttonGroup from './buttonGroup.vue';
-import collapsableText from './collapsableText.vue';
+import collapsableRow from './collapsableRow.vue';
 import { ref, Ref } from 'vue';
 interface Props {
   domId: string,
@@ -14,9 +14,6 @@ interface Props {
 }
 const props = defineProps<Props>();
 const { domId, shapes, heads, stems, commitCb, cancelCb } = { ...props };
-const lines:string[] = [];
-lines.push('<span class="text-muted">Use R to toggle note to rest. Use &lt;Delete&gt; to toggle visibility.</span>');
-lines.push('<span class="text-muted">Use keyboard shortcuts when available - they are much faster!</span>');
 const getId = (str: string) => {
   return `${domId}-${str}`;
 }
@@ -24,7 +21,7 @@ const getId = (str: string) => {
 
 </script>
 <template>
-  <dialogContainer :domId="domId" :label="'Note Heads and Stems'" :commitCb="commitCb" :cancelCb="cancelCb" :classes="'container text-center'">
+  <dialogContainer :domId="domId" :label="'Note Heads and Stems'" :commitCb="commitCb" :cancelCb="cancelCb" :classes="'container'">
       <div class="row">
         <buttonGroup :label="'Head Shapes'" :buttonDefs="shapes" :domId="getId('shape-buttons')"
           :commonClasses="'btn btn-sm btn-outline-dark me-2'" />
@@ -37,6 +34,9 @@ const getId = (str: string) => {
         <buttonGroup :label="'Note Stems'" :buttonDefs="stems" :domId="getId('stem-buttons')"
           :commonClasses="'btn btn-sm btn-outline-dark py-0  me-2'" />
       </div>
-      <collapsableText :domId="getId('notehead-help')" :lines="lines" :initialState="false" />
+      <collapsableRow :domId="getId('notehead-help')" label="" hint="Help" :initialState="false">
+        <span class="text-muted">Use R to toggle note to rest. Use &lt;Delete&gt; to toggle visibility.</span>
+        <span class="text-muted">Use keyboard shortcuts when available - they are much faster!</span>
+      </collapsableRow>
    </dialogContainer>
 </template>

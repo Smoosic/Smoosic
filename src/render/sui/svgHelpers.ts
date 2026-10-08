@@ -5,6 +5,7 @@ import { Transposable, SvgBox, SvgPoint, ElementLike } from '../../smo/data/comm
 import { SvgPage } from './svgPageMap';
 
 declare var $: any;
+export type SuiTextStrokeName = 'text-suggestion' | 'text-selection' | 'text-highlight' | 'text-drag' | 'inactive-text';
 /**
  * @internal
  */
@@ -15,6 +16,49 @@ export interface StrokeInfo {
   strokeDasharray: string | number,
   fill: string,
   opacity: number
+}
+
+export const SuiTextStrokes: Record<SuiTextStrokeName, StrokeInfo> = {
+  'text-suggestion': {
+        strokeName: 'text-suggestion',
+        stroke: '#cce',
+        strokeWidth: 1,
+        strokeDasharray: '4,1',
+        fill: 'none',
+        opacity: 1.0
+      },
+      'text-selection': {
+        strokeName: 'text-selection',
+        stroke: '#99d',
+        strokeWidth: 1,
+        fill: 'none',
+        strokeDasharray: '',
+        opacity: 1.0
+      }, 
+      'text-highlight': {
+        strokeName: 'text-highlight',
+        stroke: '#dd9',
+        strokeWidth: 1,
+        strokeDasharray: '4,1',
+        fill: 'none',
+        opacity: 1.0
+      }, 
+      'text-drag': {
+        strokeName: 'text-drag',
+        stroke: '#d99',
+        strokeWidth: 1,
+        strokeDasharray: '2,1',
+        fill: '#eee',
+        opacity: 0.3
+      },
+      'inactive-text': {
+        strokeName: 'inactive-text',
+        stroke: '#fff',
+        strokeWidth: 1,
+        strokeDasharray: '',
+        fill: '#ddd',
+        opacity: 0.3
+      }
 }
 
 /**
@@ -185,6 +229,37 @@ export class SvgHelpers {
     e.setAttributeNS('', 'stroke', '#555');
     e.setAttributeNS('', 'fill', 'none');
     svg.appendChild(e);
+  }
+
+  // ### renderLyricPositionMarker
+  // Draws a single, subtle vertical line marking where a lyric is being
+  // edited (012-lyric-live-preview-cursor). Unlike renderCursor's ornate
+  // I-beam glyph, this is a plain line; the caller is responsible for
+  // removing the returned element when the marker should disappear.
+  static renderLyricPositionMarker(svg: SVGSVGElement, x: number, y: number, height: number): SVGLineElement {
+    const ns = SvgHelpers.namespace;
+    const line = document.createElementNS(ns, 'line') as unknown as SVGLineElement;
+    line.setAttributeNS('', 'x1', x.toString());
+    line.setAttributeNS('', 'x2', x.toString());
+    line.setAttributeNS('', 'y1', y.toString());
+    line.setAttributeNS('', 'y2', (y + height).toString());
+    line.setAttributeNS('', 'stroke', '#888');
+    line.setAttributeNS('', 'stroke-width', '1');
+    line.setAttributeNS('', 'opacity', '0.6');
+    line.setAttributeNS('', 'class', 'lyric-position-marker');
+    // Blink like a text caret: native SVG animation, no JS polling loop.
+    // discrete calcMode snaps between the two opacity values instead of
+    // fading, so it reads as an on/off blink rather than a pulse.
+    const blink = document.createElementNS(ns, 'animate');
+    blink.setAttributeNS('', 'attributeName', 'opacity');
+    blink.setAttributeNS('', 'values', '0.6;0.6;0;0');
+    blink.setAttributeNS('', 'keyTimes', '0;0.5;0.5;1');
+    blink.setAttributeNS('', 'calcMode', 'discrete');
+    blink.setAttributeNS('', 'dur', '1s');
+    blink.setAttributeNS('', 'repeatCount', 'indefinite');
+    line.appendChild(blink);
+    svg.appendChild(line);
+    return line;
   }
 
   // ### boxNote

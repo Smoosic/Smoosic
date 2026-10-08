@@ -1,6 +1,4 @@
 import { SuiMenuBase, SuiConfiguredMenuOption, SuiConfiguredMenu, SuiMenuParams } from './menu';
-import { SuiHelp } from '../help';
-import { SuiNavigation } from '../../render/sui/configuration';
 
 /**
  * Stuff you can do to notes

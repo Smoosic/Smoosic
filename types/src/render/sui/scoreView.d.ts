@@ -256,6 +256,11 @@ export declare abstract class SuiScoreView implements layoutProvider {
     */
     setView(rows: ViewMapEntry[]): void;
     /**
+     * Set the music at the selector to be the only selection.
+     * @param selector
+     */
+    replaceSelection(selector: SmoSelector): void;
+    /**
      * view all the staffs in score mode.
      */
     viewAll(): void;

@@ -1,0 +1,304 @@
+<script setup lang="ts">
+import { computed, ref, Ref, watch, onBeforeUnmount } from 'vue';
+import { useEditor, EditorContent } from '@tiptap/vue-3';
+import { createStyleTag } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import { SmoTextGroup, SmoScoreText } from '../../../smo/data/scoreText';
+import { FontInfo } from '../../../common/vex';
+import { RemoveElementLike, ElementLike } from '../../../smo/data/common';
+import { SelectOption } from '../../common';
+import { SuiScoreViewOperations } from '../../../render/sui/scoreViewOperations';
+import { SvgHelpers } from '../../../render/sui/svgHelpers';
+import { textGroupToHtml, htmlToTextGroup } from './textGroupHtml';
+import { TextBlockAtomNode } from './textBlockAtomNode';
+import selectComp from './select.vue';
+
+// No css-loader is wired into this project's webpack build (no other .vue
+// component here has a <style> block), so inject the small amount of CSS
+// this editor needs via TipTap's own createStyleTag utility instead.
+//
+// The active block's font is applied here too, as an explicit rule on
+// ".ProseMirror p" (updated reactively below), rather than only as an
+// inline `:style` on the outer EditorContent div: ProseMirror's generated
+// <p> did not reliably pick up that font via plain CSS inheritance from
+// the styled ancestor div, so this rule -- confirmed the winning source in
+// DevTools -- is what actually has to carry the font-family/size/weight/style.
+const BASE_EDITOR_CSS = '.text-group-editor-content .ProseMirror p { margin: 0 0 0.25rem 0; }'
+  + '.text-group-editor-content .text-block-atom { cursor: default; margin: 0 0.15em; }';
+const editorStyleTag = createStyleTag(BASE_EDITOR_CSS, undefined, 'text-group-editor');
+
+interface Props {
+  domId: string,
+  textGroup: SmoTextGroup,
+  view: SuiScoreViewOperations,
+  rerender: () => Promise<void>
+}
+const props = defineProps<Props>();
+const emit = defineEmits<{ 'active-block-changed': [font: FontInfo] }>();
+const getId = (str: string) => `${props.domId}-${str}`;
+
+// SmoTextGroup.getActiveBlock() assumes at least one block exists; a
+// brand-new text item can start with zero, so materialize one empty block
+// on the live model up front (spec edge case: "brand-new text item").
+const ensureActiveBlock = (group: SmoTextGroup) => {
+  if (group.textBlocks.length === 0) {
+    const defaultBlock = new SmoScoreText(SmoScoreText.defaults);
+    group.addScoreText(defaultBlock, group.relativePosition);
+    group.setActiveBlock(defaultBlock);
+  }
+};
+ensureActiveBlock(props.textGroup);
+
+// Which block is editable right now -- everything else in the document is
+// rendered as a read-only textBlockAtom node (see textGroupHtml.ts).
+const activeBlockId: Ref<string> = ref(props.textGroup.getActiveBlock().attrs.id);
+
+// Subtle position marker (012-lyric-live-preview-cursor's pattern, reused
+// here): a plain-DOM element, not a Vue ref -- it's imperative SVG state,
+// not template-bound. Marks where the active text block is being edited.
+let markerElement: SVGLineElement | null = null;
+
+// If the active block has already been rendered (existing text), use its
+// bounding box, same as the lyric dialog's computeMarkerPosition. Otherwise
+// fall back to the block's own (unrendered) x/y position.
+const computeMarkerPosition = (): { x: number, y: number, height: number } | null => {
+  const activeBlock = props.textGroup.getActiveBlock();
+  const height = SmoScoreText.fontPointSize(activeBlock.fontInfo.size);
+  if (activeBlock.logicalBox) {
+    const box = activeBlock.logicalBox;
+    return { x: box.x + box.width, y: box.y, height: box.height };
+  }
+  return { x: activeBlock.x, y: activeBlock.y, height };
+};
+const removeMarker = () => {
+  if (markerElement) {
+    markerElement.remove();
+    markerElement = null;
+  }
+};
+const updateMarker = () => {
+  removeMarker();
+  const pos = computeMarkerPosition();
+  if (!pos) {
+    return;
+  }
+  const context = props.view.tracker.renderer.pageMap.getRenderer({ x: pos.x, y: pos.y });
+  if (!context) {
+    return;
+  }
+  markerElement = SvgHelpers.renderLyricPositionMarker(
+    context.svg, pos.x - context.box.x, pos.y - context.box.y, pos.height
+  );
+};
+updateMarker();
+
+// Debounced live preview (spec: "periodically ... replace the contents of
+// the active text block ... so the user can see it in context"). Only real
+// keystrokes should trigger this -- programmatic content swaps (block
+// switch, relative-position change, remove) call rebuildContent() with
+// emitUpdate: false below, so they don't re-trigger it redundantly.
+const PREVIEW_DEBOUNCE_MS = 400;
+let previewTimer: ReturnType<typeof setTimeout> | null = null;
+const pushPreview = async () => {
+  previewTimer = null;
+  if (!editor.value) {
+    return;
+  }
+  const updated = htmlToTextGroup(editor.value.getJSON(), props.textGroup);
+  props.textGroup.textBlocks = updated.textBlocks;
+  props.textGroup.justification = updated.justification;
+  props.textGroup.relativePosition = updated.relativePosition;
+  await props.rerender();
+  updateMarker();
+};
+const schedulePreview = () => {
+  if (previewTimer !== null) {
+    clearTimeout(previewTimer);
+  }
+  previewTimer = setTimeout(pushPreview, PREVIEW_DEBOUNCE_MS);
+};
+onBeforeUnmount(() => {
+  if (previewTimer !== null) {
+    clearTimeout(previewTimer);
+    previewTimer = null;
+  }
+  removeMarker();
+});
+
+const editor = useEditor({
+  content: textGroupToHtml(props.textGroup, activeBlockId.value),
+  onUpdate: schedulePreview,
+  // Move keyboard focus into the editor as soon as it's constructed -- both
+  // on the dialog's initial open and on every later remount when the
+  // dialog's v-if returns to editing mode (014-editor-autofocus). Reuses
+  // the same best-effort editor.commands.focus() call activateBlock()
+  // already relies on below, rather than a doc-level `autofocus: 'end'`,
+  // since the active (editable) block isn't always the last block in a
+  // multi-block document -- 'end' could land next to a read-only atom node.
+  onCreate: ({ editor }) => editor.commands.focus(),
+  extensions: [
+    StarterKit.configure({
+      blockquote: false,
+      bold: false,
+      bulletList: false,
+      code: false,
+      codeBlock: false,
+      hardBreak: false,
+      heading: false,
+      horizontalRule: false,
+      italic: false,
+      link: false,
+      listItem: false,
+      listKeymap: false,
+      orderedList: false,
+      strike: false,
+      underline: false
+    }),
+    TextBlockAtomNode
+  ]
+});
+
+const rebuildContent = () => {
+  editor.value?.commands.setContent(textGroupToHtml(props.textGroup, activeBlockId.value), { emitUpdate: false });
+};
+
+const computeFontStyle = () => {
+  const fontInfo = props.textGroup.getActiveBlock().fontInfo;
+  return {
+    fontFamily: SmoScoreText.familyString(fontInfo.family),
+    fontSize: `${SmoScoreText.fontPointSize(fontInfo.size)}pt`,
+    fontWeight: SmoScoreText.weightString(fontInfo.weight),
+    fontStyle: fontInfo.style ?? 'normal'
+  };
+};
+// Local (not computed-from-props) so it stays correct even when the active
+// block's fontInfo is mutated in place by a sibling control (the dialog's
+// font picker) outside this component's own reactivity graph.
+const activeFontStyle: Ref<Record<string, string>> = ref(computeFontStyle());
+const refreshActiveFont = () => {
+  activeFontStyle.value = computeFontStyle();
+};
+watch(activeFontStyle, (f) => {
+  editorStyleTag.textContent = BASE_EDITOR_CSS
+    + `.text-group-editor-content .ProseMirror p { font-family: ${f.fontFamily}; font-size: ${f.fontSize}; `
+    + `font-weight: ${f.fontWeight}; font-style: ${f.fontStyle}; }`;
+}, { immediate: true });
+
+// re-initialize the document if a different text group is passed in
+watch(() => props.textGroup, (next) => {
+  ensureActiveBlock(next);
+  activeBlockId.value = next.getActiveBlock().attrs.id;
+  rebuildContent();
+  refreshActiveFont();
+  updateMarker();
+});
+
+const activeIndex = computed(() => {
+  const id = activeBlockId.value;
+  return props.textGroup.textBlocks.findIndex((block) => block.text.attrs.id === id);
+});
+const canGoPrevious = computed(() => activeIndex.value > 0);
+const canGoNext = computed(() => activeIndex.value >= 0 && activeIndex.value < props.textGroup.textBlocks.length - 1);
+const canRemove = computed(() => activeBlockId.value.length > 0 && props.textGroup.textBlocks.length > 1);
+
+const relativePositionOptions: SelectOption[] = [
+  { value: SmoTextGroup.relativePositions.BELOW.toString(), label: 'Vertical' },
+  { value: SmoTextGroup.relativePositions.RIGHT.toString(), label: 'Horizontal' }
+];
+const onRelativePositionSelect = (value: string) => {
+  props.textGroup.setRelativePosition(parseInt(value, 10));
+  rebuildContent();
+};
+
+const activateBlock = (scoreText: SmoScoreText) => {
+  props.textGroup.setActiveBlock(scoreText);
+  activeBlockId.value = scoreText.attrs.id;
+  rebuildContent();
+  refreshActiveFont();
+  // Best-effort: land keyboard focus back in the editor after the document
+  // was rebuilt (setContent resets ProseMirror's selection). Exact caret
+  // placement within the new active block isn't guaranteed, but this avoids
+  // forcing an extra click before the user can type.
+  editor.value?.commands.focus();
+  emit('active-block-changed', { ...scoreText.fontInfo });
+  updateMarker();
+};
+
+const addBlock = () => {
+  const currentFont = props.textGroup.getActiveBlock().fontInfo;
+  const newBlock = new SmoScoreText({
+    ...SmoScoreText.defaults,
+    text: '',
+    fontInfo: { ...currentFont }
+  });
+  props.textGroup.addScoreText(newBlock, props.textGroup.relativePosition);
+  activateBlock(newBlock);
+};
+
+const removeBlock = () => {
+  if (!canRemove.value) {
+    return;
+  }
+  props.textGroup.elements.forEach((tg:ElementLike) => RemoveElementLike(tg))
+  props.textGroup.elements = [];
+  const blocks = props.textGroup.textBlocks;
+  const ix = activeIndex.value;
+  const toRemove = props.textGroup.getActiveBlock();
+  const neighborIx = ix < blocks.length - 1 ? ix + 1 : ix - 1;
+  const neighbor = blocks[neighborIx].text;
+  props.textGroup.removeBlock(toRemove);
+  activateBlock(neighbor);
+  props.rerender();
+};
+
+const goPrevious = () => {
+  if (!canGoPrevious.value) {
+    return;
+  }
+  activateBlock(props.textGroup.textBlocks[activeIndex.value - 1].text);
+};
+const goNext = () => {
+  if (!canGoNext.value) {
+    return;
+  }
+  activateBlock(props.textGroup.textBlocks[activeIndex.value + 1].text);
+};
+
+const getTextGroup = (): SmoTextGroup => {
+  if (!editor.value) {
+    return props.textGroup;
+  }
+  return htmlToTextGroup(editor.value.getJSON(), props.textGroup);
+};
+const insertAtCursor = (token: string) => {
+  editor.value?.chain().focus().insertContent(token).run();
+};
+defineExpose({ getTextGroup, insertAtCursor, refreshActiveFont });
+</script>
+<template>
+  <div v-if="editor" class="text-group-editor">
+    <div class="row mb-2 ms-2 align-items-center">
+      <div class="col-auto btn-group" role="group">
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('add-block-button')"
+          title="Add Block" @click.prevent="addBlock"><span class="icon-plus"></span></button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('remove-block-button')"
+          title="Remove Block" :disabled="!canRemove" @click.prevent="removeBlock"><span class="icon-cancel-circle"></span></button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('previous-block-button')"
+          title="Previous Block" :disabled="!canGoPrevious" @click.prevent="goPrevious"><span class="icon-arrow-left"></span></button>
+        <button type="button" class="btn btn-sm btn-outline-dark" :id="getId('next-block-button')"
+          title="Next Block" :disabled="!canGoNext" @click.prevent="goNext"><span class="icon-arrow-right"></span></button>
+      </div>
+      <div class="col-auto ms-2">
+        <selectComp :domId="getId('relative-position')" label="Layout" :selections="relativePositionOptions"
+          :initialValue="props.textGroup.relativePosition.toString()" :changeCb="onRelativePositionSelect" />
+      </div>
+    </div>
+    <div class="row mb-2 ms-2">
+      <div class="col">
+        <EditorContent :editor="editor" :id="getId('editor-content')" 
+          class="form-control text-group-editor-content tiptap-editor"
+          style="overflow-y: auto;" :style="activeFontStyle" />
+      </div>
+    </div>
+  </div>
+</template>

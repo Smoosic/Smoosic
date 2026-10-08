@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<link rel="stylesheet" href="_ds/broadsheet-7752158b-cef4-4eb9-b463-df3121e505c2/styles.css">
+<script src="_ds/broadsheet-7752158b-cef4-4eb9-b463-df3121e505c2/_ds_bundle.js"></script>
+<link rel="stylesheet" href="dialog-kit.css">
+<link rel="stylesheet" href="menu-kit.css">
+<style>body{margin:0;background:var(--color-bg)}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent)}</style>
+</helmet>
+
+<div class="doc">
+
+  <div class="masthead">
+    <h1>Menu kit</h1>
+    <span class="sub">Smoosic · sidebar menu buttons + dropdown menu modals · Material Symbols and Bravura</span>
+  </div>
+  <div class="rule-hair"></div>
+
+  <div class="notes">
+    <div>
+      <div class="eyebrow">Icons</div>
+      <p>Two sources, one size class each. <code>.mi</code> is Material Symbols Outlined by ligature name at weight 300 — chrome, files, layout, playback. <code>.bv</code> is Bravura (<code>fonts/Bravura_1.392.woff</code>, copied from your tree) addressed by SMuFL codepoint — anything that names a musical object: clef, note, accidental, rest, accent, dynamic, tuplet numeral.</p>
+    </div>
+    <div>
+      <div class="eyebrow">Behaviour</div>
+      <p>A menu button opens its dropdown as a modal: same inert layer as the dialogs, so the score is visible and untouchable. The button stays lit while its menu is open, arrow keys walk the items, letters jump by hotkey, Escape closes and returns focus to the button.</p>
+    </div>
+    <div>
+      <div class="eyebrow">Menus</div>
+      <p>Groups follow the menu modules already in <code>src/ui/menus</code> — file, edit, score, measure, note, text, beams, tuplets, voices, parts, key and time signature, staff modifier, language, help.</p>
+    </div>
+  </div>
+
+  <!-- ============ 0 · RIBBON ============ -->
+  <h2 class="sec">1 · Ribbon</h2>
+  <p class="sec-sub">Permanent across the top, 48px tall. Icon-only buttons are a 34px square hit box; text buttons add a label and their current value, so key, tempo and time signature read at a glance without opening anything. Groups are separated by a hairline, and part selection sits at the right where it belongs to the score rather than the selection. Container queries shed the text labels, then the part-selection label, as the bar's own width tightens — so it degrades wherever it is placed, not only at the viewport breakpoint.</p>
+
+  <div class="app" style="display:block">
+    <div class="ribbon-host">
+    <div class="ribbon">
+      <button class="rbtn is-on" title="Toggle view overlay"><span class="mi">visibility</span></button>
+      <button class="rbtn" title="Refresh score"><span class="mi">refresh</span></button>
+      <span class="ribbon-sep"></span>
+      <button class="rbtn" title="Zoom in"><span class="mi">zoom_in</span></button>
+      <button class="rbtn" title="Zoom out"><span class="mi">zoom_out</span></button>
+      <span class="ribbon-sep"></span>
+      <button class="rbtn" title="Play"><span class="mi">play_arrow</span></button>
+      <button class="rbtn is-stop" title="Stop"><span class="mi">stop</span></button>
+      <span class="ribbon-sep"></span>
+      <button class="rbtn has-text"><span class="bv bv-sharp"></span><span class="rbtn-label">Key</span><span class="rbtn-val">D</span></button>
+      <button class="rbtn has-text"><span class="bv bv-metronome"></span><span class="rbtn-label">Tempo</span><span class="rbtn-val">= 96</span></button>
+      <button class="rbtn has-text"><span class="bv bv-common"></span><span class="rbtn-label">Time</span><span class="rbtn-val">4/4</span></button>
+      <span class="ribbon-spacer"></span>
+      <button class="rpart"><span class="mi sm">groups</span><span class="rpart-label">Full score</span><span class="rpart-count">6 parts</span><span class="caret caret-down caret-lg"></span></button>
+    </div>
+    </div>
+  </div>
+
+  <div class="wrap" style="margin-top:var(--space-5)">
+    <div class="spec" style="width:300px">
+      <div class="spec-h">Icon only</div>
+      <p class="spec-p">34px square. Latched state for anything that stays on.</p>
+      <div style="display:flex;gap:4px;align-items:center">
+        <button class="rbtn"><span class="mi">visibility</span></button>
+        <button class="rbtn is-hover"><span class="mi">refresh</span></button>
+        <button class="rbtn is-pressed"><span class="mi">zoom_in</span></button>
+        <button class="rbtn is-focus"><span class="mi">zoom_out</span></button>
+        <button class="rbtn is-on"><span class="mi">play_arrow</span></button>
+        <button class="rbtn is-disabled"><span class="mi">stop</span></button>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:8px" class="hint">
+        <span style="width:34px;text-align:center">rest</span>
+        <span style="width:34px;text-align:center">hov</span>
+        <span style="width:34px;text-align:center">prs</span>
+        <span style="width:34px;text-align:center">foc</span>
+        <span style="width:34px;text-align:center">on</span>
+        <span style="width:34px;text-align:center">dis</span>
+      </div>
+    </div>
+
+    <div class="spec" style="width:330px">
+      <div class="spec-h">Icon + text</div>
+      <p class="spec-p">Bravura glyph, label, current value. Opens a dialog.</p>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+        <button class="rbtn has-text"><span class="bv bv-sharp"></span><span class="rbtn-label">Key</span><span class="rbtn-val">D</span></button>
+        <button class="rbtn has-text is-hover"><span class="bv bv-metronome"></span><span class="rbtn-label">Tempo</span><span class="rbtn-val">= 96</span></button>
+        <button class="rbtn has-text is-focus"><span class="bv bv-common"></span><span class="rbtn-label">Time</span><span class="rbtn-val">4/4</span></button>
+        <button class="rbtn has-text is-on"><span class="bv bv-cutcommon"></span><span class="rbtn-label">Time</span><span class="rbtn-val">2/2</span></button>
+      </div>
+    </div>
+
+    <div class="spec" style="width:330px">
+      <div class="spec-h">Part selection</div>
+      <p class="spec-p">A dropdown trigger, not a native select — its menu is the same modal the sidebar uses.</p>
+      <div style="position:relative">
+        <button class="rpart is-open" style="width:100%"><span class="mi sm">groups</span><span class="rpart-label">Full score</span><span class="rpart-count">6 parts</span><span class="caret caret-up caret-lg"></span></button>
+        <div class="mdrop" style="min-width:0;width:100%;border-radius:0 0 var(--radius-md) var(--radius-md);border-top:none">
+          <div class="mitem is-checked"><span class="mi check">check</span><span class="mi sm">groups</span><span class="mitem-label">Full score</span></div>
+          <div class="mdrop-sep"></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Flute</span></div>
+          <div class="mitem is-hover"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Clarinet in B♭</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Violin I</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Violin II</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Viola</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Cello</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 1 · IN THE APPLICATION ============ -->
+  <h2 class="sec">2 · Sidebar and an open menu</h2>
+  <p class="sec-sub">Rail 232px, buttons 34px. Four fixed grid tracks — icon, label, hotkey, caret — so all four align down the whole rail regardless of label length. The hotkey track is 42px, sized for <code>Alt-X</code>.</p>
+
+  <div class="app">
+    <div class="side">
+      <div class="side-brand"><span class="bv bv-gclef"></span><span>Smoosic</span></div>
+
+      <div class="side-group">Score</div>
+      <button class="mbtn"><span class="mi">description</span><span class="mbtn-label">File</span><span class="mbtn-key">Alt-F</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="mi">undo</span><span class="mbtn-label">Edit</span><span class="mbtn-key">Alt-E</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv bv-gclef"></span><span class="mbtn-label">Score</span><span class="mbtn-key">Alt-S</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="mi">view_column</span><span class="mbtn-label">Measure</span><span class="mbtn-key">Alt-M</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv bv-common"></span><span class="mbtn-label">Time signature</span><span class="mbtn-key">Alt-T</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv sm bv-sharp"></span><span class="mbtn-label">Key signature</span><span class="mbtn-key">Alt-K</span><span class="caret caret-right"></span></button>
+
+      <div class="side-group">Selection</div>
+      <button class="mbtn is-open"><span class="bv bv-quarter"></span><span class="mbtn-label">Note</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv sm bv-accent"></span><span class="mbtn-label">Articulation</span><span class="mbtn-key">Alt-A</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv bv-forte"></span><span class="mbtn-label">Dynamics</span><span class="mbtn-key">Alt-D</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv bv-eighth"></span><span class="mbtn-label">Beams</span><span class="mbtn-key">Alt-B</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="bv bv-num3"></span><span class="mbtn-label">Tuplets</span><span class="mbtn-key">Alt-U</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="mi">layers</span><span class="mbtn-label">Voices</span><span class="mbtn-key">Alt-V</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="mi">title</span><span class="mbtn-label">Text</span><span class="mbtn-key">Alt-X</span><span class="caret caret-right"></span></button>
+
+      <div class="side-group">Output</div>
+      <button class="mbtn"><span class="mi">play_arrow</span><span class="mbtn-label">Playback</span><span class="mbtn-key">Alt-P</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="mi">list_alt</span><span class="mbtn-label">Parts</span><span class="mbtn-key">Alt-R</span><span class="caret caret-right"></span></button>
+      <button class="mbtn"><span class="mi">help</span><span class="mbtn-label">Help</span><span class="mbtn-key">Alt-H</span><span class="caret caret-right"></span></button>
+    </div>
+
+    <div class="app-col">
+    <div class="ribbon-host">
+    <div class="ribbon">
+      <button class="rbtn is-on"><span class="mi">visibility</span></button>
+      <button class="rbtn"><span class="mi">refresh</span></button>
+      <span class="ribbon-sep"></span>
+      <button class="rbtn"><span class="mi">zoom_in</span></button>
+      <button class="rbtn"><span class="mi">zoom_out</span></button>
+      <span class="ribbon-sep"></span>
+      <button class="rbtn"><span class="mi">play_arrow</span></button>
+      <button class="rbtn is-stop"><span class="mi">stop</span></button>
+      <span class="ribbon-sep"></span>
+      <button class="rbtn has-text"><span class="bv bv-sharp"></span><span class="rbtn-label">Key</span><span class="rbtn-val">D</span></button>
+      <button class="rbtn has-text"><span class="bv bv-metronome"></span><span class="rbtn-label">Tempo</span><span class="rbtn-val">= 96</span></button>
+      <button class="rbtn has-text"><span class="bv bv-common"></span><span class="rbtn-label">Time</span><span class="rbtn-val">4/4</span></button>
+      <span class="ribbon-spacer"></span>
+      <button class="rpart"><span class="mi sm">groups</span><span class="rpart-label">Full score</span><span class="rpart-count">6 parts</span><span class="caret caret-down caret-lg"></span></button>
+    </div>
+    </div>
+    <div class="app-main">
+      <div class="score"></div>
+      <div class="inert-chip"><span class="inert-dot"></span><span>menu open — the layer behind captures pointer, wheel and key events</span></div>
+      <div class="menu-layer">
+        <div class="mdrop">
+          <div class="mdrop-head"><span>Note</span><span class="hint">↑↓ to walk · Esc closes</span></div>
+          <div class="mitem is-checked"><span class="mi check">check</span><span class="bv sm bv-quarter"></span><span class="mitem-label">Quarter note</span><span class="mitem-key">5</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-eighth"></span><span class="mitem-label">Eighth note</span><span class="mitem-key">4</span></div>
+          <div class="mitem is-hover"><span class="mi check">&nbsp;</span><span class="bv sm bv-rest"></span><span class="mitem-label">Convert to rest</span><span class="mitem-key">r</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">more_horiz</span><span class="mitem-label">Add dot</span><span class="mitem-key">.</span></div>
+          <div class="mdrop-sep"></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-sharp"></span><span class="mitem-label">Raise pitch</span><span class="mitem-key">Shift ↑</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-flat"></span><span class="mitem-label">Lower pitch</span><span class="mitem-key">Shift ↓</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="bv sm bv-natural"></span><span class="mitem-label">Toggle courtesy accidental</span><span class="mitem-key">c</span></div>
+          <div class="mdrop-sep"></div>
+          <div class="mitem is-focus"><span class="mi check">&nbsp;</span><span class="bv sm bv-quarter"></span><span class="mitem-label">Make grace note</span><span class="mitem-key">g</span></div>
+          <div class="mitem is-disabled"><span class="mi check">&nbsp;</span><span class="mi sm">link</span><span class="mitem-label">Tie to next</span><span class="mitem-key">t</span></div>
+          <div class="mitem is-danger"><span class="mi check">&nbsp;</span><span class="mi sm">backspace</span><span class="mitem-label">Delete selection</span><span class="mitem-key">Del</span></div>
+        </div>
+
+        <div class="mdrop" style="min-width:268px">
+          <div class="mdrop-head"><span>Score</span><span class="hint">submenu →</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">straighten</span><span class="mitem-label">Layout…</span><span class="mitem-key">Ctrl L</span></div>
+          <div class="mitem is-hover"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Engraving font</span><span class="caret caret-right"></span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">groups</span><span class="mitem-label">Instruments…</span><span class="mitem-key">Ctrl I</span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">tune</span><span class="mitem-label">Preferences…</span><span class="mitem-key">Ctrl ,</span></div>
+          <div class="mdrop-note">Items ending in an ellipsis open a dialog; the arrow opens a submenu.</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ============ 2 · STATES ============ -->
+  <h2 class="sec">3 · States</h2>
+  <p class="sec-sub">Sidebar button states left, item states right; ribbon states are in section 1. Every state is a class, so the Vue side toggles rather than restyles.</p>
+
+  <div class="wrap">
+    <div class="spec" style="width:300px">
+      <div class="spec-h">Menu button</div>
+      <p class="spec-p">34px row, icon then label then affordance.</p>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="mbtn"><span class="bv bv-quarter"></span><span class="mbtn-label">Rest</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+        <button class="mbtn is-hover"><span class="bv bv-quarter"></span><span class="mbtn-label">Hover</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+        <button class="mbtn is-pressed"><span class="bv bv-quarter"></span><span class="mbtn-label">Pressed</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+        <button class="mbtn is-focus"><span class="bv bv-quarter"></span><span class="mbtn-label">Focus</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+        <button class="mbtn is-open"><span class="bv bv-quarter"></span><span class="mbtn-label">Menu open</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+        <button class="mbtn is-disabled"><span class="bv bv-quarter"></span><span class="mbtn-label">Disabled</span><span class="mbtn-key">Alt-N</span><span class="caret caret-right"></span></button>
+      </div>
+    </div>
+
+    <div class="spec" style="width:300px">
+      <div class="spec-h">Menu item</div>
+      <p class="spec-p">30px row; checked keeps the tick column reserved.</p>
+      <div class="mdrop" style="box-shadow:none;min-width:0">
+        <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">straighten</span><span class="mitem-label">Rest</span><span class="mitem-key">l</span></div>
+        <div class="mitem is-hover"><span class="mi check">&nbsp;</span><span class="mi sm">straighten</span><span class="mitem-label">Hover</span><span class="mitem-key">l</span></div>
+        <div class="mitem is-focus"><span class="mi check">&nbsp;</span><span class="mi sm">straighten</span><span class="mitem-label">Keyboard focus</span><span class="mitem-key">l</span></div>
+        <div class="mitem is-checked"><span class="mi check">check</span><span class="mi sm">straighten</span><span class="mitem-label">Checked</span><span class="mitem-key">l</span></div>
+        <div class="mitem is-disabled"><span class="mi check">&nbsp;</span><span class="mi sm">straighten</span><span class="mitem-label">Disabled</span><span class="mitem-key">l</span></div>
+        <div class="mitem is-danger"><span class="mi check">&nbsp;</span><span class="mi sm">backspace</span><span class="mitem-label">Destructive</span><span class="mitem-key">Del</span></div>
+      </div>
+    </div>
+
+    <div class="spec" style="width:420px">
+      <div class="spec-h">Submenu</div>
+      <p class="spec-p">Opens to the right of its parent item, overlapping the parent panel by 6px so the pointer can cross without closing it. Add <code>.flip-left</code> when the parent sits within a submenu's width of the viewport edge.</p>
+      <div style="position:relative;height:150px">
+        <div class="mdrop" style="position:absolute;top:0;left:0;min-width:212px">
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">straighten</span><span class="mitem-label">Layout…</span></div>
+          <div class="mitem is-hover"><span class="mi check">&nbsp;</span><span class="bv sm bv-gclef"></span><span class="mitem-label">Engraving font</span><span class="caret caret-right"></span></div>
+          <div class="mitem"><span class="mi check">&nbsp;</span><span class="mi sm">tune</span><span class="mitem-label">Preferences…</span></div>
+          <div class="mdrop msub" style="min-width:168px">
+            <div class="mitem is-checked"><span class="mi check">check</span><span class="mitem-label">Bravura</span></div>
+            <div class="mitem"><span class="mi check">&nbsp;</span><span class="mitem-label">Gonville</span></div>
+            <div class="mitem"><span class="mi check">&nbsp;</span><span class="mitem-label">Petaluma</span></div>
+            <div class="mitem"><span class="mi check">&nbsp;</span><span class="mitem-label">Leland</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec" style="width:340px">
+      <div class="spec-h">Icon inventory</div>
+      <p class="spec-p">Bravura first, Material second. Codepoints and ligature names as written in the markup.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px">
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-gclef"></span><span class="hint">E050 gClef</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-quarter"></span><span class="hint">E1D5 quarter</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-eighth"></span><span class="hint">E1D7 eighth</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-rest"></span><span class="hint">E4E5 rest</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv sm bv-sharp"></span><span class="hint">E262 sharp</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv sm bv-flat"></span><span class="hint">E260 flat</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv sm bv-accent"></span><span class="hint">E4A0 accent</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-forte"></span><span class="hint">E522 forte</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-common"></span><span class="hint">E08A common</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="bv bv-num3"></span><span class="hint">E083 numeral 3</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">description</span><span class="hint">description</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">undo</span><span class="hint">undo</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">view_column</span><span class="hint">view_column</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">layers</span><span class="hint">layers</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">title</span><span class="hint">title</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">play_arrow</span><span class="hint">play_arrow</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">list_alt</span><span class="hint">list_alt</span></div>
+        <div class="tgl-row" style="gap:8px"><span class="mi">help</span><span class="hint">help</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 3 · RAIL / 768 ============ -->
+  <h2 class="sec">4 · At 768px</h2>
+  <p class="sec-sub">The ribbon keeps every button but drops the text labels — icon-only at 40px, horizontally scrollable if it still overflows. The sidebar collapses to a 52px icon rail — labels drop, the icon carries the meaning, which is why every button has one. The dropdown fills the remaining width and its rows grow to 40px.</p>
+
+  <div class="frame" style="padding:0;overflow:hidden">
+    <div class="frame-label">768 px</div>
+    <div class="app" style="border:none;border-radius:0">
+      <div class="side is-rail">
+        <div class="side-brand"><span class="bv bv-gclef"></span><span>Smoosic</span></div>
+        <button class="mbtn"><span class="mi">description</span><span class="mbtn-label">File</span><span class="mbtn-key">Alt-F</span></button>
+        <button class="mbtn"><span class="mi">undo</span><span class="mbtn-label">Edit</span><span class="mbtn-key">Alt-E</span></button>
+        <button class="mbtn"><span class="bv bv-gclef"></span><span class="mbtn-label">Score</span><span class="mbtn-key">Alt-S</span></button>
+        <button class="mbtn"><span class="mi">view_column</span><span class="mbtn-label">Measure</span><span class="mbtn-key">Alt-M</span></button>
+        <button class="mbtn is-open"><span class="bv bv-quarter"></span><span class="mbtn-label">Note</span><span class="mbtn-key">Alt-N</span></button>
+        <button class="mbtn"><span class="bv bv-forte"></span><span class="mbtn-label">Dynamics</span><span class="mbtn-key">Alt-D</span></button>
+        <button class="mbtn"><span class="bv bv-num3"></span><span class="mbtn-label">Tuplets</span><span class="mbtn-key">Alt-U</span></button>
+        <button class="mbtn"><span class="mi">title</span><span class="mbtn-label">Text</span><span class="mbtn-key">Alt-X</span></button>
+        <button class="mbtn"><span class="mi">play_arrow</span><span class="mbtn-label">Playback</span><span class="mbtn-key">Alt-P</span></button>
+        <button class="mbtn"><span class="mi">help</span><span class="mbtn-label">Help</span><span class="mbtn-key">Alt-H</span></button>
+      </div>
+      <div class="app-col">
+      <div class="ribbon-host">
+      <div class="ribbon is-compact">
+        <button class="rbtn is-on"><span class="mi">visibility</span></button>
+        <button class="rbtn"><span class="mi">refresh</span></button>
+        <button class="rbtn"><span class="mi">zoom_in</span></button>
+        <button class="rbtn"><span class="mi">zoom_out</span></button>
+        <button class="rbtn"><span class="mi">play_arrow</span></button>
+        <button class="rbtn is-stop"><span class="mi">stop</span></button>
+        <button class="rbtn has-text"><span class="bv bv-sharp"></span><span class="rbtn-label">Key</span><span class="rbtn-val">D</span></button>
+        <button class="rbtn has-text"><span class="bv bv-metronome"></span><span class="rbtn-label">Tempo</span><span class="rbtn-val">= 96</span></button>
+        <button class="rbtn has-text"><span class="bv bv-common"></span><span class="rbtn-label">Time</span><span class="rbtn-val">4/4</span></button>
+        <button class="rpart"><span class="mi sm">groups</span><span class="rpart-label">Full score</span><span class="caret caret-down caret-lg"></span></button>
+      </div>
+      </div>
+      <div class="app-main" style="min-height:352px">
+        <div class="score"></div>
+        <div class="menu-layer">
+          <div class="mdrop" style="width:100%">
+            <div class="mdrop-head"><span>Note</span><span class="hint">Esc closes</span></div>
+            <div class="mitem is-checked" style="height:40px"><span class="mi check">check</span><span class="bv sm bv-quarter"></span><span class="mitem-label">Quarter note</span><span class="mitem-key">5</span></div>
+            <div class="mitem" style="height:40px"><span class="mi check">&nbsp;</span><span class="bv sm bv-eighth"></span><span class="mitem-label">Eighth note</span><span class="mitem-key">4</span></div>
+            <div class="mitem is-hover" style="height:40px"><span class="mi check">&nbsp;</span><span class="bv sm bv-rest"></span><span class="mitem-label">Convert to rest</span><span class="mitem-key">r</span></div>
+            <div class="mitem" style="height:40px"><span class="mi check">&nbsp;</span><span class="bv sm bv-sharp"></span><span class="mitem-label">Raise pitch</span><span class="mitem-key">Shift ↑</span></div>
+            <div class="mdrop-sep"></div>
+            <div class="mitem is-danger" style="height:40px"><span class="mi check">&nbsp;</span><span class="mi sm">backspace</span><span class="mitem-label">Delete selection</span><span class="mitem-key">Del</span></div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" style="margin-top:var(--space-6)">
+    <div class="col" style="width:340px">
+      <div class="eyebrow">Open questions</div>
+      <ul class="list">
+        <li>Should submenus open on hover after a delay, or on click only?</li>
+        <li>Hotkeys are shown for every item — do you want them hidden until Alt is held?</li>
+        <li>Ribbon text buttons show the current value (Key D, Tempo = 96). Useful, or too busy for a permanent bar?</li>
+        <li>Bravura glyphs sit optically larger than Material at the same px; I set <code>.bv</code> to 22px against <code>.mi</code> at 20px. Worth a second look on your display.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360}}"></script>
+</body>
+</html>

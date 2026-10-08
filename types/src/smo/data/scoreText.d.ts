@@ -80,6 +80,7 @@ export declare class SmoScoreText extends SmoScoreModifierBase {
     scaleY: number;
     getText(): string;
     estimateWidth(): number;
+    estimateHeight(): number;
     tryParseUnicode(): void;
     offsetX(offset: number): void;
     offsetY(offset: number): void;
@@ -127,6 +128,22 @@ export interface SmoTextPlacement {
     fontFamily: string;
     fontSize: number;
     xPlacement: number;
+    yOffset: number;
+}
+/**
+ * Default placement/font for a landmark purpose (see {@link SmoTextGroup.createLandmarkText}).
+ * Distinct from {@link SmoTextPlacement} (used by `purposeToFont`) since a landmark can be
+ * either centered between the margins or right-justified against the right margin.
+ * @category SmoObject
+ */
+export interface SmoLandmarkPlacement {
+    fontFamily: string;
+    fontSize: number;
+    /** 'center': centered between the left/right margins, at `xPlacement` (a 0-1 fraction of
+     *  the printable width). 'right': right-justified so the text's right edge sits at the
+     *  right margin; `xPlacement` is unused. */
+    xJustify: 'center' | 'right';
+    xPlacement?: number;
     yOffset: number;
 }
 /**
@@ -198,7 +215,7 @@ export interface SmoTextGroupParamsSer {
 /**
  * Suggestion for text purpose, maybe used to find a match..maybe not used at all
  */
-export type SmoTextGroupPurpose = 'NONE' | 'TITLE' | 'SUBTITLE' | 'COMPOSER' | 'COPYRIGHT';
+export type SmoTextGroupPurpose = 'NONE' | 'TITLE' | 'SUBTITLE' | 'COMPOSER' | 'COPYRIGHT' | 'PAGE' | 'PART' | 'DATE';
 /**
  * @category SmoObject
  */
@@ -237,7 +254,21 @@ export declare class SmoTextGroup extends SmoScoreModifierBase {
     static get simpleAttributes(): string[];
     static isTextGroup(modifier: SmoTextGroup | SmoModifierBase): modifier is SmoTextGroup;
     static get purposeToFont(): Record<number | string, SmoTextPlacement>;
+    /**
+     * Default placement/font for each landmark purpose, used by {@link SmoTextGroup.createLandmarkText}.
+     * Kept separate from {@link SmoTextGroup.purposeToFont} (used unmodified by MusicXML import) since
+     * this feature's font-size defaults (Title 24px, Subtitle 18px) differ from that map's values.
+     *
+     * `yOffset`'s *sign* selects top-anchored (positive) vs. bottom-anchored (negative) placement.
+     * For a top-anchored entry, only the sign is used -- `createLandmarkText` computes the actual
+     * vertical position from the top margin (or from whatever landmark is stacked above it), not
+     * from this magnitude; the value `1` is a deliberate placeholder for "top-anchored, no other
+     * meaning". Bottom-anchored entries' magnitude is still used as-is (pixels up from the page's
+     * true bottom edge).
+     */
+    static get landmarkPlacements(): Record<number, SmoLandmarkPlacement>;
     static createTextForLayout(purpose: number, text: string, layout: ScaledPageLayout): SmoTextGroup;
+    static createLandmarkText(purpose: number, text: string, layout: ScaledPageLayout, above?: SmoTextGroup | null, measureText?: string): SmoTextGroup;
     static get defaults(): SmoTextGroupParams;
     justification: number;
     relativePosition: number;
@@ -252,12 +283,26 @@ export declare class SmoTextGroup extends SmoScoreModifierBase {
     textBlocks: SmoTextBlock[];
     edited: boolean;
     skipRender: boolean;
+    beingEdited: boolean;
     static deserialize(jObj: SmoTextGroupParamsSer): SmoTextGroup;
     static deserializePreserveId(jObj: any): SmoTextGroup;
     static getPagedTextGroups(tg: SmoTextGroup, pages: number, pageHeight: number): SmoTextGroup[];
     serialize(): SmoTextGroupParamsSer;
     constructor(params: SmoTextGroupParams);
     scaleText(scale: number): void;
+    /**
+     * Reposition this group so it keeps the same position relative to the page when the page's
+     * width and/or height changes, e.g. text at 10% of the old page width ends up at 10% of the
+     * new page width.  Unlike scaleText, x and y are adjusted independently since page width and
+     * height can change by different amounts (or only one of them can change).
+     * @param xRatio newPageWidth / oldPageWidth (1 if page width didn't change)
+     * @param yRatio newPageHeight / oldPageHeight (1 if page height didn't change)
+     */
+    rescalePosition(xRatio: number, yRatio: number): void;
+    /**
+     * Remove empty text blocks introduced when editing
+     */
+    trimEmptyBlocks(): void;
     tryParseUnicode(): void;
     estimateWidth(): number;
     isTextVisible(): boolean;
@@ -274,4 +319,16 @@ export declare class SmoTextGroup extends SmoScoreModifierBase {
     removeBlock(scoreText: SmoScoreText): void;
     offsetX(offset: number): void;
     offsetY(offset: number): void;
+    /**
+     * Horizontally center this group between the page's left/right margins, using the same
+     * margin math as {@link SmoTextGroup.createLandmarkText}'s 'center' xJustify branch. Vertical
+     * position is unchanged. Requires `this.logicalBox` to already be populated by a render pass.
+     */
+    centerOnPage(layout: ScaledPageLayout): void;
+    /**
+     * Horizontally right-justify this group against the page's right margin, using the same
+     * margin math as {@link SmoTextGroup.createLandmarkText}'s 'right' xJustify branch. Vertical
+     * position is unchanged. Requires `this.logicalBox` to already be populated by a render pass.
+     */
+    rightJustifyOnPage(layout: ScaledPageLayout): void;
 }

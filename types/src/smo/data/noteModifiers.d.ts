@@ -378,6 +378,12 @@ export interface SmoLyricParamsSer extends SmoObjectParams {
      */
     translateY: number;
     /**
+     * for annotations, whether the text justifies above (top) or below (bottom) the note.
+     * Matches VexFlow's own Annotation.VerticalJustify numbering (see SmoLyric.annotationVerticalJustify)
+     * though this file has no VexFlow dependency itself.
+     */
+    verticalJustify: number;
+    /**
      * the actual text
      */
     text: string | null;
@@ -424,6 +430,12 @@ export interface SmoLyricParams {
      */
     translateY: number;
     /**
+     * for annotations, whether the text justifies above (top) or below (bottom) the note.
+     * Matches VexFlow's own Annotation.VerticalJustify numbering (see SmoLyric.annotationVerticalJustify)
+     * though this file has no VexFlow dependency itself.
+     */
+    verticalJustify: number;
+    /**
      * the actual text
      */
     text: string | null;
@@ -441,6 +453,7 @@ export declare class SmoLyric extends SmoNoteModifierBase {
         SUBSCRIPT: number;
         NORMAL: number;
     };
+    static readonly annotationVerticalJustify: Record<string, number>;
     static get persistArray(): string[];
     static get parameterArray(): string[];
     ctor: string;
@@ -455,6 +468,7 @@ export declare class SmoLyric extends SmoNoteModifierBase {
     fill: string;
     translateX: number;
     translateY: number;
+    verticalJustify: number;
     classes: string;
     adjX: number;
     adjY: number;

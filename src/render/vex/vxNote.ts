@@ -181,6 +181,20 @@ export class VxNote {
     }
     vexL.addClass(classString);
   }
+  addAnnotationToNote(vexNote: Note, annotation: SmoLyric) {
+    const classString = 'annotation annotation-' + annotation.verse;
+    const text = annotation.getText();
+    if (annotation.skipRender || !text.length) {
+      return;
+    }
+    const vexL: Annotation = new VF.Annotation(text);
+    vexL.setAttribute('id', annotation.attrs.id);
+    vexL.setFont(annotation.fontInfo.family, annotation.fontInfo.size, annotation.fontInfo.weight);
+    vexL.setVerticalJustification(annotation.verticalJustify);
+    vexL.setReportWidth(false);  // ignore width for formatting
+    vexNote.addModifier(vexL);
+    vexL.addClass(classString);
+  }
   addChordChangeToNote(vexNote: Note, lyric: SmoLyric) {
     const cs = new VF.ChordSymbol();
     cs.setAttribute('id', lyric.attrs.id);
@@ -211,6 +225,10 @@ export class VxNote {
     const chords = this.noteData.smoNote.getChords();
     chords.forEach((chord) => {
       this.addChordChangeToNote(this.noteData.staveNote, chord);
+    });
+    const annotations = this.noteData.smoNote.getAnnotations();
+    annotations.forEach((annotation) => {
+      this.addAnnotationToNote(this.noteData.staveNote, annotation as SmoLyric);
     });
   }
   createGraceNotes() {

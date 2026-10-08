@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import dialogContainer from './dialogContainer.vue';
 import numberInputApp from './numberInput.vue';
+import toggle from './toggle.vue';
 import { ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
@@ -35,13 +36,9 @@ const getId = (str: string) => {
         </div>
       </div>
       <div class="row mb-2">
-        <div class="col col-2 pe-0 me-n2">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" :id="getId('append-checkbox')" v-model="append">
-          </div>
-        </div>
-        <div class="col col-6 text-start ps-0 pe-0 ms-n4">
-          <label class="form-check-label" :for="getId('append-checkbox')">Append to Selection</label>
+        <div class="col col-8 pe-0 me-n2">
+          <toggle :domId="getId('append-checkbox')" :label="'Append to Selection'" :initialValue="append"
+            :changeCb="(value: boolean) => { append = value }" />
         </div>
       </div>
   </dialogContainer>

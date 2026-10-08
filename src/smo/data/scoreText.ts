@@ -189,6 +189,16 @@ export class SmoScoreText extends SmoScoreModifierBase {
     }
     return rv;
   }
+  estimateHeight(): number {
+    const textFont = TextFormatter.create({
+      family: this.fontInfo.family,
+      size: this.fontInfo.size,
+      weight: this.fontInfo.weight,
+      style: this.fontInfo.style
+    });
+    textFont.setFontSize(SmoScoreText.fontPointSize(this.fontInfo.size));
+    return textFont.getYForStringInPx(this.text).height;
+  }
   tryParseUnicode() {
     this.text = smoSerialize.tryParseUnicode(this.text);
   }
@@ -276,6 +286,22 @@ export interface SmoTextPlacement {
   fontFamily: string,
   fontSize: number,
   xPlacement: number,
+  yOffset: number,
+}
+/**
+ * Default placement/font for a landmark purpose (see {@link SmoTextGroup.createLandmarkText}).
+ * Distinct from {@link SmoTextPlacement} (used by `purposeToFont`) since a landmark can be
+ * either centered between the margins or right-justified against the right margin.
+ * @category SmoObject
+ */
+export interface SmoLandmarkPlacement {
+  fontFamily: string,
+  fontSize: number,
+  /** 'center': centered between the left/right margins, at `xPlacement` (a 0-1 fraction of
+   *  the printable width). 'right': right-justified so the text's right edge sits at the
+   *  right margin; `xPlacement` is unused. */
+  xJustify: 'center' | 'right',
+  xPlacement?: number,
   yOffset: number,
 }
 /**
@@ -370,7 +396,8 @@ function isTextBlockSer(params: Partial<SmoTextBlockSer>): params is SmoTextBloc
 /**
  * Suggestion for text purpose, maybe used to find a match..maybe not used at all
  */
-export type SmoTextGroupPurpose = 'NONE' |'TITLE' | 'SUBTITLE' | 'COMPOSER' | 'COPYRIGHT';
+export type SmoTextGroupPurpose = 'NONE' |'TITLE' | 'SUBTITLE' | 'COMPOSER' | 'COPYRIGHT'
+ | 'PAGE' | 'PART'| 'DATE';
 /**
  * @category SmoObject
  */
@@ -404,16 +431,17 @@ export class SmoTextGroup extends SmoScoreModifierBase {
 
   static get purposes(): Record<SmoTextGroupPurpose, number> {
     return {
-      NONE: 1, TITLE: 2, SUBTITLE: 3, COMPOSER: 4, COPYRIGHT: 5
+      NONE: 1, TITLE: 2, SUBTITLE: 3, COMPOSER: 4, COPYRIGHT: 5,
+      PAGE: 6, PART: 7, DATE: 8
     };
   }
   static get attributes() {
-    return ['textBlocks', 'justification', 'relativePosition', 'spacing', 'pagination', 
-    'attachToSelector', 'selector', 'musicXOffset', 'musicYOffset'];
+    return ['textBlocks', 'justification', 'relativePosition', 'spacing', 'pagination',
+    'attachToSelector', 'selector', 'musicXOffset', 'musicYOffset', 'purpose'];
   }
   static get nonTextAttributes() {
-    return ['justification', 'relativePosition', 'spacing', 'pagination', 
-    'attachToSelector', 'selector', 'musicXOffset', 'musicYOffset'];
+    return ['justification', 'relativePosition', 'spacing', 'pagination',
+    'attachToSelector', 'selector', 'musicXOffset', 'musicYOffset', 'purpose'];
   }
   static get simpleAttributes() {
     return ['justification', 'relativePosition', 'spacing', 'pagination', 
@@ -450,6 +478,68 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     };
     return rv;
   }
+  /**
+   * Default placement/font for each landmark purpose, used by {@link SmoTextGroup.createLandmarkText}.
+   * Kept separate from {@link SmoTextGroup.purposeToFont} (used unmodified by MusicXML import) since
+   * this feature's font-size defaults (Title 24px, Subtitle 18px) differ from that map's values.
+   *
+   * `yOffset`'s *sign* selects top-anchored (positive) vs. bottom-anchored (negative) placement.
+   * For a top-anchored entry, only the sign is used -- `createLandmarkText` computes the actual
+   * vertical position from the top margin (or from whatever landmark is stacked above it), not
+   * from this magnitude; the value `1` is a deliberate placeholder for "top-anchored, no other
+   * meaning". Bottom-anchored entries' magnitude is still used as-is (pixels up from the page's
+   * true bottom edge).
+   */
+  static get landmarkPlacements(): Record<number, SmoLandmarkPlacement> {
+    const rv: Record<number, SmoLandmarkPlacement> = {};
+    rv[SmoTextGroup.purposes.TITLE] = {
+      fontFamily: 'Merriweather',
+      fontSize: 24,
+      xJustify: 'center',
+      xPlacement: 0.5,
+      yOffset: 1 // top-anchored; see landmarkPlacements' doc comment
+    };
+    rv[SmoTextGroup.purposes.SUBTITLE] = {
+      fontFamily: 'Merriweather',
+      fontSize: 18,
+      xJustify: 'center',
+      xPlacement: 0.5,
+      yOffset: 1 // top-anchored; stacks below Title
+    };
+    rv[SmoTextGroup.purposes.COMPOSER] = {
+      fontFamily: 'Merriweather',
+      fontSize: 12,
+      xJustify: 'right', // upper right corner: right-justified against the right margin
+      yOffset: 1 // top-anchored
+    };
+    rv[SmoTextGroup.purposes.COPYRIGHT] = {
+      fontFamily: 'Merriweather',
+      fontSize: 12,
+      xJustify: 'center',
+      xPlacement: 0.5,
+      yOffset: -12
+    };
+    rv[SmoTextGroup.purposes.DATE] = {
+      fontFamily: 'Merriweather',
+      fontSize: 12,
+      xJustify: 'center',
+      xPlacement: 0.5,
+      yOffset: -28
+    };
+    rv[SmoTextGroup.purposes.PAGE] = {
+      fontFamily: 'Merriweather',
+      fontSize: 12,
+      xJustify: 'right', // upper right corner: right-justified against the right margin
+      yOffset: 1 // top-anchored; stacks below Composer
+    };
+    rv[SmoTextGroup.purposes.PART] = {
+      fontFamily: 'Merriweather',
+      fontSize: 12,
+      xJustify: 'right', // upper right corner: right-justified against the right margin
+      yOffset: 1 // top-anchored; stacks below Composer/Page
+    };
+    return rv;
+  }
   // ### createTextForLayout
   // Create a specific score text type (title etc.) based on the supplied
   // score layout
@@ -475,6 +565,73 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     const params = SmoTextGroup.defaults;
     params.textBlocks = [{ text: st, position: SmoTextGroup.relativePositions.RIGHT, activeText: false }];
     params.purpose = purpose;
+    const tg = new SmoTextGroup(params);
+    return tg;
+  }
+  // ### createLandmarkText
+  // Create a landmark text group (Title, Subtitle, Composer, Copyright, Date, Page number, Part)
+  // using this feature's own placement/font defaults (landmarkPlacements). Not yet added to any
+  // score or part -- the caller is responsible for that (see src/ui/menus/text.ts).
+  // `above`, if supplied, is the already-existing landmark immediately above this one in its
+  // column (e.g. Title for Subtitle; whichever of Composer/Page already exists, for Part) --
+  // the new text is stacked flush below it instead of using the top-of-page base position.
+  // `measureText`, if supplied, is used only to estimate width/height for positioning, in
+  // place of `text` -- needed for Page number, whose stored `text` is the literal '###'/'@@@'
+  // marker template rather than the actual substituted digits it renders as per page.
+  static createLandmarkText(
+    purpose: number, text: string, layout: ScaledPageLayout, above?: SmoTextGroup | null, measureText?: string
+  ): SmoTextGroup {
+    const textAttr = SmoTextGroup.landmarkPlacements[purpose];
+    const pageHeight = layout.pageHeight;
+    const topMargin = layout.topMargin;
+    const leftMargin = layout.leftMargin;
+    const rightMargin = layout.rightMargin;
+    const defaults: SmoScoreTextParams = SmoScoreText.defaults;
+    const st = new SmoScoreText({
+      text, x: 0, y: 0, width: defaults.width, height: defaults.height,
+      fontInfo: { family: textAttr.fontFamily, size: textAttr.fontSize, weight: 'normal' }
+    });
+    if (measureText) {
+      st.text = measureText;
+    }
+    const height = st.estimateHeight();
+    const width = st.estimateWidth();
+    st.text = text;
+    if (textAttr.xJustify === 'right') {
+      // Right-justified against the right margin: the text's right edge sits at
+      // the right margin, not the raw page edge.
+      st.x = (layout.pageWidth - rightMargin) - width;
+    } else {
+      // Centered between the left/right margins, at xPlacement (a fraction of the
+      // printable width) -- not a fraction of the raw page width.
+      const printableWidth = layout.pageWidth - leftMargin - rightMargin;
+      const centerX = leftMargin + printableWidth * (textAttr.xPlacement ?? 0.5);
+      st.x = centerX - (width / 2);
+    }
+    // `st.y` behaves like the bottom/baseline of the text (the renderer derives the visual
+    // top as `y - height`), so a target visual-top of `top` requires `st.y = top + height`.
+    if (textAttr.yOffset > 0) {
+      // Top-anchored (Title, Subtitle, Composer, Page number, Part).
+      if (above && above.logicalBox) {
+        const top = above.logicalBox.y + above.logicalBox.height;
+        st.y = top + height;
+      } else {
+        // Nothing above this one yet: start at half the top margin, minus this
+        // text's own height, never above the page's true top edge (min 0). The
+        // margin is reserved for music, so this keeps the landmark entirely
+        // within the (unused) upper half of that margin rather than colliding
+        // with it.
+        st.y = Math.max(topMargin / 2, height);
+      }
+    } else {
+      // Bottom-anchored (Copyright, Date): measured from the true bottom edge
+      // of the page, not the bottom margin.
+      st.y = pageHeight + textAttr.yOffset;
+    }
+    const params = SmoTextGroup.defaults;
+    params.textBlocks = [{ text: st, position: SmoTextGroup.relativePositions.RIGHT, activeText: false }];
+    params.purpose = purpose;
+    params.pagination = SmoTextGroup.paginations.EVERY;
     const tg = new SmoTextGroup(params);
     return tg;
   }
@@ -505,7 +662,8 @@ export class SmoTextGroup extends SmoScoreModifierBase {
   elements: ElementLike[] = [];
   textBlocks: SmoTextBlock[] = [];
   edited: boolean = false;  // indicates not edited this session
-  skipRender: boolean = false; // don't render if it is being edited  
+  skipRender: boolean = false; // don't render if it is being edited
+  beingEdited: boolean = false; // session-only render hint: dim this group's SVG while its dialog is open (never serialized)
   static deserialize(jObj: SmoTextGroupParamsSer) {
     const textBlocks: SmoTextBlock[] = [];
     const params: any = {};
@@ -518,6 +676,7 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     // Create new scoreText object for the text blocks
     jObj.textBlocks.forEach((st: any) => {
       const tx = SmoScoreText.deserialize(st.text);
+      // Note activeText is not serialized.
       textBlocks.push({ text: tx, position: st.position, activeText: false });
     });
     // fill in the textBlock configuration
@@ -529,6 +688,14 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     const rv = SmoTextGroup.deserialize(jObj);
     if (jObj.attrs.id) {
       rv.attrs.id = jObj.attrs.id;
+    }
+    // If we are deserializing from a saved score, text element attributes won't 
+    // exists.  If we are deserializing a text group that has already been rendered, 
+    // preserve the text block IDs.
+    for (let i = 0; i < jObj.textBlocks.length; ++i) {
+      if (jObj.textBlocks[i].text.attrs) {
+        rv.textBlocks[i].text.attrs.id = jObj.textBlocks[i].text.attrs.id;
+      }
     }
     return rv;
   }
@@ -557,6 +724,7 @@ export class SmoTextGroup extends SmoScoreModifierBase {
       smoSerialize.serializedMerge(SmoTextGroup.nonTextAttributes, tg, params);
       params.textBlocks = nblocks;
       const ngroup: SmoTextGroup = new SmoTextGroup(params);
+      ngroup.beingEdited = tg.beingEdited;
       ngroup.textBlocks.forEach((block) => {
         const xx = block.text;
         xx.classes = 'score-text ' + xx.attrs.id;
@@ -617,6 +785,37 @@ export class SmoTextGroup extends SmoScoreModifierBase {
       block.text.x *= scale;
       block.text.y *= scale;
     });
+  }
+  /**
+   * Reposition this group so it keeps the same position relative to the page when the page's
+   * width and/or height changes, e.g. text at 10% of the old page width ends up at 10% of the
+   * new page width.  Unlike scaleText, x and y are adjusted independently since page width and
+   * height can change by different amounts (or only one of them can change).
+   * @param xRatio newPageWidth / oldPageWidth (1 if page width didn't change)
+   * @param yRatio newPageHeight / oldPageHeight (1 if page height didn't change)
+   */
+  rescalePosition(xRatio: number, yRatio: number) {
+    this.musicXOffset *= xRatio;
+    this.musicYOffset *= yRatio;
+    this.textBlocks.forEach((block: SmoTextBlock) => {
+      block.text.x *= xRatio;
+      block.text.y *= yRatio;
+    });
+  }
+  /**
+   * Remove empty text blocks introduced when editing
+   */
+  trimEmptyBlocks() {
+    const blocks: SmoTextBlock[] = [];
+    this.textBlocks.forEach((tb: SmoTextBlock) => {
+      if (tb.text.text.trim().length > 0) {
+        blocks.push(tb);
+      }
+    });
+    if (blocks.length < 1) {
+      return;
+    }
+    this.textBlocks = blocks;
   }
   // ### tryParseUnicode
   // Try to parse unicode strings.
@@ -707,5 +906,27 @@ export class SmoTextGroup extends SmoScoreModifierBase {
     this.textBlocks.forEach((block) => {
       block.text.offsetY(offset);
     });
+  }
+  /**
+   * Horizontally center this group between the page's left/right margins, using the same
+   * margin math as {@link SmoTextGroup.createLandmarkText}'s 'center' xJustify branch. Vertical
+   * position is unchanged. Requires `this.logicalBox` to already be populated by a render pass.
+   */
+  centerOnPage(layout: ScaledPageLayout) {
+    const width = this.logicalBox?.width ?? 0;
+    const printableWidth = layout.pageWidth - layout.leftMargin - layout.rightMargin;
+    const centerX = layout.leftMargin + (printableWidth / 2);
+    const targetX = centerX - (width / 2);
+    this.offsetX(targetX - this.ul().x);
+  }
+  /**
+   * Horizontally right-justify this group against the page's right margin, using the same
+   * margin math as {@link SmoTextGroup.createLandmarkText}'s 'right' xJustify branch. Vertical
+   * position is unchanged. Requires `this.logicalBox` to already be populated by a render pass.
+   */
+  rightJustifyOnPage(layout: ScaledPageLayout) {
+    const width = this.logicalBox?.width ?? 0;
+    const targetX = (layout.pageWidth - layout.rightMargin) - width;
+    this.offsetX(targetX - this.ul().x);
   }
 }

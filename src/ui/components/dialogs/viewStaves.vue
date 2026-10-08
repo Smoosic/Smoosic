@@ -3,6 +3,7 @@ import { reactive, Ref, ref, watch } from 'vue';
 import { SmoScore } from '../../../smo/data/score';
 import { ViewMapEntry } from '../../../render/sui/scoreView';
 import dialogContainer from './dialogContainer.vue';
+import toggle from './toggle.vue';
 import { SmoScorePreferences } from '../../../smo/data/scoreModifiers';
 interface Props {
   domId: string,
@@ -42,20 +43,17 @@ const toggleStave = async (ix: number) => {
       </div>
     </div>
     <div class="row">
-      <div class="col col-7 text-end">
-        <input class="form-check-input" type="checkbox" v-model="preferences.horizontalDisplay"
-          :id="getId('horizontalDisplay')" ></input>
-      </div>
-      <div class="col col-5">
-        <label class="form-check-label" :for="getId('hideEmptyLines')">Horizontal Display</label>
+      <div class="col col-12">
+        <toggle :domId="getId('horizontalDisplay')" :label="'Horizontal Display'" :initialValue="preferences.horizontalDisplay"
+          :changeCb="(value: boolean) => { preferences.horizontalDisplay = value }" />
       </div>
     </div>
 
     <div v-for="(stave, ix) in viewMap" class="row">
       <div class="col col-6 text-end ">{{ score.staves[ix].partInfo.partName }}</div>
       <div class="col col-6 text-start">
-        <input class="form-check-input" type="checkbox" v-model="viewMap[ix].show" :id="getStaffId('group-checkbox', ix)"
-          @change="toggleStave(ix)"></input>
+        <toggle :domId="getStaffId('group-checkbox', ix)" :label="''" :initialValue="viewMap[ix].show"
+          :changeCb="(value: boolean) => { viewMap[ix].show = value; toggleStave(ix); }" />
       </div>
     </div>
   </dialogContainer>

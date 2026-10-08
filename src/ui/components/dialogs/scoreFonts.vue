@@ -46,22 +46,12 @@ const engravingFontChange = (val: string) => {
 </script>
 <template>
   <dialogContainer :domId="domId" :commitCb="commitCb" :cancelCb="cancelCb" :label="label">
-      <div class="row mb-2 ms-2">
-        <div class="col-6 col">
-        <selectComp :domId="getId('score-font-select')" :label="'Engraving Font'" :selections="engravingFonts" :initialValue="engravingFontValue"
+      <div class="group">
+        <div class="group-label">Engraving</div>
+        <selectComp :domId="getId('score-font-select')" :label="''" :selections="engravingFonts" :initialValue="engravingFontValue"
           :changeCb="engravingFontChange" />
-        </div>
-        <div class="col col-6 fw-bolder">
-          <span>Engraving</span>
-        </div>        
       </div>
-      <div class="row mb-2 border-top dropdown-divider">
-      </div>
-        <fontPickerApp :domId="getId('chord-font-picker')" :font="fontInfo.chordFont" :label="'Chords'" />
-      <div class="row mb-2 border-top dropdown-divider">
-      </div>
-        <fontPickerApp :domId="getId('lyric-font-picker')" :font="fontInfo.lyricFont" :label="'Lyrics'"/>
-      <div class="row mb-2 border-top dropdown-divider">
-      </div>
+      <fontPickerApp :domId="getId('chord-font-picker')" :font="fontInfo.chordFont" :label="'Chords'" />
+      <fontPickerApp :domId="getId('lyric-font-picker')" :font="fontInfo.lyricFont" :label="'Lyrics'"/>
   </dialogContainer>
 </template>

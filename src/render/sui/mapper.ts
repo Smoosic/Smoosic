@@ -163,6 +163,10 @@ export abstract class SuiMapper {
         this.localModifiers.push({ index, selection: sel, modifier: tempo, box: tempo.logicalBox ?? SvgBox.default });
         index += 1;
       });
+      sel.measure.getModifiersByType('SmoRehearsalMark').forEach((rm) => {
+        this.localModifiers.push({ index, selection: sel, modifier: rm, box: rm.logicalBox ?? SvgBox.default });
+        index += 1;
+      });
       sel.staff.renderableModifiers.forEach((mod) => {
         if (SmoSelector.gteq(sel.selector, mod.startSelector) &&
           SmoSelector.lteq(sel.selector, mod.endSelector) && mod.logicalBox)  {
@@ -385,6 +389,17 @@ export abstract class SuiMapper {
                 const lyricElement = context.svg.getElementById('vf-' + lyric.attrs.id) as SVGSVGElement;
                 if (lyricElement) {
                   SvgHelpers.updateArtifactBox(context, lyricElement, lyric as any);
+                  // getBBox() is measured in the element's own coordinate system, i.e. before
+                  // its own `transform` attribute is applied -- so for an annotation (whose
+                  // rendered position is offset live via `transform="translate(translateX -translateY)"`,
+                  // VxSystem._updateAnnotationOffsets) the box above is still the untranslated
+                  // position. Shift it by the same translation so logicalBox (used for hit-testing/
+                  // outlining, e.g. the annotation drag tool) matches where the annotation actually renders.
+                  if (lyric.parser === SmoLyric.parsers.annotation && lyric.logicalBox) {
+                    lyric.logicalBox = SvgHelpers.boxPoints(
+                      lyric.logicalBox.x + lyric.translateX, lyric.logicalBox.y - lyric.translateY,
+                      lyric.logicalBox.width, lyric.logicalBox.height);
+                  }
                 }
               }
             });

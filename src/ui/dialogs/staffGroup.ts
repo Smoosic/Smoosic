@@ -56,10 +56,15 @@ export const SuiStaffGroupDialogVue = (parameters: SuiDialogParams) => {
     changed = true;
     populateGroups();
   }
-  const addToGroupCb = async (staffId: number) => {
-    const sg = score.getSystemGroupForStaffId(staffId - 1);
+  const addToGroupCb = async (staffId: number, direction: 'above' | 'below') => {
+    const neighborId = direction === 'above' ? staffId - 1 : staffId + 1;
+    const sg = score.getSystemGroupForStaffId(neighborId);
     if (sg) {
-      sg.endSelector.staff = staffId;
+      if (direction === 'above') {
+        sg.endSelector.staff = staffId;
+      } else {
+        sg.startSelector.staff = staffId;
+      }
       await parameters.view.addOrUpdateStaffGroup(sg);
     }
     await parameters.view.refreshViewport();

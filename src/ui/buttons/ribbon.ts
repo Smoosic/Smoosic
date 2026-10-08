@@ -1,22 +1,19 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { buildDom, getDomContainer } from '../../common/htmlHelpers';
-import { KeyEvent } from '../../smo/data/common';
+import { KeyEvent, SvgPoint } from '../../smo/data/common';
 import { ButtonDefinition, ButtonAction } from './button';
 import { BrowserEventSource } from '../eventSource';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { CompleteNotifier, RibbonLayout, replaceVueRoot } from '../common';
 import { SuiTracker } from '../../render/sui/tracker';
 import { SuiMenuManager } from '../menus/manager';
-import { SuiLibraryDialog } from '../dialogs/library';
-import { SuiTempoDialog } from '../dialogs/tempo';
+import { SuiLibraryDialogVue } from '../dialogs/libraryVue';
 import { ButtonLabel } from './button';
-import { CollapseRibbonControl } from './collapsable';
-import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SuiHelp } from '../help';
 import { SmoUiConfiguration } from '../configuration';
 import { createApp, ref, reactive, watch } from 'vue';
-import { SuiKeySignatureDialog } from '../dialogs/keySignature';
+import { SuiKeySignatureDialogVue } from '../dialogs/keySignatureVue';
+import { SuiTempoDialogVue } from '../dialogs/tempoVue';
 import { default as ribbonApp } from '../components/buttons/ribbon.vue';
 import { default as ribbonSidebarApp } from '../components/buttons/sidebar.vue';
 import { SuiTimeSignatureDialogVue } from '../dialogs/timeSignature';
@@ -66,26 +63,7 @@ export interface SuiRibbonParams {
 export class RibbonButtons {
   static get paramArray() {
     return ['ribbonButtons', 'ribbons', 'keyCommands', 'controller', 'menus', 'eventSource', 'view'];
-  }
-  static ribbonButtonHtml(containerClass: string, buttonId: string, buttonClass: string, buttonText: string, buttonIcon: string, buttonKey: string) {
-    const b = buildDom;
-    const r = b('div').classes(containerClass).append(b('button').attr('id', buttonId).classes(buttonClass).append(
-      b('span').classes('left-text').append(
-        b('span').classes('text-span').text(buttonText)).append(
-          b('span').classes('ribbon-button-text icon ' + buttonIcon))).append(
-            b('span').classes('ribbon-button-hotkey').text(buttonKey)));
-    return r.dom();
-  }
-  static menuButtonHtml(buttonId: string, buttonClass: string, buttonText: string, buttonIcon: string, buttonKey: string) {
-    const b = buildDom;
-    const r = b('li').classes('nav-item')
-      .append(b('button').classes(buttonClass).attr('id', buttonId).classes('nav-link').append(
-        b('span').classes('left-text').append(
-          b('span').classes('text-span').text(buttonText))).append(
-            b('span').classes('ribbon-button-text icon ' + buttonIcon)).append(
-              b('span').classes('ribbon-button-hotkey').text(buttonKey)));
-    return r.dom();
-  }
+  }  
   static translateButtons: ButtonLabel[] = [];
   controller: CompleteNotifier;
   config: SmoUiConfiguration;
@@ -94,8 +72,6 @@ export class RibbonButtons {
   menus: SuiMenuManager;
   ribbons: RibbonLayout;
   ribbonButtons: ButtonDefinition[];
-  collapsables: CollapseRibbonControl[] = [];
-  collapseChildren: any[] = [];
 
   constructor(params: SuiRibbonParams) {
     this.controller = params.completeNotifier;
@@ -105,10 +81,32 @@ export class RibbonButtons {
     this.menus = params.menus;
     this.ribbonButtons = params.ribbonButtons;
     this.ribbons = params.ribbons;
-    this.collapsables = [];
-    this.collapseChildren = [];
   }
-  async executeQuickButton(button: ButtonDefinition) {
+  // Anchor point for a menu opened from a standard menu button: the button's top-right corner.
+  resolveTopRightAnchor(elementId?: string): SvgPoint | undefined {
+    if (!elementId) {
+      return undefined;
+    }
+    const element = document.getElementById(elementId.replace(/^#/, ''));
+    if (!element) {
+      return undefined;
+    }
+    const rect = element.getBoundingClientRect();
+    return { x: rect.right, y: rect.top };
+  }
+  // Anchor point for a menu opened from a quick-action button: the control's bottom-left corner.
+  resolveBottomLeftAnchor(elementId?: string): SvgPoint | undefined {
+    if (!elementId) {
+      return undefined;
+    }
+    const element = document.getElementById(elementId.replace(/^#/, ''));
+    if (!element) {
+      return undefined;
+    }
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left, y: rect.bottom };
+  }
+  async executeQuickButton(button: ButtonDefinition, elementId?: string) {
     if (button.id === 'setView') {
     SuiScoreViewDialogVue(
       {
@@ -136,7 +134,7 @@ export class RibbonButtons {
       if (!this.controller) {
         return;
       }
-      createAndDisplayDialog(SuiKeySignatureDialog, {
+      SuiKeySignatureDialogVue({
         view: this.view,
         completeNotifier: this.controller,
         startPromise: null,
@@ -165,7 +163,7 @@ export class RibbonButtons {
         return;
       }
       const tempo = this.view.tracker.selections[0].measure.getTempo();
-      createAndDisplayDialog(SuiTempoDialog,
+      SuiTempoDialogVue(
         {
           id: 'tempoDialog',
           ctor: 'SuiTempoDialog',
@@ -186,7 +184,8 @@ export class RibbonButtons {
         return;
       }
       await this.view.renderPromise();
-      this.menus.createMenu('SuiPartSelectionMenu', this.controller);
+      const anchor = this.resolveBottomLeftAnchor(elementId);
+      this.menus.createMenu('SuiPartSelectionMenu', this.controller, anchor);
     }
   }
   async executeButtonModal(buttonElement: string, buttonData: ButtonDefinition) {
@@ -201,25 +200,28 @@ export class RibbonButtons {
         tracker: this.view.tracker
       };
       if (buttonData.ctor === 'SuiLibraryDialog') {
-        await SuiLibraryDialog.createAndDisplay(params, this.config);
+        SuiLibraryDialogVue({eventSource: this.eventSource,
+        completeNotifier: this.controller,
+        view: this.view,
+        ctor: buttonData.ctor,
+        id: buttonData.id,
+        startPromise: null,
+        tracker: this.view.tracker}, this.config);
       } else {
-        createAndDisplayDialog(SuiTempoDialog, params);
+        SuiTempoDialogVue(params);
       }
     } else if (buttonData.ctor === 'helpModal') {
       this.view.navigation.showHelpModal();
     }
   }
-  executeButtonMenu(buttonElement: string, buttonData: ButtonDefinition) {
-    this.menus.createMenu(buttonData.ctor, this.controller);
-  }
 
   async executeButton(buttonElement: string, buttonData: ButtonDefinition) {
     if (buttonData.action === 'modal') {
       await this.executeButtonModal(buttonElement, buttonData);
-      return;
     }
     if (buttonData.action === 'menu' || buttonData.action === 'collapseChildMenu') {
-      this.executeButtonMenu(buttonElement, buttonData);
+      const anchor = this.resolveTopRightAnchor(buttonElement);
+      await this.menus.createMenu(buttonData.ctor, this.controller, anchor);
     }
   }
 
@@ -228,66 +230,6 @@ export class RibbonButtons {
       await this.executeButton(buttonElement, buttonData);
     };
     this.eventSource.domClick(buttonElement, cb);
-  }
-  createCollapsibleButtonGroups(selector: string | HTMLElement) {
-    let containerClass: string = '';
-    // Now all the button elements have been bound.  Join child and parent buttons
-    // For all the children of a button group, add it to the parent group
-    this.collapseChildren.forEach((b) => {
-      containerClass = 'ribbonButtonContainer';
-      if (b.action === 'collapseGrandchild') {
-        containerClass = 'ribbonButtonContainerMore';
-      }
-      const buttonHtml = RibbonButtons.ribbonButtonHtml(
-        containerClass, b.id, b.classes, b.leftText, b.icon, b.rightText);
-      if (b.dataElements) {
-        const bkeys = Object.keys(b.dataElements);
-        bkeys.forEach((bkey) => {
-          var de = b.dataElements[bkey];
-          $(buttonHtml).find('button').attr('data-' + bkey, de);
-        });
-      }
-      // Bind the child button actions
-      const parent = $(selector).find('.collapseContainer[data-group="' + b.group + '"]');
-      $(parent).append(buttonHtml);
-      const el = $(selector).find('#' + b.id);
-      this.bindButton(el, b);
-    });
-
-    this.collapsables.forEach((cb) => {
-      // Bind the events of the parent button
-      cb.bind();
-    });
-  }
-  _createSidebarButtonGroups(selector: string | HTMLElement) {
-    let containerClass: string = '';
-    // Now all the button elements have been bound.  Join child and parent buttons
-    // For all the children of a button group, add it to the parent group
-    this.collapseChildren.forEach((b) => {
-      containerClass = 'ribbonButtonContainer';
-      if (b.action === 'collapseGrandchild') {
-        containerClass = 'ribbonButtonContainerMore';
-      }
-      const buttonHtml = RibbonButtons.ribbonButtonHtml(
-        containerClass, b.id, b.classes, b.leftText, b.icon, b.rightText);
-      if (b.dataElements) {
-        const bkeys = Object.keys(b.dataElements);
-        bkeys.forEach((bkey) => {
-          var de = b.dataElements[bkey];
-          $(buttonHtml).find('button').attr('data-' + bkey, de);
-        });
-      }
-      // Bind the child button actions
-      const parent = $(selector).find('.collapseContainer[data-group="' + b.group + '"]');
-      $(parent).append(buttonHtml);
-      const el = $(selector).find('#' + b.id);
-      this.bindButton(el, b);
-    });
-
-    this.collapsables.forEach((cb) => {
-      // Bind the events of the parent button
-      cb.bind();
-    });
   }
   static isCollapsible(action: ButtonAction) {
     return ['collapseChild', 'collapseChildMenu', 'collapseGrandchild', 'collapseMore'].indexOf(action) >= 0;
@@ -298,8 +240,8 @@ export class RibbonButtons {
   // the button's configured action.
   createRibbonHtml(buttonAr: string[], selector: string | HTMLElement) {
     const dataArray: ButtonDefinition[] = reactive([]);
-    const buttonCallback = async (button: ButtonDefinition) => {
-      return await this.executeQuickButton(button);
+    const buttonCallback = async (button: ButtonDefinition, elementId?: string) => {
+      return await this.executeQuickButton(button, elementId);
     };
     buttonAr.forEach((buttonId) => {
       const buttonData = this.ribbonButtons.find((e) =>
@@ -330,69 +272,26 @@ export class RibbonButtons {
   createSidebarMenuHtml(buttonAr: string[], selector: string | HTMLElement) {
     let buttonClass = '';
     const buttonList: ButtonDefinition[] = [];
-    const executeButton = async (buttonData: ButtonDefinition) => {
-      await this.executeButton(buttonData.id, buttonData);
-    };    
+    const executeButton = async (buttonData: ButtonDefinition, elementId?: string) => {
+      await this.executeButton(elementId ?? buttonData.id, buttonData);
+    };
     buttonAr.forEach((buttonId) => {
       const buttonData = this.ribbonButtons.find((e) =>
         e.id === buttonId
       );
       if (buttonData) {
         buttonData.callback = executeButton;
-        buttonData.icon += ' menu-icon';
-        buttonList.push(buttonData);
-        /* if (buttonData.leftText) {
-          RibbonButtons.translateButtons.push({ buttonId: buttonData.id, buttonText: buttonData.leftText });
-        }
-        // collapse child is hidden until the parent button is selected, exposing the button group
-        if (RibbonButtons.isCollapsible(buttonData.action)) {
-          this.collapseChildren.push(buttonData);
-        }
-        if (buttonData.action !== 'collapseChild') {
-          // else the button has a specific action, such as a menu or dialog, or a parent button
-          // for translation, add the menu name to the button class
-          buttonClass = buttonData.classes;
-          if (buttonData.action === 'menu' || buttonData.action === 'modal') {
-            buttonClass += ' ' + buttonData.ctor;
-          }
-          const buttonHtml = RibbonButtons.menuButtonHtml(
-            buttonData.id, buttonClass, buttonData.leftText, buttonData.icon, buttonData.rightText);
-          $(buttonHtml).attr('data-group', buttonData.group);
-          $(selector).append(buttonHtml);
-          const buttonElement = $('#' + buttonData.id);
-          // If this is a collabsable button, create it, otherwise bind its execute function.
-          if (buttonData.action === 'collapseParent') {
-            $(buttonHtml).addClass('collapseContainer');
-            // collapseParent
-            this.collapsables.push(new CollapseRibbonControl({
-              ctor: buttonData.ctor,
-              buttons: this.ribbonButtons,
-              view: this.view,
-              menus: this.menus,
-              eventSource: this.eventSource,
-              completeNotifier: this.controller,
-              buttonId: buttonData.id,
-              buttonElement,
-              buttonData
-            }));
-          } else {
-            const cb = async () => {
-              await this.executeButton(buttonElement, buttonData);
-            };
-            this.eventSource.domClick(buttonElement, cb);
-          }
-        }*/
+        // buttonData.icon += ' menu-icon';
+        buttonList.push(buttonData);        
       }
     });
     createApp(ribbonSidebarApp as any, { buttonProps: buttonList, domId: selector instanceof HTMLElement ? selector.id : selector }).mount(selector);
   }
   createRibbon(buttonDataArray: string[], parentElement: string | HTMLElement) {
     this.createRibbonHtml(buttonDataArray, parentElement);
-    this.createCollapsibleButtonGroups(parentElement);
   }
-  createSidebarRibbon(buttonDataArray: string[], parentElement: string | HTMLElement, containerClasses: string) {
+  async createSidebarRibbon(buttonDataArray: string[], parentElement: string | HTMLElement, containerClasses: string) {
     this.createSidebarMenuHtml(buttonDataArray, parentElement);
-    // this._createCollapsibleButtonGroups(parentElement); needed?
   }
   async handleKeyDown(ev: KeyEvent) {
     if (ev.altKey) {

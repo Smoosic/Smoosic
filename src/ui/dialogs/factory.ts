@@ -6,26 +6,20 @@ import { SuiHairpinAttributesDialog } from './hairpin';
 import { SuiSlurAttributesDialog } from './slur';
 import { SuiPedalMarkingDialog } from './pedalMarking';
 import { SuiVoltaAttributeDialog } from './volta';
-import { SuiLyricDialog } from './lyric';
-import { SuiChordChangeDialog } from './chordChange';
+import { SuiLyricDialogVue } from './lyricVue';
+import { SuiChordChangeDialogVue } from './chordChangeVue';
 import { SuiTieAttributesDialog } from './tie';
 import { SuiDynamicModifierDialog } from './dynamics';
-import { SuiTextBlockDialog } from './textBlock';
-import { SuiTextBracketDialog } from './textBracket';
-import { SuiArpeggioDialog } from './arpeggio';
 import { SuiDialogNotifier, SmoDynamicComponentCtor, SuiBaseComponentParams } from './components/baseComponent';
 import { SuiButtonComponent, SuiButtonComposite, SuiButtonCompositeParams, SuiButtonComponentParams } from './components/button';
 import { CheckboxDropdownComponent, CheckboxDropdownComponentParams } from './components/checkdrop';
-import { SuiDragText } from './components/dragText';
 import { SuiDropdownComponent, SuiDropdownComponentParams, SuiDropdownCompositeParams, SuiDropdownComposite } from './components/dropdown';
 import { SuiFileDownloadComponentParams, SuiFileDownloadComponent } from './components/fileDownload';
 import { SuiFontComponent, SuiFontComponentParams } from './components/fontComponent';
-import { SuiNoteTextParams, SuiLyricComponent, SuiChordComponent } from './components/noteText';
 import { SuiPitchComponentParams, SuiPitchComponent, SuiPitchComposite, SuiPitchCompositeParams, SuiPitchArrayComponentTab } from './components/pitch';
 import { SuiRockerComponentParams,SuiRockerComponent, SuiRockerComposite, SuiRockerCompositeParams } from './components/rocker';
 import { StaffAddRemoveComponentParams, StaffAddRemoveComponent,  StaffCheckComponentParams, StaffCheckComponent } from './components/staffComponents';
 import { TextCheckComponentParams, TextCheckComponent } from './components/textCheck';
-import { SuiTextInPlace, SuiTextInPlaceParams,  SuiTextBlockComponent, SuiTextBlockComponentParams } from './components/textInPlace';
 import { SuiTextInputComponentParams, SuiTextInputComponent, 
   SuiTextInputCompositeParams, SuiTextInputComposite, SuiReadOnlyTextComponent } from './components/textInput';
 import { TieMappingComponentParams, TieMappingComponent } from './components/tie';
@@ -33,11 +27,20 @@ import { SuiToggleComponentParams, SuiToggleComponent, SuiToggleCompositeParams,
 import { SuiTreeComponent, SuiTreeComponentParams } from './components/tree';
 import { SmoLyric } from '../../smo/data/noteModifiers';
 import { SuiExceptionHandler } from '../exceptions';
+import { SuiTextBlockDialogVue } from './textBlockVue';
+import { SuiVoltaAttributeDialogVue } from './voltaVue';
+import { SuiRehearsalMarkDialogVue } from './rehearsalMarkVue';
+import { SuiTextBracketDialogVue } from './textBracketVue';
+import { SuiSlurAttributesDialogVue } from './slurVue';
+import { SuiPedalMarkingDialogVue } from './pedalMarkingVue';
+import { SuiHairpinAttributesDialogVue } from './hairpinVue';
+import { SuiDynamicModifierDialogVue } from './dynamicsVue';
+import { SuiAnnotationDialogVue } from './annotationVue';
 
 export type ModifiersWithDialogs = 'SmoStaffHairpin' | 'SmoTie' | 'SmoSlur' | 
-'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking';
+'SmoDynamicText' | 'SmoVolta' | 'SmoScoreText' | 'SmoLoadScore' | 'SmoLyric' | 'SmoPedalMarking' | 'SmoRehearsalMark';
 export var ModifiersWithDialogNames = ['SmoStaffHairpin', 'SmoTie', 'SmoSlur', 'SmoDynamicText', 'SmoVolta',
-  'SmoScoreText', 'SmoLoadScore', 'SmoLyric', 'SmoTextGroup', 'SmoStaffTextBracket', 'SmoPedalMarking'];
+  'SmoScoreText', 'SmoLoadScore', 'SmoLyric', 'SmoTextGroup', 'SmoStaffTextBracket', 'SmoPedalMarking', 'SmoRehearsalMark'];
 
 export function isModifierWithDialog(modifier: SmoModifier) {
   return ModifiersWithDialogNames.indexOf(modifier.attrs.type) >= 0;
@@ -55,21 +58,40 @@ export function isModifierWithDialog(modifier: SmoModifier) {
     const ctor = modifier.attrs.type;
     parameters.modifier = modifier;
     if (ctor === 'SmoStaffHairpin') {
-      return createAndDisplayDialog(SuiHairpinAttributesDialog, parameters);
+      SuiHairpinAttributesDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoPedalMarking') {
-      return createAndDisplayDialog(SuiPedalMarkingDialog, parameters);
+      SuiPedalMarkingDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoTie') {
       return createAndDisplayDialog(SuiTieAttributesDialog, parameters);
     } else if (ctor === 'SmoSlur') {
-      return createAndDisplayDialog(SuiSlurAttributesDialog, parameters);
+      SuiSlurAttributesDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoDynamicText') {
-      return createAndDisplayDialog(SuiDynamicModifierDialog, parameters);
+      SuiDynamicModifierDialogVue(parameters);
+      return null;
     } else if (ctor === 'SmoVolta') {
-      return createAndDisplayDialog(SuiVoltaAttributeDialog, parameters);
-    } else if (ctor === 'SmoTextGroup') {      
-      return createAndDisplayDialog(SuiTextBlockDialog, parameters);
+      SuiVoltaAttributeDialogVue(parameters);
+      return null;
+    } else if (ctor === 'SmoRehearsalMark') {
+      SuiRehearsalMarkDialogVue(parameters);
+      return null;
+    } else if (ctor === 'SmoTextGroup') {
+      SuiTextBlockDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'textDialog',
+        ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+      });      
+      return null;
     } else if (ctor === 'SmoStaffTextBracket') {
-      return createAndDisplayDialog(SuiTextBracketDialog, parameters);
+      SuiTextBracketDialogVue(parameters);
+      return null;
     } else {
       if (modifier.ctor !== 'SmoLyric') {
          new SuiExceptionHandler({
@@ -80,9 +102,41 @@ export function isModifierWithDialog(modifier: SmoModifier) {
       
       const lModifier = (modifier as SmoLyric);
       if (lModifier.parser == SmoLyric.parsers.lyric) {
-        return createAndDisplayDialog(SuiLyricDialog, parameters);
+        SuiLyricDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'textDialog',
+        ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+        });
+        return null;
+      } else if (lModifier.parser == SmoLyric.parsers.annotation) {
+        SuiAnnotationDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'annotationDialog',
+        ctor: 'SuiAnnotationDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+        });
+        return null;
       } else {
-        return createAndDisplayDialog(SuiChordChangeDialog, parameters);
+        SuiChordChangeDialogVue({
+        completeNotifier: parameters.completeNotifier,
+        view: parameters.view,
+        eventSource: parameters.eventSource,
+        id: 'textDialog',
+        ctor: 'SuiTextBlockDialog',
+        tracker: parameters.view.tracker,
+        startPromise: parameters.startPromise,
+        modifier: parameters.modifier
+        });
+        return null;
       }
     }
   }
@@ -95,10 +149,6 @@ export const initDialogTranslationElements = () => {
   DialogTranslations.push(suiDialogTranslate(SuiSlurAttributesDialog.dialogElements, 'SuiSlurAttributesDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiDynamicModifierDialog.dialogElements, 'SuiDynamicModifierDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiVoltaAttributeDialog.dialogElements, 'SuiVoltaAttributeDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiTextBlockDialog.dialogElements, 'SuiTextBlockDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiTextBlockDialog.dialogElements, 'SuiTextBracketDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiLyricDialog.dialogElements, 'SuiLyricDialog'));
-  // DialogTranslations.push(suiDialogTranslate(SuiArpeggioDialog.dialogElements, 'SuiArpeggioDialog'));
 }
 export const initDialogConstructors = () => {
   SmoDynamicComponentCtor['SuiButtonComponent'] = 
@@ -107,8 +157,6 @@ export const initDialogConstructors = () => {
   (dialog: SuiDialogNotifier, params: SuiButtonCompositeParams) => new SuiButtonComposite(dialog, params);
   SmoDynamicComponentCtor['CheckboxDropdownComponent'] = 
   (dialog: SuiDialogNotifier, params: CheckboxDropdownComponentParams) => new CheckboxDropdownComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiDragText'] = 
-  (dialog: SuiDialogNotifier, params: SuiBaseComponentParams) => new SuiDragText(dialog, params);
   //SuiDropdownComponent, SuiDropdownComponentParams, SuiDropdownCompositeParams, SuiDropdownComposite
   SmoDynamicComponentCtor['SuiDropdownComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiDropdownComponentParams) => new SuiDropdownComponent(dialog, params);
@@ -118,10 +166,6 @@ export const initDialogConstructors = () => {
   (dialog: SuiDialogNotifier, params: SuiFileDownloadComponentParams) => new SuiFileDownloadComponent(dialog, params);
   SmoDynamicComponentCtor['SuiFontComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiFontComponentParams) => new SuiFontComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiLyricComponent'] = 
-  (dialog: SuiDialogNotifier, params: SuiNoteTextParams) => new SuiLyricComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiChordComponent'] = 
-  (dialog: SuiDialogNotifier, params: SuiNoteTextParams) => new SuiChordComponent(dialog, params);
   SmoDynamicComponentCtor['SuiPitchComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiPitchComponentParams) => new SuiPitchComponent(dialog, params);
   SmoDynamicComponentCtor['SuiPitchComposite'] = 
@@ -138,11 +182,7 @@ export const initDialogConstructors = () => {
   (dialog: SuiDialogNotifier, params: StaffCheckComponentParams) => new StaffCheckComponent(dialog, params);
   SmoDynamicComponentCtor['TextCheckComponent'] = 
   (dialog: SuiDialogNotifier, params: TextCheckComponentParams) => new TextCheckComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiTextInPlace'] = 
-  (dialog: SuiDialogNotifier, params: SuiTextInPlaceParams) => new SuiTextInPlace(dialog, params);
-  SmoDynamicComponentCtor['SuiTextBlockComponent'] = 
-  (dialog: SuiDialogNotifier, params: SuiTextBlockComponentParams) => new SuiTextBlockComponent(dialog, params);
-  SmoDynamicComponentCtor['SuiTextInputComponent'] = 
+    SmoDynamicComponentCtor['SuiTextInputComponent'] = 
   (dialog: SuiDialogNotifier, params: SuiTextInputComponentParams) => new SuiTextInputComponent(dialog, params);
   SmoDynamicComponentCtor['SuiTextInputComposite'] = 
   (dialog: SuiDialogNotifier, params: SuiTextInputCompositeParams) => new SuiTextInputComposite(dialog, params);

@@ -1,4 +1,4 @@
-import { Note as VexNote, StaveNote as VexStaveNote, StemmableNote as VexStemmableNote, Beam as VexBeam, Tuplet as VexTuplet, Voice as VexVoice, Formatter as VexFormatter, Accidental as VexAccidental, Annotation as VexAnnotation, StaveNoteStruct as VexStaveNoteStruct, StaveText as VexStaveText, StaveModifier as VexStaveModifier, TextNote as VexTextNote, Stave as VexStave, StaveModifierPosition as VexStaveModifierPosition, Font as VexFont, FontInfo as VexFontInfo, FontStyle as VexFontStyle, FontWeight as VexFontWeight, TupletOptions as VexTupletOptions, Curve as VexCurve, StaveTie as VexStaveTie, ClefNote as VexClefNote, Music as VexMusic, ChordSymbol as VexChordSymbol, TabStave as VexTabStave, TabNote as VexTabNote, TabSlide as VexTabSlide, TabNotePosition as VexTabNotePosition, TabNoteStruct as VexTabNoteStruct, PedalMarking as VexPedalMarking, Stem as VexStem, Renderer as VexRenderer, RenderContext as VexRenderContext, SVGContext as VexSVGContext } from "vexflow_smoosic";
+import { Note as VexNote, StaveNote as VexStaveNote, StemmableNote as VexStemmableNote, Beam as VexBeam, Tuplet as VexTuplet, Voice as VexVoice, Formatter as VexFormatter, Accidental as VexAccidental, Annotation as VexAnnotation, StaveNoteStruct as VexStaveNoteStruct, StaveText as VexStaveText, StaveModifier as VexStaveModifier, StaveSection as VexStaveSection, TextFormatter as VexTextFormatter, TextNote as VexTextNote, Stave as VexStave, StaveModifierPosition as VexStaveModifierPosition, Font as VexFont, FontInfo as VexFontInfo, FontStyle as VexFontStyle, FontWeight as VexFontWeight, TupletOptions as VexTupletOptions, Curve as VexCurve, StaveTie as VexStaveTie, ClefNote as VexClefNote, Music as VexMusic, ChordSymbol as VexChordSymbol, TabStave as VexTabStave, TabNote as VexTabNote, TabSlide as VexTabSlide, TabNotePosition as VexTabNotePosition, TabNoteStruct as VexTabNoteStruct, PedalMarking as VexPedalMarking, Stem as VexStem, Renderer as VexRenderer, RenderContext as VexRenderContext, SVGContext as VexSVGContext } from "vexflow_smoosic";
 import { SvgBox } from "../smo/data/common";
 export declare const VexFlow: typeof import("vexflow_smoosic").Flow;
 export type Music = VexMusic;
@@ -22,6 +22,8 @@ export type TextNote = VexTextNote;
 export type StaveNoteStruct = VexStaveNoteStruct;
 export type StaveModifier = VexStaveModifier;
 export type StaveText = VexStaveText;
+export declare const StaveSection: typeof VexStaveSection;
+export declare const VexTextMetrics: typeof VexTextFormatter;
 export type Stave = VexStave;
 export type Curve = VexCurve;
 export type StaveTie = VexStaveTie;

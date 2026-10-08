@@ -1,20 +1,8 @@
-import { MenuDefinition, SuiMenuBase, SuiMenuParams } from './menu';
+import { SuiMenuParams, SuiConfiguredMenu } from './menu';
 /**
  * stuff you can do to a score
  * @category SuiMenu
  */
-export declare class SuiScoreMenu extends SuiMenuBase {
-    static defaults: MenuDefinition;
-    getDefinition(): MenuDefinition;
-    preAttach(): void;
+export declare class SuiScoreMenu extends SuiConfiguredMenu {
     constructor(params: SuiMenuParams);
-    execStaffGroups(): void;
-    execScoreId(): void;
-    execPageLayout(): void;
-    execFonts(): void;
-    execGlobalLayout(): void;
-    execPreferences(): void;
-    execTransposeScore(): void;
-    selection(ev: any): Promise<void>;
-    keydown(): void;
 }

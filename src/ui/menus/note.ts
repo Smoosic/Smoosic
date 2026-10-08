@@ -1,5 +1,4 @@
 import { createAndDisplayDialog } from '../dialogs/dialog';
-import { SuiArpeggioDialog } from '../dialogs/arpeggio';
 import { SuiClefChangeDialog } from '../dialogs/clefChange';
 import { SuiNoteHeadDialog } from '../dialogs/noteHead';
 import { SuiOrnamentDialogVue } from '../dialogs/ornament';
@@ -8,6 +7,7 @@ import { SuiArticulationDialogVue } from '../dialogs/articulation';
 import { SuiGraceNoteDialog } from '../dialogs/gracenote';
 import { SuiMicrotoneDialogVue } from '../dialogs/microtones';
 import { SuiPitchDialogVue } from '../dialogs/pitch';
+import { SmoArpeggioType } from '../../smo/data/noteModifiers';
 import { SmoPedalMarking } from '../../smo/data/staffModifiers';
 import { SmoSelector } from '../../smo/xform/selections';
 import { SuiMenuBase, SuiMenuParams, 
@@ -31,29 +31,44 @@ const toggleCueMenuOption: SuiConfiguredMenuOption = {
     await menu.view.toggleCue();
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv sm bv-noteheadHalfFilled',
     text: 'Toggle Cue',
     value: 'toggleCueMenuOption'
   }
 }
 /**
+ * One choice per arpeggio style, shown as a submenu of arpeggioMenuOption.
  * @category SuiMenu
  */
-const arpeggioMenuOption: SuiConfiguredMenuOption = {
+const arpeggioStyleOption = (type: SmoArpeggioType, text: string): SuiConfiguredMenuOption => ({
   handler: async (menu: SuiMenuBase) => {
-    SuiArpeggioDialog({
-      view: menu.view,
-      completeNotifier: menu.completeNotifier,
-      startPromise: menu.closePromise,
-      eventSource: menu.eventSource,
-      tracker: menu.tracker,
-      ctor: 'SuiArpeggioDialog',
-      id: 'insert-dialog',
-      modifier: null
-    });
+    await menu.view.addRemoveArpeggio(type);
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
     icon: '',
+    text,
+    value: type
+  }
+});
+const arpeggioStyleOptions: SuiConfiguredMenuOption[] = [
+  arpeggioStyleOption('directionless', 'Plain'),
+  arpeggioStyleOption('rasquedo_up', 'Rasquedo Up'),
+  arpeggioStyleOption('rasquedo_down', 'Rasquedo Down'),
+  arpeggioStyleOption('roll_up', 'Roll Up'),
+  arpeggioStyleOption('roll_down', 'Roll Down'),
+  arpeggioStyleOption('brush_up', 'Brush Up'),
+  arpeggioStyleOption('brush_down', 'Brush Down'),
+  arpeggioStyleOption('none', 'None')
+];
+/**
+ * @category SuiMenu
+ */
+const arpeggioMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {},
+  display: (menu: SuiMenuBase) => true,
+  subMenu: arpeggioStyleOptions,
+  menuChoice: {
+    icon: 'bv tall oversize bv-arpeggiatoUp',
     text: 'Arpeggio',
     value: 'arpeggioDialog'
   }
@@ -75,7 +90,7 @@ const noteHeadMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-noteheadXBlack',
     text: 'Head and Stem',
     value: 'noteHeadDialog'
   }
@@ -119,7 +134,7 @@ const graceNotesMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'icon-smo smoi icon-grace_note',
     text: 'Grace Notes',
     value: 'graceNotes'
   }
@@ -141,7 +156,7 @@ const clefNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-fClef',
     text: 'Change Clef',
     value: 'clefNoteDialog'
   }
@@ -184,7 +199,7 @@ const togglePedalRelease: SuiConfiguredMenuOption = {
     return show;
   }),
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-keyboardPedalUp',
     text: 'Toggle Pedal Release',
     value: 'togglePedalRelease'
   }
@@ -206,7 +221,7 @@ const ornamentNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-ornamentMordent',
     text: 'Ornaments',
     value: 'ornamentDialog'
   }
@@ -228,7 +243,7 @@ const durationDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'icon-smo smoi icon-duration',
     text: 'Durations',
     value: 'durationDialog'
   }
@@ -250,7 +265,7 @@ const articulationNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-accent',
     text: 'Articulations',
     value: 'articulationDialog'
   }
@@ -272,7 +287,7 @@ const microtoneNoteDialogMenuOption: SuiConfiguredMenuOption = {
     });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv bv-accidentalKoron',
     text: 'Microtones',
     value: 'microtoneDialog'
   }

@@ -35,7 +35,7 @@ const formatMeasureMenuOption: SuiConfiguredMenuOption = {
   },
   display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi insert_page_break',
     text: 'Format Measure',
     value: 'formatMeasure'
   }
@@ -58,7 +58,7 @@ const addMeasureMenuOption: SuiConfiguredMenuOption = {
   },
   display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi add',
     text: 'Add Measures',
     value: 'addMeasures'
   }
@@ -81,7 +81,7 @@ const endingsMeasureMenuOption: SuiConfiguredMenuOption = {
   },
   display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'bv tall bv-repeat-right-left',
     text: 'Endings',
     value: 'endings'
   }
@@ -95,7 +95,7 @@ const deleteSelectedMenuOption: SuiConfiguredMenuOption = {
   },
   display: (menu: SuiMenuBase) => true,
   menuChoice: {
-    icon: '',
+    icon: 'mi delete',
     text: 'Delete Selected Measures',
     value: 'deleteSelected'
   }

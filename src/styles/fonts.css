@@ -9,9 +9,12 @@
   font-display: block;
 }
 
-[class^="icon-"], [class*=" icon-"] {
-  /* use !important to prevent issues with browser extensions that change fonts */
+.icon-smo {
   font-family: 'smoosic' !important;
+}
+[class^="icon-"], [class*=" icon-"] {
+  font-family: 'smoosic';
+  /* use !important to prevent issues with browser extensions that change fonts */
   speak: never;
   font-style: normal;
   font-weight: normal;

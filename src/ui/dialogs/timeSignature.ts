@@ -52,7 +52,7 @@ export const SuiTimeSignatureDialogVue = (parameters: SuiDialogParams) => {
     await parameters.view.setTimeSignature(backup);
   }
   
-  const appParams = { domId: rootId, timeSignature, label: "Staff Groups", 
+  const appParams = { domId: rootId, timeSignature, label: "Time Signature", 
     updateTimeSignatureCb, updateApplyTo };
   
   InstallDialog({

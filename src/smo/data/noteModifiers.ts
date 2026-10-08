@@ -790,6 +790,12 @@ export interface SmoLyricParamsSer extends SmoObjectParams {
    */
   translateY: number,
   /**
+   * for annotations, whether the text justifies above (top) or below (bottom) the note.
+   * Matches VexFlow's own Annotation.VerticalJustify numbering (see SmoLyric.annotationVerticalJustify)
+   * though this file has no VexFlow dependency itself.
+   */
+  verticalJustify: number,
+  /**
    * the actual text
    */
   text: string | null
@@ -843,6 +849,12 @@ export interface SmoLyricParams {
    */
   translateY: number,
   /**
+   * for annotations, whether the text justifies above (top) or below (bottom) the note.
+   * Matches VexFlow's own Annotation.VerticalJustify numbering (see SmoLyric.annotationVerticalJustify)
+   * though this file has no VexFlow dependency itself.
+   */
+  verticalJustify: number,
+  /**
    * the actual text
    */
   text: string | null
@@ -855,7 +867,7 @@ export interface SmoLyricParams {
  */
 export class SmoLyric extends SmoNoteModifierBase {
   static readonly parsers: Record<string, number> = {
-    lyric: 0, anaylysis: 1, chord: 2
+    lyric: 0, annotation: 1, chord: 2
   }
   static get defaults(): SmoLyricParams {
     return JSON.parse(JSON.stringify({
@@ -873,6 +885,7 @@ export class SmoLyric extends SmoNoteModifierBase {
       classes: 'score-text',
       translateX: 0,
       translateY: 0,
+      verticalJustify: 1,
       adjustNoteWidthLyric: true,
       adjustNoteWidthChord: false,
       parser: SmoLyric.parsers.lyric
@@ -884,6 +897,12 @@ export class SmoLyric extends SmoNoteModifierBase {
       SUBSCRIPT: 2,
       NORMAL: 3
     };
+  }
+  // Matches VexFlow's own Annotation.VerticalJustify numbering (TOP/CENTER/BOTTOM),
+  // deliberately skipping CENTER, so the rendering layer can pass this value straight
+  // through with no translation. This file itself has no VexFlow dependency.
+  static readonly annotationVerticalJustify: Record<string, number> = {
+    TOP: 1, BOTTOM: 3
   }
   static get persistArray(): string[] {
     const rv: string[] = [];
@@ -916,6 +935,7 @@ export class SmoLyric extends SmoNoteModifierBase {
   fill: string = '';
   translateX: number = 0;
   translateY: number = 0;
+  verticalJustify: number = SmoLyric.annotationVerticalJustify.TOP;
   classes: string = '';
   // used by the renderer to calculate offsets for aligning lyrics
   adjX: number = 0;
@@ -990,7 +1010,12 @@ export class SmoLyric extends SmoNoteModifierBase {
   // ### getClassSelector
   // returns a selector used to find this text block within a note.
   getClassSelector(): string {
-    var parser = (this.parser === SmoLyric.parsers.lyric ? 'lyric' : 'chord');
+    var parser = 'chord';
+    if (this.parser === SmoLyric.parsers.lyric) {
+      parser = 'lyric';
+    } else if (this.parser === SmoLyric.parsers.annotation) {
+      parser = 'annotation';
+    }
     return 'g.' + parser + '-' + this.verse;
   }
 

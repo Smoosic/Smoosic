@@ -6,7 +6,7 @@ import { SmoMeasure, SmoVoice, MeasureTickmaps } from '../../smo/data/measure';
 import { SmoScore } from '../../smo/data/score';
 import { SmoArticulation, SmoLyric, SmoOrnament } from '../../smo/data/noteModifiers';
 import {VexFlow, StaveNoteStruct, TupletOptions, vexOrnaments, getVexTuplets} from '../../common/vex';
-import { SmoBarline, SmoRehearsalMark } from '../../smo/data/measureModifiers';
+import { SmoBarline } from '../../smo/data/measureModifiers';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { SmoSystemStaff } from '../../smo/data/systemStaff';
 import { getId } from '../../smo/data/common';
@@ -133,10 +133,9 @@ function createMeasureModifiers(smoMeasure: SmoMeasure, strs: string[]) {
     strs.push(`${vxStave}.setEndBarType(${bl});`);
   }
   if (smoMeasure.svg.rowInSystem === 0) {
-    const rmb = smoMeasure.getRehearsalMark();
-    const rm = rmb as SmoRehearsalMark;
-    if (rm) {
-      strs.push(`${vxStave}.setSection('${rm.symbol}', 0);`);
+    const rmText = smoMeasure.getRehearsalMarkText();
+    if (rmText !== undefined) {
+      strs.push(`${vxStave}.setSection('${rmText}', 0);`);
     }
   }
   const tempo = smoMeasure.getTempo();

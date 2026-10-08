@@ -5,6 +5,7 @@ import { SmoMusic } from '../../../smo/data/music';
 import { SmoTabStave } from '../../../smo/data/staffModifiers';
 import { ref, reactive } from 'vue';
 import dialogContainer from './dialogContainer.vue';
+import toggle from './toggle.vue';
 type cbtype = () => Promise<void>;
 interface Props {
   domId: string,
@@ -102,9 +103,8 @@ const getId = (str: string) => {
     </div>
     <div class="row ms-2 me-2 align-items-center">
       <div class="col col-4">
-        <input class="form-check-input" type="checkbox" v-model="showStems" :id="getId('toggleStems')"
-          @change="toggleStemsCb"></input>
-        <label class="form-check-label" :for="getId('toggleStems')"> Show Stems </label>
+        <toggle :domId="getId('toggleStems')" :label="'Show Stems'" :initialValue="showStems"
+          :changeCb="(value: boolean) => { showStems = value; toggleStemsCb(); }" />
       </div>
       <div class="col col-8"></div>
     </div>

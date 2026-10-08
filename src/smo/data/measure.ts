@@ -1517,13 +1517,39 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
 
   addRehearsalMark(parameters: SmoRehearsalMarkParams) {
     this._removeSingletonModifier('SmoRehearsalMark');
-    this.modifiers.push(new SmoRehearsalMark(parameters));
+    const mark = new SmoRehearsalMark(parameters);
+    // if we are given an existing mark, keep its id so whoever holds it can find this copy
+    if (parameters instanceof SmoRehearsalMark) {
+      mark.attrs.id = parameters.attrs.id;
+    }
+    this.modifiers.push(mark);
   }
   removeRehearsalMark() {
     this._removeSingletonModifier('SmoRehearsalMark');
   }
   getRehearsalMark(): SmoMeasureModifierBase | undefined {
     return this.modifiers.find(obj => obj.attrs.type === 'SmoRehearsalMark');
+  }
+  /**
+   * The text to display for this measure's rehearsal mark.  For a 'measureNumber' mark this is
+   * the number shown for the measure (displayMeasure is 0-indexed, so add 1, matching the
+   * measure numbers drawn by the score renderer), otherwise it is the mark's symbol.
+   * @returns undefined if there is no rehearsal mark
+   */
+  getRehearsalMarkText(): string | undefined {
+    const rm = this.getRehearsalMark() as SmoRehearsalMark | undefined;
+    if (!rm) {
+      return undefined;
+    }
+    if (rm.cardinality === SmoRehearsalMark.cardinalities.measureNumber) {
+      if (Number.isFinite(this.measureNumber.displayMeasure)) {
+        return (this.measureNumber.displayMeasure + 1).toString();
+      }
+      if (Number.isFinite(this.measureNumber.measureIndex)) {
+        return (this.measureNumber.measureIndex + 1).toString();
+      }
+    }
+    return rm.symbol;
   }
   getModifiersByType(type: string) {
     return this.modifiers.filter((mm) => type === mm.attrs.type);

@@ -778,7 +778,8 @@
         "enum": [
           "capitals",
           "lowerCase",
-          "numbers"
+          "numbers",
+          "measureNumber"
         ]
       },
       "SmoRehearsalMark": {
@@ -795,8 +796,13 @@
             "default": "A"
           },
           "cardinality": {
-            "type": "number",
-            "default": 0
+            "enum": [
+              "capitals",
+              "lowerCase",
+              "numbers",
+              "measureNumber"
+            ],
+            "default": "capitals"
           },
           "increment": {
             "type": "boolean",

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { DialogButtonState, DialogButtonDefinition, DialogButtonCallback } from '../../buttons/button';
+import { computed } from 'vue';
 interface Props {
   label: string,
   buttonDefs: DialogButtonDefinition[],
@@ -12,11 +13,17 @@ const { buttonDefs, domId } = { ...props };
 const rowClasses = props.rowClasses ?? 'row mb-3 align-items-center';
 const getId = (str: string) => `${domId}-${str}`;
 const getClasses = (button: DialogButtonDefinition) => {
-  let rv = button.classes + ' ' + props.commonClasses;
-  if (button.state === 'selected' || button.state === 'partiallySelected') {
-    rv += ' active';
-  }
+  let rv = button.classes + ' ' + props.commonClasses + ' ' + buttonClassFromState(button);
   return rv;
+}
+const buttonClassFromState = (button: DialogButtonDefinition) => {
+  if (button.state === 'selected') {
+    return 'is-on';
+  } else if (button.state === 'partiallySelected') {
+    return 'is-partial';
+  } else {
+    return '';
+  }
 }
 const getIconClasses = (button: DialogButtonDefinition) => {
   let rv = button.icon + ' ';
@@ -40,15 +47,16 @@ const ariaPressed = (button: DialogButtonDefinition) => {
       <span  v-if="label.length" class="float-end">{{ label }}</span>
     </div>
     <div class="col col-10">
-      <div class="btn-toolbar dialog-button-group float-start" role="group" :id="domId">
-        <button v-for="btnDef in buttonDefs" data-bs-toggle="button" :key="btnDef.id" :id="getId(btnDef.id)"
+      <div class="sbtn-group" role="group" :id="domId">
+        <div v-for="btnDef in buttonDefs" class="sbtn" 
+          :key="btnDef.id" :id="getId(btnDef.id)"
           :class="getClasses(btnDef)" :aria-pressed="ariaPressed(btnDef)" :aria-label="btnDef.label"
-          @click.prevent="btnDef.callback(btnDef)">
-          
+          @click.prevent="btnDef.callback(btnDef)">          
           <span v-if="btnDef.icon.length" :class="getIconClasses(btnDef)"></span>
-          <span v-if="btnDef.hotkey" class="font-monospace" :class="{ 'ms-1': btnDef.icon.length > 0 }">{{ btnDef.hotkey }}</span>
           <span v-if="btnDef.icon.length === 0">{{  btnDef.label }}</span>
-        </button>
+          <span v-if="btnDef.hotkey" class="mx-2"></span>
+          <span v-if="btnDef.hotkey" class="font-monospace" :class="{ 'ms-1': btnDef.icon.length > 0 }">{{ btnDef.hotkey }}</span>
+        </div>
       </div>
     </div>
   </div>

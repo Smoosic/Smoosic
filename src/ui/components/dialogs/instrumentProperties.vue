@@ -5,6 +5,7 @@ import { SmoInstrument, SmoInstrumentNumParamType, SmoInstrumentStringParamType 
 import selectComp from './select.vue';
 import dialogContainer from './dialogContainer.vue';
 import numberInputApp from './numberInput.vue';
+import toggle from './toggle.vue';
 import { computed, ref, Ref, reactive, watch } from 'vue';
 interface Props {
   domId: string,
@@ -147,52 +148,34 @@ const getId = (str: string) => {
 <template>
   <dialogContainer :domId="domId" :label="label" :commitCb="props.commitCb" :cancelCb="props.cancelCb">
       <div class="row mb-2 ms-2 align-items-center">
-        <div class="col col-8 mb-2">
+        <div class="col col-12 mb-2">
           <selectComp :domId="getId('instrument-select')" :label="'Sound'" :selections="instrumentChoices"
             :initialValue="instrument.instrument" :changeCb="updateInstrumentCb" />
         </div>
-        <div class="col col-4 fs-6 ps-0 text-start">
-          <span class="form-check-label">Instrument</span>
-        </div>
-        <div class="col col-8 mb-2">
+        <div class="col col-12 mb-2">
           <selectComp :domId="getId('clef-select')" :label="'Clef'" :selections="clefOptions"
             :initialValue="instrument.clef" :changeCb="updateClefCb" />
-        </div>
-        <div class="col col-4 fs-6 ps-0 text-start">
-          <span class="form-check-label">Clef</span>
         </div>
       </div>
       <div class="row mb-2" :class="{ hide: !showPercussionSymbols }">
         <div class="col col-12">
-          <input class="form-check-input me-2" type="checkbox" v-model="usePercussionSymbols"
-            :id="getId('font-weight')"></input>
-          <label class="form-check-label" :for="getId('font-weight')">Use Percussion Symbols</label>
+          <toggle :domId="getId('font-weight')" :label="'Use Percussion Symbols'" :initialValue="usePercussionSymbols"
+            :changeCb="(value: boolean) => { usePercussionSymbols = value }" />
         </div>
       </div>
-      <div class="row mb-2">
-        <div class="col col-8 ps-0">
+      <div class="group">
+        <div class="grow-row">
           <numberInputApp :domId="getId('stafflines')" :initialValue="instrument.lines" :precision="0"
-            :changeCb="updateNumberCb('lines')"></numberInputApp>
-        </div>
-        <div class="col col-4 fs-6 ps-0 text-start">
-          <span class="form-check-label">Staff Lines</span>
-        </div>
-      </div>
-      <div class="row mb-2">
-        <div class="col col-8 ps-0">
+            :changeCb="updateNumberCb('lines')" label="Staff Lines" :inline="true" />
           <numberInputApp :domId="getId('keyOffset')" :initialValue="instrument.keyOffset" :precision="0"
-            :changeCb="updateNumberCb('keyOffset')"></numberInputApp>
-        </div>
-        <div class="col col-4 fs-6 ps-0 text-start">
-          <span class="form-check-label">Transpose Index</span>
+            :changeCb="updateNumberCb('keyOffset')" label="Transpose 1/2 Steps" :inline="true"/>
         </div>
       </div>
-      <div class="row mb-2 ms-2 align-items-center">
-        <div class="col col-8">
-          <selectComp :domId="getId('page-size-select')" :label="''" :selections="applyToOptions"
-            :initialValue="applyTo" :changeCb="updateApplyToCb" />
+      <div class="row mb-2 align-items-center">
+        <div class="col col-12">
+          <selectComp :domId="getId('page-size-select')" :selections="applyToOptions"
+            :initialValue="applyTo" :changeCb="updateApplyToCb" label="Apply To"/>
         </div>
-        <div class="col col-4 text-start ms-n4">Apply To</div>
       </div>
     </dialogContainer>
   </template>

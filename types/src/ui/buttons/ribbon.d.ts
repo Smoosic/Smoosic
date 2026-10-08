@@ -1,4 +1,4 @@
-import { KeyEvent } from '../../smo/data/common';
+import { KeyEvent, SvgPoint } from '../../smo/data/common';
 import { ButtonDefinition, ButtonAction } from './button';
 import { BrowserEventSource } from '../eventSource';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
@@ -6,7 +6,6 @@ import { CompleteNotifier, RibbonLayout } from '../common';
 import { SuiTracker } from '../../render/sui/tracker';
 import { SuiMenuManager } from '../menus/manager';
 import { ButtonLabel } from './button';
-import { CollapseRibbonControl } from './collapsable';
 import { SmoUiConfiguration } from '../configuration';
 export type SuiModalButtonTypes = 'SuiLibraryDialog' | 'SuiTempoDialog';
 export declare var SuiModalButtonStrings: string[];
@@ -46,8 +45,6 @@ export interface SuiRibbonParams {
  */
 export declare class RibbonButtons {
     static get paramArray(): string[];
-    static ribbonButtonHtml(containerClass: string, buttonId: string, buttonClass: string, buttonText: string, buttonIcon: string, buttonKey: string): any;
-    static menuButtonHtml(buttonId: string, buttonClass: string, buttonText: string, buttonIcon: string, buttonKey: string): any;
     static translateButtons: ButtonLabel[];
     controller: CompleteNotifier;
     config: SmoUiConfiguration;
@@ -56,21 +53,18 @@ export declare class RibbonButtons {
     menus: SuiMenuManager;
     ribbons: RibbonLayout;
     ribbonButtons: ButtonDefinition[];
-    collapsables: CollapseRibbonControl[];
-    collapseChildren: any[];
     constructor(params: SuiRibbonParams);
-    executeQuickButton(button: ButtonDefinition): Promise<void>;
+    resolveTopRightAnchor(elementId?: string): SvgPoint | undefined;
+    resolveBottomLeftAnchor(elementId?: string): SvgPoint | undefined;
+    executeQuickButton(button: ButtonDefinition, elementId?: string): Promise<void>;
     executeButtonModal(buttonElement: string, buttonData: ButtonDefinition): Promise<void>;
-    executeButtonMenu(buttonElement: string, buttonData: ButtonDefinition): void;
     executeButton(buttonElement: string, buttonData: ButtonDefinition): Promise<void>;
     bindButton(buttonElement: string, buttonData: ButtonDefinition): void;
-    createCollapsibleButtonGroups(selector: string | HTMLElement): void;
-    _createSidebarButtonGroups(selector: string | HTMLElement): void;
     static isCollapsible(action: ButtonAction): boolean;
     createRibbonHtml(buttonAr: string[], selector: string | HTMLElement): void;
     createSidebarMenuHtml(buttonAr: string[], selector: string | HTMLElement): void;
     createRibbon(buttonDataArray: string[], parentElement: string | HTMLElement): void;
-    createSidebarRibbon(buttonDataArray: string[], parentElement: string | HTMLElement, containerClasses: string): void;
+    createSidebarRibbon(buttonDataArray: string[], parentElement: string | HTMLElement, containerClasses: string): Promise<void>;
     handleKeyDown(ev: KeyEvent): Promise<void>;
     display(): void;
 }

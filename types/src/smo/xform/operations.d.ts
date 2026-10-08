@@ -92,6 +92,8 @@ export declare class SmoOperation {
     static setRepeatSymbol(score: SmoScore, selection: SmoSelection, sym: SmoRepeatSymbol): void;
     static interval(selection: SmoSelection, interval: number): boolean;
     static addOrReplaceBracket(modifier: SmoStaffTextBracket, fromSelection: SmoSelection, toSelection: SmoSelection): void;
+    static createTextBracket(fromSelection: SmoSelection, toSelection: SmoSelection, text: string): SmoStaffTextBracket;
+    static createTextBracketGeneric(fromSelection: SmoSelection, toSelection: SmoSelection): SmoStaffTextBracket;
     static createRitardBracket(fromSelection: SmoSelection, toSelection: SmoSelection): SmoStaffTextBracket;
     static createAccelerandoBracket(fromSelection: SmoSelection, toSelection: SmoSelection): SmoStaffTextBracket;
     static createCrescendoBracket(fromSelection: SmoSelection, toSelection: SmoSelection): SmoStaffTextBracket;

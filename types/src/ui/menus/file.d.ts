@@ -1,26 +1,8 @@
-import { SuiMenuBase, SuiMenuParams } from './menu';
+import { SuiMenuParams, SuiConfiguredMenu } from './menu';
 /**
+ * Stuff you can do with parts.
  * @category SuiMenu
  */
-export declare class SuiFileMenu extends SuiMenuBase {
+export declare class SuiFileMenu extends SuiConfiguredMenu {
     constructor(params: SuiMenuParams);
-    static defaults: {
-        label: string;
-        menuItems: {
-            icon: string;
-            text: string;
-            value: string;
-        }[];
-    };
-    getDefinition(): {
-        label: string;
-        menuItems: {
-            icon: string;
-            text: string;
-            value: string;
-        }[];
-    };
-    systemPrint(): void;
-    selection(ev: any): Promise<void>;
-    keydown(): void;
 }

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<template id="__bundler_thumbnail" data-bg-color="#f3f2f2">
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#f3f2f2"/>
+<g stroke="#605d5d" stroke-width="6" opacity=".45">
+<line x1="120" y1="180" x2="1080" y2="180"/><line x1="120" y1="230" x2="1080" y2="230"/>
+<line x1="120" y1="280" x2="1080" y2="280"/><line x1="120" y1="330" x2="1080" y2="330"/>
+<line x1="120" y1="380" x2="1080" y2="380"/>
+<line x1="120" y1="500" x2="1080" y2="500"/><line x1="120" y1="550" x2="1080" y2="550"/>
+<line x1="120" y1="600" x2="1080" y2="600"/><line x1="120" y1="650" x2="1080" y2="650"/>
+<line x1="120" y1="700" x2="1080" y2="700"/>
+</g>
+<rect x="300" y="240" width="600" height="360" rx="10" fill="#f8f4f4" stroke="#9b9797" stroke-width="4"/>
+<rect x="300" y="240" width="600" height="64" rx="10" fill="#eae7e7"/>
+<circle cx="336" cy="264" r="7" fill="#7d7979"/><circle cx="362" cy="264" r="7" fill="#7d7979"/>
+<circle cx="336" cy="290" r="7" fill="#7d7979"/><circle cx="362" cy="290" r="7" fill="#7d7979"/>
+<rect x="340" y="350" width="520" height="52" rx="12" fill="#fff" stroke="#bab6b6" stroke-width="4"/>
+<rect x="340" y="430" width="150" height="52" rx="12" fill="#0088b0"/>
+<rect x="510" y="430" width="150" height="52" rx="12" fill="#e9f8ff" stroke="#0088b0" stroke-width="4"/>
+<rect x="340" y="516" width="180" height="56" rx="12" fill="#0088b0"/>
+<rect x="700" y="516" width="160" height="56" rx="12" fill="none" stroke="#d6006c" stroke-width="4"/>
+</svg>
+</template>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_ds/broadsheet-7752158b-cef4-4eb9-b463-df3121e505c2/styles.css">
+<script src="_ds/broadsheet-7752158b-cef4-4eb9-b463-df3121e505c2/_ds_bundle.js"></script>
+<link rel="stylesheet" href="dialog-kit.css">
+<style>body{margin:0;background:var(--color-bg)}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent)}</style>
+</helmet>
+
+<div class="doc">
+
+  <div class="masthead">
+    <h1>Dialog kit</h1>
+    <span class="sub">Smoosic · Vue 3 dialog components · compact density · responsive to 768px</span>
+  </div>
+  <div class="rule-hair"></div>
+
+  <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+  <div class="notes">
+    <div>
+      <div class="eyebrow">What I read</div>
+      <p>Built from the existing components in <code>src/ui/components/dialogs</code>: <em>dialogContainer</em>, <em>draggableComp</em>, <em>numberInput</em>, <em>select</em>, <em>buttonGroup</em>, <em>collapsableRow</em> and <em>dialogButtons</em>. Structure and prop names are unchanged; only the visual layer is new.</p>
+    </div>
+    <div>
+      <div class="eyebrow">Assumptions</div>
+      <p>Bootstrap grid classes stay, so every row is a 12-column flex row. Tri-state buttons map to <code>aria-pressed</code> true / mixed / false. The backdrop is a full-viewport inert layer: transparent, pointer-events captured, focus trapped.</p>
+    </div>
+    <div>
+      <div class="eyebrow">The system</div>
+      <p>Broadsheet, read as engraver's chrome: Source Serif 4 throughout, hairline rules instead of fills, soft 6px corners on anything clickable. Cyan is the only interactive ink; magenta appears once, as the value-changed mark. All of it lives in <code>dialog-kit.css</code> on the Broadsheet tokens.</p>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ 1 · CONTROLS ============ -->
+  <h2 class="sec">1 · Controls</h2>
+  <p class="sec-sub">Row height 26px, label 12.5px, 4px gutters. State classes: <code>.is-on .is-partial .is-hover .is-focus .is-changed .is-disabled</code>.</p>
+
+  <div class="wrap">
+
+    <div class="spec" style="width:330px">
+      <div class="spec-h">Number picker</div>
+      <p class="spec-p">Props: min, max, step, precision, unit, percent.</p>
+
+      <div class="spec-row">
+        <div class="spec-name">Rest</div>
+        <div class="num">
+          <div class="num-field"><span class="num-unit">pt</span><span>12.0</span></div>
+          <div class="num-spin">
+            <div class="num-btn"><span class="caret caret-up"></span></div>
+            <div class="num-btn"><span class="caret caret-down"></span></div>
+          </div>
+        </div>
+        <span class="hint">8 – 72, step 0.5</span>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-name">Hover ↑</div>
+        <div class="num">
+          <div class="num-field"><span class="num-unit">pt</span><span>12.5</span></div>
+          <div class="num-spin">
+            <div class="num-btn is-hover"><span class="caret caret-up"></span></div>
+            <div class="num-btn"><span class="caret caret-down"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-name">Focus</div>
+        <div class="num is-focus">
+          <div class="num-field"><span class="num-unit">pt</span><span>12.5</span></div>
+          <div class="num-spin">
+            <div class="num-btn"><span class="caret caret-up"></span></div>
+            <div class="num-btn"><span class="caret caret-down"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-name">Changed</div>
+        <div class="num is-changed">
+          <div class="num-field"><span class="num-unit">pt</span><span>12.5</span></div>
+          <div class="num-spin">
+            <div class="num-btn"><span class="caret caret-up"></span></div>
+            <div class="num-btn"><span class="caret caret-down"></span></div>
+          </div>
+        </div>
+        <span class="hint-changed">was 12.0</span>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-name">At max</div>
+        <div class="num is-disabled">
+          <div class="num-field"><span class="num-unit">pt</span><span>72.0</span></div>
+          <div class="num-spin">
+            <div class="num-btn is-disabled"><span class="caret caret-up"></span></div>
+            <div class="num-btn"><span class="caret caret-down"></span></div>
+          </div>
+        </div>
+        <span class="hint">up disabled</span>
+      </div>
+    </div>
+
+    <div class="spec" style="width:300px">
+      <div class="spec-h">Select</div>
+      <p class="spec-p">Custom list; closes on outside click.</p>
+      <div class="spec-name" style="width:auto;margin-bottom:5px">Closed</div>
+      <div class="sel" style="margin-bottom:14px"><span>Merriweather</span><span class="caret caret-down caret-lg"></span></div>
+      <div class="spec-name" style="width:auto;margin-bottom:5px">Open</div>
+      <div class="sel is-open"><span>Merriweather</span><span class="caret caret-up caret-lg"></span></div>
+      <div class="sel-panel">
+        <div class="sel-opt">Arial</div>
+        <div class="sel-opt is-hover">Times New Roman <span class="hint">hover</span></div>
+        <div class="sel-opt">Roboto Slab</div>
+        <div class="sel-opt is-active">Merriweather</div>
+        <div class="sel-opt">Petaluma Script</div>
+      </div>
+    </div>
+
+    <div class="spec" style="width:330px">
+      <div class="spec-h">Toggle</div>
+      <p class="spec-p">Label sits right; whole row is the hit target.</p>
+      <div class="toggles" style="margin-bottom:22px;padding:0">
+        <div class="tgl-row"><span class="tgl"><span class="tgl-knob"></span></span><span>Auto-position</span><span class="hint">off</span></div>
+        <div class="tgl-row"><span class="tgl is-on"><span class="tgl-knob"></span></span><span>Attach to measure</span><span class="hint">on</span></div>
+        <div class="tgl-row is-focus"><span class="tgl is-on"><span class="tgl-knob"></span></span><span>Courtesy accidentals</span><span class="hint" style="margin-left:8px">focus</span></div>
+        <div class="tgl-row is-disabled"><span class="tgl"><span class="tgl-knob"></span></span><span>Pad all in system</span><span class="hint">disabled</span></div>
+      </div>
+
+      <div class="spec-h">Stateful buttons</div>
+      <p class="spec-p">aria-pressed true / mixed / false. Mixed means the selection disagrees.</p>
+      <div class="sbtn-group" style="margin-bottom:10px">
+        <div class="sbtn is-on">B</div>
+        <div class="sbtn is-partial"><span class="i">I</span></div>
+        <div class="sbtn"><span class="u">U</span></div>
+        <div class="sbtn is-hover">S</div>
+      </div>
+      <div style="display:flex;gap:16px" class="hint"><span>on</span><span>partly on</span><span>off</span><span>hover</span></div>
+    </div>
+
+    <div class="spec" style="width:300px">
+      <div class="spec-h">Submit row</div>
+      <p class="spec-p">Any of the three can be hidden. Remove is separated to the right.</p>
+      <div class="actions">
+        <div class="act act-ok">OK</div>
+        <div class="act act-cancel">Cancel</div>
+        <div class="act act-remove">Remove</div>
+      </div>
+      <div class="spec-h" style="margin-top:24px">Drag handle</div>
+      <p class="spec-p">Upper left of the title bar; grabs the whole dialog.</p>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="grip-chip"><span class="grip"></span><span>Rest</span></div>
+        <div class="grip-chip is-grabbing"><span class="grip is-grabbing"></span><span>Grabbing</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2 · DIALOGS ============ -->
+  <h2 class="sec">2 · Dialogs over the score</h2>
+  <p class="sec-sub">The layer behind is transparent and inert: it swallows clicks, wheel and key events so the score stays visible but untouchable.</p>
+
+  <div class="canvas">
+    <div class="score"></div>
+    <div class="inert-chip"><span class="inert-dot"></span><span>inert layer — pointer, wheel and key events captured; focus trapped in the dialog</span></div>
+
+    <div class="dlg-layer">
+
+      <div class="dlg" style="width:404px">
+        <div class="dlg-bar">
+          <span class="grip"></span>
+          <span class="dlg-title">Text block</span>
+          <span class="dlg-meta">measure 14</span>
+        </div>
+        <div class="dlg-body">
+
+          <div class="group">
+            <span class="group-label">Typeface</span>
+            <div class="grow-row">
+              <span class="field-label">Family</span>
+              <div class="sel grow"><span>Merriweather</span><span class="caret caret-down caret-lg"></span></div>
+              <span class="field-label auto">Size</span>
+              <div class="num is-changed">
+                <div class="num-field w-md"><span>14.0</span></div>
+                <div class="num-spin">
+                  <div class="num-btn"><span class="caret caret-up"></span></div>
+                  <div class="num-btn"><span class="caret caret-down"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="grow-row">
+              <span class="field-label">Style</span>
+              <div class="sbtn-group">
+                <div class="sbtn is-on">B</div>
+                <div class="sbtn is-partial"><span class="i">I</span></div>
+                <div class="sbtn"><span class="u">U</span></div>
+              </div>
+              <span class="hint-changed">size changed · was 12.0</span>
+            </div>
+          </div>
+
+          <div class="group">
+            <span class="group-label">Placement</span>
+            <div class="grow-row">
+              <span class="field-label">Justify</span>
+              <div class="sbtn-group">
+                <div class="sbtn wide is-on">Left</div>
+                <div class="sbtn wide">Center</div>
+                <div class="sbtn wide">Right</div>
+              </div>
+            </div>
+            <div class="grow-row">
+              <span class="field-label">Offset</span>
+              <span class="axis">X</span>
+              <div class="num">
+                <div class="num-field w-sm"><span>0</span></div>
+                <div class="num-spin">
+                  <div class="num-btn"><span class="caret caret-up"></span></div>
+                  <div class="num-btn"><span class="caret caret-down"></span></div>
+                </div>
+              </div>
+              <span class="axis">Y</span>
+              <div class="num">
+                <div class="num-field w-sm"><span>-18</span></div>
+                <div class="num-spin">
+                  <div class="num-btn"><span class="caret caret-up"></span></div>
+                  <div class="num-btn"><span class="caret caret-down"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toggles">
+            <div class="tgl-row"><span class="tgl is-on"><span class="tgl-knob"></span></span><span>Attach to measure</span></div>
+            <div class="tgl-row"><span class="tgl"><span class="tgl-knob"></span></span><span>Auto-position to avoid collisions</span></div>
+          </div>
+
+          <div class="actions">
+            <div class="act act-ok">OK</div>
+            <div class="act act-cancel">Cancel</div>
+            <sc-if value="{{ showRemove }}" hint-placeholder-val="{{ true }}">
+            <div class="act act-remove">Remove</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <div class="dlg" style="width:372px">
+        <div class="dlg-bar is-dragging">
+          <span class="grip is-grabbing"></span>
+          <span class="dlg-title">Slur properties</span>
+          <span class="dlg-meta">dragging · 412, 268</span>
+        </div>
+        <div class="dlg-body">
+          <div class="group">
+            <span class="group-label">Stroke</span>
+            <div class="grow-row">
+              <span class="field-label wide">Line</span>
+              <div class="sel grow"><span>Solid</span><span class="caret caret-down caret-lg"></span></div>
+            </div>
+            <div class="grow-row">
+              <span class="field-label wide">Thickness</span>
+              <div class="num">
+                <div class="num-field w-md"><span>1.6</span></div>
+                <div class="num-spin">
+                  <div class="num-btn"><span class="caret caret-up"></span></div>
+                  <div class="num-btn"><span class="caret caret-down"></span></div>
+                </div>
+              </div>
+              <span class="hint">0.5 – 6.0, step 0.1</span>
+            </div>
+            <div class="grow-row">
+              <span class="field-label wide">Position</span>
+              <div class="sbtn-group">
+                <div class="sbtn wide">Above</div>
+                <div class="sbtn wide is-on">Below</div>
+                <div class="sbtn wide is-partial">Auto</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sect-inline">
+            <div class="sect-head"><span class="caret caret-right"></span><span>Control points</span><span class="hint">4 settings · collapsed</span></div>
+          </div>
+
+          <div class="toggles">
+            <div class="tgl-row"><span class="tgl"><span class="tgl-knob"></span></span><span>Invert curve direction</span></div>
+          </div>
+
+          <div class="actions">
+            <div class="act act-ok">OK</div>
+            <div class="act act-cancel">Cancel</div>
+            <sc-if value="{{ showRemove }}" hint-placeholder-val="{{ true }}">
+            <div class="act act-remove">Remove</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <div class="dlg" style="width:392px">
+        <div class="dlg-bar">
+          <span class="grip"></span>
+          <span class="dlg-title">Score preferences</span>
+        </div>
+        <div class="dlg-body tight">
+
+          <div class="sect is-open">
+            <div class="sect-head"><span class="caret caret-open"></span><span>Playback</span></div>
+            <div class="sect-body">
+              <div class="tgl-row"><span class="tgl is-on"><span class="tgl-knob"></span></span><span>Auto-play sounds on pitch change</span></div>
+              <div class="tgl-row"><span class="tgl is-on"><span class="tgl-knob"></span></span><span>Scroll score during playback</span></div>
+              <div class="tgl-row"><span class="tgl"><span class="tgl-knob"></span></span><span>Show piano widget</span></div>
+              <div class="grow-row" style="margin-top:3px">
+                <span class="field-label auto">Default duration</span>
+                <div class="sel w-md"><span>1/8</span><span class="caret caret-down caret-lg"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sect">
+            <div class="sect-head"><span class="caret caret-right"></span><span>Engraving</span><span class="hint">6 settings</span></div>
+          </div>
+          <div class="sect">
+            <div class="sect-head"><span class="caret caret-right"></span><span>Experimental</span><span class="hint">3 settings</span></div>
+          </div>
+
+          <div class="actions" style="margin-top:4px">
+            <div class="act act-ok">OK</div>
+            <div class="act act-cancel">Cancel</div>
+            <span class="hint">removeCb omitted</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 3 · RESPONSIVE ============ -->
+  <h2 class="sec">3 · At 768px</h2>
+  <p class="sec-sub">Below 768px the dialog goes to <code>calc(100vw - 24px)</code>, rows stack, labels move above their control, and the submit row becomes full-width buttons in reading order. Drag is disabled; the handle is hidden. Shown here with <code>.dlg-stack</code>, which mirrors the media query.</p>
+
+  <div class="wrap" style="gap:30px">
+    <div class="frame">
+      <div class="frame-label">768 px</div>
+      <div class="score"></div>
+      <div class="dlg dlg-stack">
+        <div class="dlg-bar" style="padding:9px 12px">
+          <span class="dlg-title" style="font-size:12px">Text block</span>
+          <span class="dlg-meta">drag disabled</span>
+        </div>
+        <div class="dlg-body">
+          <div class="group">
+            <span class="group-label">Typeface</span>
+            <div class="grow-row">
+              <span class="field-label">Family</span>
+              <div class="sel"><span>Merriweather</span><span class="caret caret-down caret-lg"></span></div>
+            </div>
+            <div class="split">
+              <div class="grow-row">
+                <span class="field-label">Size</span>
+                <div class="num">
+                  <div class="num-field"><span>14.0</span></div>
+                  <div class="num-spin">
+                    <div class="num-btn"><span class="caret caret-up caret-lg"></span></div>
+                    <div class="num-btn"><span class="caret caret-down caret-lg"></span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="grow-row">
+                <span class="field-label">Style</span>
+                <div class="sbtn-group" style="gap:5px">
+                  <div class="sbtn is-on">B</div>
+                  <div class="sbtn is-partial"><span class="i">I</span></div>
+                  <div class="sbtn"><span class="u">U</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tgl-row"><span class="tgl is-on"><span class="tgl-knob"></span></span><span>Attach to measure</span></div>
+          <div class="actions">
+            <div class="act act-ok">OK</div>
+            <div class="act act-cancel">Cancel</div>
+            <sc-if value="{{ showRemove }}" hint-placeholder-val="{{ true }}">
+            <div class="act act-remove">Remove</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col" style="width:330px">
+      <div class="eyebrow">Breakpoint rules</div>
+      <ul class="list">
+        <li>Rows switch from 12-col to stacked at 768px.</li>
+        <li>Controls grow: 26px → 30px; hit targets in the submit row go to 44px minimum.</li>
+        <li>The dropdown panel becomes a bottom sheet when the list exceeds six items.</li>
+        <li>Grouped boxes keep their border and legend; only the internal flow changes.</li>
+        <li>Dialog is centred and scrolls internally; the inert layer still blocks the score.</li>
+      </ul>
+      <div class="eyebrow" style="margin:24px 0 9px">Open questions</div>
+      <ul class="list">
+        <li>Should the changed-value mark clear on commit, or persist until the dialog closes?</li>
+        <li>Do collapsed sections remember their state per dialog, or per session?</li>
+        <li>Remove is currently magenta-outlined only. Want a confirm step?</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showRemove&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Dialog&quot;},&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Document&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showRemove: this.props.showRemove ?? true,
+      showNotes: this.props.showNotes ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

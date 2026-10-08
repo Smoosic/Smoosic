@@ -37,7 +37,7 @@ const getId = (str: string) => {
         <span class="float-end" :for="getId('clef-select')">Position</span>
       </div>
       <div class="col col-4 text-start">
-        <selectComp :domId="getId('art-select')" label="Select" :initialValue="initialValue" :selections="positions"
+        <selectComp :domId="getId('art-select')" label="" :initialValue="initialValue" :selections="positions"
           :changeCb="positionChangeCb" />
       </div>
     </div>

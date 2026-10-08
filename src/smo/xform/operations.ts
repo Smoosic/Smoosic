@@ -745,6 +745,11 @@ export class SmoOperation {
   static addRehearsalMark(score: SmoScore, selection: SmoSelection, rehearsalMark: SmoRehearsalMark) {
     score.staves.forEach((staff) => {
       const mt = new SmoRehearsalMark(rehearsalMark.serialize());
+      // Keep the id on the selected staff's copy so a caller that holds on to 'rehearsalMark' (the
+      // properties dialog) can find it again for later edits.  Other staves keep unique ids.
+      if (staff.staffId === selection.selector.staff) {
+        mt.attrs.id = rehearsalMark.attrs.id;
+      }
       staff.addRehearsalMark(selection.selector.measure, mt);
     });
   }
@@ -800,37 +805,28 @@ export class SmoOperation {
   static addOrReplaceBracket(modifier: SmoStaffTextBracket, fromSelection: SmoSelection, toSelection: SmoSelection) {
     fromSelection.staff.addTextBracket(modifier);
   }
-  static createRitardBracket(fromSelection: SmoSelection, toSelection: SmoSelection) {
-    const params: SmoStaffTextBracketParams = SmoStaffTextBracket.defaults;
+  static createTextBracket(fromSelection: SmoSelection, toSelection: SmoSelection, text: string) {
+  const params: SmoStaffTextBracketParams = SmoStaffTextBracket.defaults;
     params.startSelector = JSON.parse(JSON.stringify(fromSelection.selector));
     params.endSelector = JSON.parse(JSON.stringify(toSelection.selector));
-    params.text = SmoStaffTextBracket.RITARD;
+    params.text = text;
     const modifier = new SmoStaffTextBracket(params);
     return modifier;
+  }
+  static createTextBracketGeneric(fromSelection: SmoSelection, toSelection: SmoSelection) {
+    return SmoOperation.createTextBracket(fromSelection, toSelection, "Text");
+  }
+  static createRitardBracket(fromSelection: SmoSelection, toSelection: SmoSelection) {
+    return SmoOperation.createTextBracket(fromSelection, toSelection, SmoStaffTextBracket.RITARD);
   }
   static createAccelerandoBracket(fromSelection: SmoSelection, toSelection: SmoSelection) {
-    const params: SmoStaffTextBracketParams = SmoStaffTextBracket.defaults;
-    params.startSelector = JSON.parse(JSON.stringify(fromSelection.selector));
-    params.endSelector = JSON.parse(JSON.stringify(toSelection.selector));
-    params.text = SmoStaffTextBracket.ACCEL;
-    const modifier = new SmoStaffTextBracket(params);
-    return modifier;
+    return SmoOperation.createTextBracket(fromSelection, toSelection, SmoStaffTextBracket.ACCEL);
   }
   static createCrescendoBracket(fromSelection: SmoSelection, toSelection: SmoSelection) {
-    const params: SmoStaffTextBracketParams = SmoStaffTextBracket.defaults;
-    params.startSelector = JSON.parse(JSON.stringify(fromSelection.selector));
-    params.endSelector = JSON.parse(JSON.stringify(toSelection.selector));
-    params.text = SmoStaffTextBracket.CRESCENDO;
-    const modifier = new SmoStaffTextBracket(params);
-    return modifier;
+    return SmoOperation.createTextBracket(fromSelection, toSelection, SmoStaffTextBracket.CRESCENDO);
   }
   static createDimenuendoBracket(fromSelection: SmoSelection, toSelection: SmoSelection) {
-    const params: SmoStaffTextBracketParams = SmoStaffTextBracket.defaults;
-    params.startSelector = JSON.parse(JSON.stringify(fromSelection.selector));
-    params.endSelector = JSON.parse(JSON.stringify(toSelection.selector));
-    params.text = SmoStaffTextBracket.CRESCENDO;
-    const modifier = new SmoStaffTextBracket(params);
-    return modifier;
+    return SmoOperation.createTextBracket(fromSelection, toSelection, SmoStaffTextBracket.DIMENUENDO);
   }
   static createCrescendo(fromSelection: SmoSelection, toSelection: SmoSelection) {
     const params: SmoStaffHairpinParams = SmoStaffHairpin.defaults;

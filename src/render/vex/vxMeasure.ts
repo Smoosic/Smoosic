@@ -8,7 +8,7 @@
 import { SmoNote } from '../../smo/data/note';
 import { SmoMusic } from '../../smo/data/music';
 import { layoutDebug } from '../sui/layoutDebug';
-import { SmoRepeatSymbol, SmoMeasureText, SmoBarline, SmoMeasureModifierBase, SmoRehearsalMark } from '../../smo/data/measureModifiers';
+import { SmoRepeatSymbol, SmoMeasureText, SmoBarline, SmoMeasureModifierBase } from '../../smo/data/measureModifiers';
 import { SourceSerifProFont } from '../../styles/font_metrics/ssp-serif-metrics';
 import { SmoOrnament, SmoDynamicText, 
   SmoNoteModifierBase, SmoTabNote } from '../../smo/data/noteModifiers';
@@ -482,10 +482,9 @@ export class VxMeasure implements VxMeasureIf {
       vm.setFont(tm.fontInfo);
     });
     if (this.smoMeasure.svg.rowInSystem === 0) {
-      const rmb = this.smoMeasure.getRehearsalMark();
-      const rm = rmb as SmoRehearsalMark;
-      if (rm) {
-        this.stave.setSection(rm.symbol, 0);
+      const rmText = this.smoMeasure.getRehearsalMarkText();
+      if (rmText !== undefined) {
+        this.stave.setSection(rmText, 0);
       }
     }
 
