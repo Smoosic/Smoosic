@@ -6,7 +6,7 @@ import { smoSerialize } from '../../common/serializationHelpers';
 /**
  * @internal
  */
-export interface kvPair { [key: string]: string }
+export interface kvPair { [key: string]: string | string[] }
 /**
  * @category SuiFile
  */

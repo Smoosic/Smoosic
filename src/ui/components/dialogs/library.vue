@@ -53,16 +53,33 @@ const loadChildrenIfNeeded = async (node: SmoLibrary): Promise<void> => {
     await node.load();
   }
 };
-
+const tags = computed<string[]>(() => {
+  if (selectedNode.value && selectedNode.value.metadata.tags) {
+    return selectedNode.value.metadata.tags as string[];
+  }
+  return [];
+});
 const selectNode = async (node: SmoLibrary) => {
   selectedUrl.value = node.url ?? '';
   if (node.format === 'library') {
     await loadChildrenIfNeeded(node);
     if (node.url) {
-      expanded[node.url] = true;
+      expanded[node.url] = !expanded[node.url];
     }
   }
 };
+const selectedMetadata = computed<Record<string, string>>(() => {
+  const rv = {};
+  if (!selectedNode.value?.metadata) {
+    return rv;
+  }
+  ['name', 'composer', 'type', 'artist'].forEach((key: string) => {
+    if (selectedNode.value?.metadata[key]) {
+      rv[key] = selectedNode.value?.metadata[key];
+    }
+  });
+  return rv;
+});
 
 // Independent of selection: shows/hides a folder's already-known children
 // with no fetch and no change to the current selection.
@@ -79,7 +96,7 @@ const confirmLoad = async () => {
   }
 };
 // Matches SuiLibraryAdapter.cancel(): no-op.
-const cancel = async () => {};
+const cancel = async () => { };
 
 const handleCommit = async () => {
   await confirmLoad();
@@ -93,9 +110,30 @@ const handleCancel = async () => {
 
 <template>
   <dialogContainer :domId="domId" :label="label" :commitCb="handleCommit" :cancelCb="handleCancel" :enable="canLoad">
-    <ul class="tree tree-root">
-      <TreeNode v-for="child in topLib.children" :key="child.url" :node="child"
-        :selectedUrl="selectedUrl" :expanded="expanded" :selectCb="selectNode" :toggleCb="toggleExpand" />
-    </ul>
+    <div class="lt">
+      <div class="lt-pane">
+        <div class="lt-scroll">
+          <TreeNode v-for="child in topLib.children" :key="child.url" :node="child" :selectedUrl="selectedUrl"
+            :expanded="expanded" :selectCb="selectNode" :toggleCb="toggleExpand" />
+        </div>
+      </div>
+      <div class="lt-pane">
+        <div v-if="selectedNode" class="lt-detail">
+          <span class="lt-detail-head">
+            <span class="lt-detail-title">{{ selectedNode.metadata.name }}</span>
+          </span>
+          <span class="lt-detail-kind">{{ selectedNode.format }}</span>
+          <dl class="lt-props">
+            <slot v-for="key in Object.keys(selectedMetadata)">
+              <dt>{{ key }}</dt>
+              <dd>{{ selectedMetadata[key] }}</dd>
+            </slot>
+          </dl>
+          <div v-if="tags.length" class="lt-tags">
+            <span class="badge" v-for="tag in tags">{{ tag }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </dialogContainer>
 </template>

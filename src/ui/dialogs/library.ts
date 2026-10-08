@@ -2,7 +2,7 @@
 // Copyright (c) Aaron David Newman 2021.
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 
-import { SmoLibrary } from '../fileio/library';
+import { SmoLibrary, kvPair } from '../fileio/library';
 import { SuiDialogParams } from './dialog';
 import { DialogDefinitionOption } from './components/baseComponent';
 import { TreeComponentOption, SuiTreeComponent } from './components/tree';
@@ -31,6 +31,13 @@ export interface LibraryDefinition {
   elements: LibraryDefinitionElement[],
   staticText: Record<string, string>[]
 }
+const stringValue = (val: string | string[]): string => {
+  if (typeof(val) === "string") {
+    return val;
+  } 
+  return val[0];
+}
+
 /**
  * The Smoosic music library.
  * @category SuiDialog
@@ -65,7 +72,8 @@ export class SuiLibraryAdapter extends SuiComponentAdapter {
     });
   }
   static addChildRecurse(options: TreeComponentOption[], parent: SmoLibrary, child: SmoLibrary) {
-    options.push({ label: child.metadata.name, value: child.url, parent: parent.url, format: child.format, expanded: false });
+    options.push({ label: stringValue(child.metadata.name), 
+        value: child.url, parent: parent.url, format: child.format, expanded: false });
     child.children.forEach((gchild) => {
       SuiLibraryAdapter.addChildRecurse(options, child, gchild);
     });
