@@ -20,7 +20,10 @@ See [changes](https://smoosic.github.io/Smoosic/changes.md) for changes, updates
 There is a [demo application](https://smoosic.github.io/Smoosic/release/html/smoosic.html) that you can play around with that show the capabilities.
 
 ## What's new in Smoosic?
-See [change notes](https://smoosic.github.io/Smoosic/changes.html) for latest changes.
+
+* Version 2.0.1 Many text-handling improvements.  New UI.   In the AI age.
+
+See [change notes](https://smoosic.github.io/Smoosic/changes.html) for details.
 
 This is a completely new Github project.  It contains 5 repositories (so far):
 
