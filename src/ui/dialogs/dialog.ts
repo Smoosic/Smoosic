@@ -57,9 +57,14 @@ export interface DialogInstallParams {
   app: any, 
   appParams: any,
   dialogParams: SuiDialogParams,
-  commitCb: DialogCallback, 
+  commitCb: DialogCallback,
   cancelCb: DialogCallback,
-  removeCb?: DialogCallback
+  removeCb?: DialogCallback,
+  /**
+   * Called after the dialog has been committed, closed and unmounted (not on cancel).  Use this
+   * to do something that needs another dialog, which can't be shown until this one is gone.
+   */
+  afterCloseCb?: DialogCallback
 };
 /**
  * The callbacks can be confusing.  Dialog CB button calls this callback, 
@@ -92,6 +97,9 @@ export const InstallDialog = async (params: DialogInstallParams) => {
     trapper.close();
     params.dialogParams.view.navigation.hideDialogModal();
     dialogApp?.unmount();
+    if (params.afterCloseCb) {
+      await params.afterCloseCb();
+    }
   }
   const cancelCb = async () => {
     complete.value = true;

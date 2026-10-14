@@ -112,6 +112,12 @@ export class UndoBuffer {
   reconcile: number = -1;
   opCount: number;
   _grouping: boolean;
+  /**
+   * Optional listener, called every time an undo step is recorded.  Recording an undo step
+   * means the score is about to be modified, so a view can use this to track unsaved changes.
+   * It is not cleared by {@link reset}.
+   */
+  onAddBuffer?: () => void;
   constructor() {
     this.buffer.push(new UndoSet());
     this.opCount = 0;
@@ -213,6 +219,9 @@ export class UndoBuffer {
     buff.push(undoObj);
     if (!this._grouping) {
       this.buffer.push(new UndoSet());
+    }
+    if (this.onAddBuffer) {
+      this.onAddBuffer();
     }
   }
 

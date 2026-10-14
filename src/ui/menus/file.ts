@@ -3,7 +3,8 @@ import { createAndDisplayDialog } from '../dialogs/dialog';
 import {
   SuiFileSaveDialog ,  
   SuiFileUploadDialog,
-  SuiPrintDialog
+  SuiPrintDialog,
+  confirmReplaceScore
 } from '../dialogs/fileDialogs';
 import { SmoScore } from '../../smo/data/score';
 
@@ -12,8 +13,23 @@ declare var $: any;
 
 const systemNewScoreOption: SuiConfiguredMenuOption = {
   handler: async (menu: SuiMenuBase) => {
-      const score = SmoScore.getDefaultScore(SmoScore.defaults, null);
-      await menu.view.changeScore(score);
+      // Ask about unsaved changes first.  The prompt waits for this menu to close, and the menu
+      // closes only after this handler returns, so don't await the prompt here.
+      confirmReplaceScore({
+        ctor: 'SuiNewScoreDialog',
+        id: 'newScore',
+        modifier: null,
+        completeNotifier: menu.completeNotifier,
+        tracker: menu.tracker,
+        eventSource: menu.eventSource,
+        view: menu.view,
+        startPromise: menu.closePromise
+      }).then(async (proceed) => {
+        if (proceed) {
+          const score = SmoScore.getDefaultScore(SmoScore.defaults, null);
+          await menu.view.changeScore(score);
+        }
+      });
   }, display: (menu: SuiMenuBase) => true,
   menuChoice: {
     icon: 'mi create',

@@ -10,6 +10,8 @@ interface Props {
   label: string,
   view: SuiScoreViewOperations,
   topLib: SmoLibrary,
+  /** called with the chosen score's url when the user presses OK; the caller loads it after this dialog closes */
+  selectedCb: (url: string) => void,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>
 }
@@ -92,7 +94,7 @@ const toggleExpand = (node: SmoLibrary) => {
 
 const confirmLoad = async () => {
   if (canLoad.value && selectedNode.value && selectedNode.value.url) {
-    await props.view.loadRemoteScore(selectedNode.value.url);
+    props.selectedCb(selectedNode.value.url);
   }
 };
 // Matches SuiLibraryAdapter.cancel(): no-op.

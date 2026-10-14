@@ -1,6 +1,7 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { toRaw } from 'vue';
+import { isFullSaveFormat } from './scoreChangeState';
 import { SuiScoreView, updateStaffModifierFunc } from './scoreView';
 import { SmoScore, engravingFontType } from '../../smo/data/score';
 import { SmoSystemStaffParams, SmoSystemStaff } from '../../smo/data/systemStaff';
@@ -274,6 +275,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this._undoScorePreferences('Update preferences');
     this.score.scoreInfo = scoreInfo;
     this.storeScore.scoreInfo = JSON.parse(JSON.stringify(scoreInfo));
+    this.refreshScoreName();
     return this.renderer.updatePromise()
   }
   async addRemoveArpeggio(code: SmoArpeggioType) {
@@ -2163,6 +2165,21 @@ export class SuiScoreViewOperations extends SuiScoreView {
   quickSave() {
     const scoreStr = JSON.stringify(this.storeScore.serialize());
     localStorage.setItem(smoSerialize.localScore, scoreStr);
+    this.markScoreSaved();
+  }
+  /**
+   * Called when the user has saved the score to a file.  Only a save in the full Smoosic
+   * format counts: other formats (MusicXML, MIDI...) lose information, so the score still
+   * has unsaved changes.  The save dialog doesn't know which formats are lossy; we do.
+   * @param extension the extension of the file that was saved, e.g. '.json'
+   * @returns true if the score is now considered saved
+   */
+  recordSave(extension: string): boolean {
+    if (!isFullSaveFormat(extension)) {
+      return false;
+    }
+    this.markScoreSaved();
+    return true;
   }
   updateRepeatCount(count: number) {
     const measureSelections = this.undoTrackerMeasureSelections('repeat bar');

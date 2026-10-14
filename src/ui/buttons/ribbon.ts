@@ -285,7 +285,9 @@ export class RibbonButtons {
         buttonList.push(buttonData);        
       }
     });
-    createApp(ribbonSidebarApp as any, { buttonProps: buttonList, domId: selector instanceof HTMLElement ? selector.id : selector }).mount(selector);
+    createApp(ribbonSidebarApp as any, { buttonProps: buttonList,
+      domId: selector instanceof HTMLElement ? selector.id : selector,
+      scoreName: this.view.scoreName, scoreChanged: this.view.scoreChanged }).mount(selector);
   }
   createRibbon(buttonDataArray: string[], parentElement: string | HTMLElement) {
     this.createRibbonHtml(buttonDataArray, parentElement);

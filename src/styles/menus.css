@@ -167,6 +167,7 @@ body.showAttributeDialog.textEditor .overlay {
   font-size: 0.9rem;
 }
 .side-brand {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -174,6 +175,31 @@ body.showAttributeDialog.textEditor .overlay {
     font: 600 12px / 1 var(--font-heading);
     letter-spacing: .12em;
     text-transform: uppercase;
+}
+/* The open score's name after the app name; long names are truncated, the full name is in the tooltip.
+   The right padding keeps the name clear of the unsaved-changes asterisk. */
+.side-brand .side-score {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+}
+/* Unsaved-changes asterisk: pinned to the right edge of the brand area so it is visible
+   even when the score name is truncated. */
+.side-brand .side-changed {
+    position: absolute;
+    top: 4px;
+    bottom: 10px;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    letter-spacing: normal;
+    font-weight: 700;
 }
 .side-group {
     margin-top: var(--space-3);

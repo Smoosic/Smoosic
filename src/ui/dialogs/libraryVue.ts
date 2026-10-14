@@ -6,6 +6,7 @@ import { SmoLibrary } from '../fileio/library';
 import { SmoUiConfiguration } from '../configuration';
 import libraryComp from '../components/dialogs/library.vue';
 import { replaceVueRoot, modalContainerId } from '../common';
+import { confirmReplaceScore } from './fileDialogs';
 
 /**
  * Vue-based replacement for SuiLibraryDialog (src/ui/dialogs/library.ts),
@@ -27,14 +28,26 @@ export const SuiLibraryDialogVue = async (
   const topLib: SmoLibrary = reactive(new SmoLibrary({ url: config.libraryUrl }));
   await topLib.load();
 
+  // The chosen score is loaded after the library dialog has closed, once the user has been
+  // asked about any unsaved changes in the open score.
+  let selectedUrl: string | null = null;
+  const selectedCb = (url: string) => {
+    selectedUrl = url;
+  };
   const commitCb = async () => {};
   const cancelCb = async () => {};
+  const afterCloseCb = async () => {
+    if (selectedUrl && await confirmReplaceScore(parameters)) {
+      await parameters.view.loadRemoteScore(selectedUrl);
+    }
+  };
 
   const appParams = {
     domId: rootId,
     label: 'Music Library',
     view: parameters.view,
-    topLib
+    topLib,
+    selectedCb
   };
 
   InstallDialog({
@@ -43,6 +56,7 @@ export const SuiLibraryDialogVue = async (
     appParams,
     dialogParams: parameters,
     commitCb,
-    cancelCb
+    cancelCb,
+    afterCloseCb
   });
 };

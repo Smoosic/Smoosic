@@ -20,6 +20,8 @@ import { default as messageDialog } from '../components/dialogs/modalMessage.vue
 import { default as fileUploadApp } from '../components/dialogs/fileUpload.vue';
 import { default as saveFileApp } from '../components/dialogs/save.vue';
 import { SuiNavigationDom } from '../navigation';
+import { SaveOutcome, nextStepAfterSave } from '../../render/sui/scoreChangeState';
+import { askUnsavedChoice } from './unsavedChanges';
 declare var $: any;
 
 export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
@@ -39,44 +41,58 @@ export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
     uploadedFile = localFile.value;
     enable.value = true;
   };
-  const commitMidi = async () => {
+  // The score read from the file.  It replaces the open score only after the user has been
+  // asked about unsaved changes, which has to wait until this dialog has closed.
+  let pendingScore: SmoScore | null = null;
+  const convertMidi = (): SmoScore | null => {
     try {
       // midi parser expects data in UintArray form
       const ar = new Uint8Array(uploadedFile);
       const midi: any = parseMidi(ar);
       const midiParser = new MidiToSmo(midi, quantizeValue);
-      await parameters.view.changeScore(midiParser.convert());
+      return midiParser.convert();
     } catch (e) {
       console.warn('unable to score ' + e);
     }
+    return null;
   }
-  const commitXml = async () => {
+  const convertXml = (): SmoScore | null => {
     try {
       const parser = new DOMParser();
       const xml = parser.parseFromString(uploadedFile, 'text/xml');
       const score = XmlToSmo.convert(xml);
       score.layoutManager!.zoomToWidth($('body').width());
-      await parameters.view.changeScore(score);
+      return score;
     } catch (e) {
       console.warn('unable to score ' + e);
     }
+    return null;
+  }
+  const convertJson = (): SmoScore | null => {
+    if (uploadedFile && uploadedFile.length > 0) {
+      try {
+        return SmoScore.deserialize(uploadedFile);
+      } catch (e) {
+        console.warn('unable to score ' + e);
+      }
+    }
+    return null;
   }
   const commitCb = async () => {
+    pendingScore = null;
     if (filename.endsWith('.mid') || filename.endsWith('.midi')) {
-      await commitMidi();
+      pendingScore = convertMidi();
     }
     else if (filename.endsWith('.xml') || filename.endsWith('.mxml') || filename.endsWith('.mxl')) {
-      await commitXml();
+      pendingScore = convertXml();
     }
     else if (filename.endsWith('.json')) {
-      if (uploadedFile && uploadedFile.length > 0) {
-        try {
-          const score = SmoScore.deserialize(uploadedFile);
-          await parameters.view.changeScore(score);
-        } catch (e) {
-          console.warn('unable to score ' + e);
-        }
-      }
+      pendingScore = convertJson();
+    }
+  }
+  const afterCloseCb = async () => {
+    if (pendingScore && await confirmReplaceScore(parameters)) {
+      await parameters.view.changeScore(pendingScore);
     }
   }
   const cancelCb = async () => {
@@ -92,11 +108,49 @@ export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
     appParams,
     dialogParams: parameters,
     commitCb,
-    cancelCb
+    cancelCb,
+    afterCloseCb
   });
 }
 
-export const SuiFileSaveDialog  = async (parameters: SuiDialogParams) => {
+/**
+ * Call before replacing the open score with another (New, Open, Import, Library).  If the score
+ * has unsaved changes, ask the user whether to save first.  If they save in a lossy format
+ * (MusicXML, MIDI...) the score is still unsaved, so ask again.  Must be called after any dialog
+ * used to choose the new score has closed.
+ * @param parameters dialog parameters, including the view
+ * @returns true if it is OK to replace the score, false if the user cancelled
+ */
+export const confirmReplaceScore = async (parameters: SuiDialogParams): Promise<boolean> => {
+  while (parameters.view.scoreChanged.value) {
+    const choice = await askUnsavedChoice(parameters);
+    if (choice === 'discard') {
+      return true;
+    }
+    if (choice === 'cancel') {
+      return false;
+    }
+    const outcome = await new Promise<SaveOutcome>((resolve) => {
+      SuiFileSaveDialog(parameters, (result: SaveOutcome) => resolve(result));
+    });
+    const next = nextStepAfterSave(outcome);
+    if (next === 'load') {
+      return true;
+    }
+    if (next === 'abort') {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Save the score to a file.
+ * @param parameters dialog parameters
+ * @param onClosed optional, called when the dialog closes with how it ended: the score was saved
+ * in full, exported to a lossy format, or the dialog was cancelled.
+ */
+export const SuiFileSaveDialog  = async (parameters: SuiDialogParams, onClosed?: (outcome: SaveOutcome) => void) => {
   const page = 0;
   const contents: Ref<any> = ref('');
   const getSmoContent = () => {
@@ -144,9 +198,21 @@ export const SuiFileSaveDialog  = async (parameters: SuiDialogParams) => {
     }
     extension.value = ext;
   }
+  let committedOutcome: SaveOutcome = 'cancelled';
   const commitCb = async () => {
+    // The view knows which formats hold the whole score, and clears the changed flag only for those.
+    committedOutcome = parameters.view.recordSave(extension.value) ? 'saved' : 'exported';
   }
   const cancelCb = async () => {
+    if (onClosed) {
+      onClosed('cancelled');
+    }
+  }
+  // Report a committed save only after the dialog has closed, so a caller can open another dialog.
+  const afterCloseCb = async () => {
+    if (onClosed) {
+      onClosed(committedOutcome);
+    }
   }
   const rootId = replaceVueRoot(modalContainerId);
   const appParams = { suggestedName, contents, extension, changeExtensionCb, domId: rootId };
@@ -156,7 +222,8 @@ export const SuiFileSaveDialog  = async (parameters: SuiDialogParams) => {
     appParams,
     dialogParams: parameters,
     commitCb,
-    cancelCb
+    cancelCb,
+    afterCloseCb
   });
 }
 export const SuiPrintDialog = async (parameters: SuiDialogParams) => {

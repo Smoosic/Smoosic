@@ -60,6 +60,13 @@ export abstract class SuiScoreView implements layoutProvider {
   scroller: SuiScroller;
   storePaste: PasteBuffer;
   selectedPart: Ref<string> = ref('');
+  /**
+   * true if the score has been edited since it was last saved in the full Smoosic
+   * format or loaded.  Displayed in the sidebar; session state only, not serialized.
+   */
+  scoreChanged: Ref<boolean> = ref(false);
+  /** the name of the open score, for display */
+  scoreName: Ref<string> = ref('');
   config: SmoRenderConfiguration;
   audioAnimation: SuiAudioAnimationParams;
   debug: layoutDebug;
@@ -91,10 +98,25 @@ export abstract class SuiScoreView implements layoutProvider {
     this.storeScore = SmoScore.deserialize(JSON.stringify(scoreJson));
     this.score.synchronizeTextGroups(this.storeScore.textGroups);
     this.storeUndo = new UndoBuffer();
+    // Recording an undo step means the score is about to change.
+    this.storeUndo.onAddBuffer = () => this.markScoreChanged();
+    this.refreshScoreName();
     this.staffMap = this.defaultStaffMap;
     SuiScoreView.Instance = this; // for debugging
     this.setMappedStaffIds();
     createTopDomContainer('.saveLink'); // for file upload
+  }
+  /** Note that the score has been edited since it was last saved or loaded */
+  markScoreChanged() {
+    this.scoreChanged.value = true;
+  }
+  /** Note that the score has been saved in full, or that a new score was loaded */
+  markScoreSaved() {
+    this.scoreChanged.value = false;
+  }
+  /** Update the displayed score name from the score's information */
+  refreshScoreName() {
+    this.scoreName.value = this.score.scoreInfo?.name ?? '';
   }
   getLayout(): SmoGlobalLayout | undefined {
     if (this.score.layoutManager) {
@@ -776,6 +798,9 @@ export abstract class SuiScoreView implements layoutProvider {
       this.exposePart(this.score.staves[0]);
     }
     const rv = await this.awaitRender();
+    // A new score starts as saved.  Done last so nothing recorded during setup leaves an asterisk.
+    this.markScoreSaved();
+    this.refreshScoreName();
     window.dispatchEvent(new CustomEvent(scoreChangeEvent, { detail: { view: this } }));
     return rv;
   }
@@ -850,6 +875,9 @@ export abstract class SuiScoreView implements layoutProvider {
     } else {
       this.replaceMeasureView(measureRange);
     }
+    // Undo is an edit: it never returns the score to the saved state.
+    this.markScoreChanged();
+    this.refreshScoreName();
     await this.renderer.updatePromise();
   }
 }
