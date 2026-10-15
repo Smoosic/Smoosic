@@ -36,6 +36,31 @@ export interface ModifierPlacement {
   ticksToStart: number
 }
 /**
+ * Voices copied with {@link PasteBuffer.setVoiceSelections}.  Whole measures of one voice,
+ * or of all the voices, on one or more consecutive staves.
+ * @category SmoTransform
+ */
+export interface VoiceCopy {
+  /** the voice numbers (0-3) that were copied, ascending.  More than one means 'all' */
+  voices: number[],
+  firstStaff: number,
+  staffCount: number,
+  firstMeasure: number,
+  measureCount: number,
+  /** for each voice and staff, every note of every copied measure, in order */
+  notes: Record<number, Record<number, PasteNote[]>>,
+  /** staff modifiers that start on the copied notes, used when the voice number is kept */
+  modifiers: Record<number, StaffModifierBase[]>
+}
+/** the most voices a measure can have */
+const MAX_VOICES = 4;
+
+/** Set the voice of a tuplet and its nested tuplets, for a tuplet pasted into a different voice */
+const setTupletVoice = (tuplet: SmoTupletTree['tuplet'], voice: number) => {
+  tuplet.voice = voice;
+  tuplet.childrenTuplets.forEach((child) => setTupletVoice(child, voice));
+}
+/**
  * PasteBuffer holds copied music, and handles the action of pasting the music to
  * a different point in the score.  It does this by serializing the measure(s) from the source
  * and then creating handling the overlap with existing music when deserializaing it.
@@ -54,6 +79,8 @@ export class PasteBuffer {
   modifiersToPlace: ModifierPlacement[] = [];
   destination: SmoSelector = SmoSelector.default;
   staffSelectors: SmoSelector[] = [];
+  /** voices copied by setVoiceSelections, or null.  Separate from the notes copied by setSelections */
+  voiceCopy: VoiceCopy | null = null;
   constructor() {
     this.notes = {};
     this.noteIndex = 0;
@@ -81,7 +108,267 @@ export class PasteBuffer {
     });
     return maxRv;
   }
+  /**
+   * Which choices the Copy Voices menu offers.
+   * @param voicesInSelection the most voices any selected measure has
+   * @returns each voice number to offer, then 'all' if there is more than one voice
+   */
+  static copyVoiceChoices(voicesInSelection: number): Array<number | 'all'> {
+    const count = Math.min(Math.max(voicesInSelection, 0), MAX_VOICES);
+    const rv: Array<number | 'all'> = [];
+    for (let i = 0; i < count; ++i) {
+      rv.push(i);
+    }
+    if (count > 1) {
+      rv.push('all');
+    }
+    return rv;
+  }
+  /**
+   * Which choices the Paste Voice menu offers.
+   * @param copiedVoices the voices in the current voice copy, empty if there is none
+   * @param destVoiceCount how many voices the destination has (the most in any destination measure)
+   * @returns for one copied voice, each existing destination voice (to replace it) and 'new', a new
+   * voice after the existing ones, unless the destination already has the maximum number of voices;
+   * for several copied voices, only 'all'; nothing if there is no voice copy or no destination
+   */
+  static pasteVoiceChoices(copiedVoices: number[], destVoiceCount: number): Array<number | 'all' | 'new'> {
+    if (copiedVoices.length < 1) {
+      return [];
+    }
+    if (copiedVoices.length > 1) {
+      return ['all'];
+    }
+    const count = Math.min(destVoiceCount, MAX_VOICES);
+    if (count < 1) {
+      return [];
+    }
+    const rv: Array<number | 'all' | 'new'> = [];
+    for (let i = 0; i < count; ++i) {
+      rv.push(i);
+    }
+    if (count < MAX_VOICES) {
+      rv.push('new');
+    }
+    return rv;
+  }
+  hasVoiceCopy(): boolean {
+    return this.voiceCopy !== null && this.voiceCopy.voices.length > 0;
+  }
+  clearVoiceCopy() {
+    this.voiceCopy = null;
+  }
+  copiedVoiceNumbers(): number[] {
+    return this.voiceCopy ? this.voiceCopy.voices.slice() : [];
+  }
+  /**
+   * The length of one copied voice in ticks, for working out how many measures a paste covers.
+   */
+  getVoiceCopyTickCount(): number {
+    if (!this.voiceCopy || this.voiceCopy.voices.length < 1) {
+      return 0;
+    }
+    const byStaff = this.voiceCopy.notes[this.voiceCopy.voices[0]];
+    let rv = 0;
+    Object.keys(byStaff).forEach((staffStr) => {
+      let ticks = 0;
+      byStaff[parseInt(staffStr, 10)].forEach((pn) => {
+        ticks += pn.note.tickCount;
+      });
+      rv = Math.max(rv, ticks);
+    });
+    return rv;
+  }
+  /**
+   * Copy whole measures of one voice, or all the voices.  If the selection starts or ends in the
+   * middle of a measure, it is extended to the start of the first measure and the end of the last.
+   * The selection is treated as a rectangle: from the first to the last selected staff and measure.
+   * A voice that is missing from a copied measure is copied as that measure's default rests.
+   * @param score the score to copy from
+   * @param selections the selected notes or measures
+   * @param voice the voice to copy (0-3), or 'all'
+   * @returns false if nothing was copied
+   */
+  setVoiceSelections(score: SmoScore, selections: SmoSelection[], voice: number | 'all'): boolean {
+    this.voiceCopy = null;
+    this.score = score;
+    if (selections.length < 1) {
+      return false;
+    }
+    let firstStaff = selections[0].selector.staff;
+    let lastStaff = firstStaff;
+    let firstMeasure = selections[0].selector.measure;
+    let lastMeasure = firstMeasure;
+    selections.forEach((sel) => {
+      firstStaff = Math.min(firstStaff, sel.selector.staff);
+      lastStaff = Math.max(lastStaff, sel.selector.staff);
+      firstMeasure = Math.min(firstMeasure, sel.selector.measure);
+      lastMeasure = Math.max(lastMeasure, sel.selector.measure);
+    });
+    lastStaff = Math.min(lastStaff, score.staves.length - 1);
+    // Which voices exist in the copied measures
+    let voiceCount = 0;
+    for (let s = firstStaff; s <= lastStaff; ++s) {
+      for (let m = firstMeasure; m <= lastMeasure; ++m) {
+        const measure = score.staves[s].measures[m];
+        if (measure) {
+          voiceCount = Math.max(voiceCount, measure.voices.length);
+        }
+      }
+    }
+    voiceCount = Math.min(voiceCount, MAX_VOICES);
+    const voices: number[] = [];
+    if (voice === 'all') {
+      for (let v = 0; v < voiceCount; ++v) {
+        voices.push(v);
+      }
+    } else if (voice >= 0 && voice < voiceCount) {
+      voices.push(voice);
+    }
+    if (voices.length < 1) {
+      return false;
+    }
+    const voiceCopy: VoiceCopy = {
+      voices,
+      firstStaff,
+      staffCount: lastStaff - firstStaff + 1,
+      firstMeasure,
+      measureCount: lastMeasure - firstMeasure + 1,
+      notes: {},
+      modifiers: {}
+    };
+    voices.forEach((v) => {
+      // Gather every note in the voice, measure by measure.  _populateSelectArray does the
+      // work of making concert-pitch copies, and fills this.notes and this.modifiers.
+      const noteSelections: SmoSelection[] = [];
+      const restNotes: PasteNote[] = [];
+      for (let s = firstStaff; s <= lastStaff; ++s) {
+        for (let m = firstMeasure; m <= lastMeasure; ++m) {
+          const measure = score.staves[s].measures[m];
+          if (!measure) {
+            continue;
+          }
+          if (v < measure.voices.length) {
+            for (let t = 0; t < measure.voices[v].notes.length; ++t) {
+              const sel = SmoSelection.noteSelection(score, s, m, v, t);
+              if (sel) {
+                noteSelections.push(sel);
+              }
+            }
+          } else {
+            // This voice doesn't exist in this measure: copy the measure's rests instead.
+            const key = measure.keySignature.toLocaleLowerCase();
+            SmoMeasure.getDefaultNotes(measure).forEach((note, t) => {
+              restNotes.push({
+                note,
+                selector: { staff: s, measure: m, voice: v, tick: t, pitches: [] },
+                originalKey: key,
+                tupletStart: null
+              });
+            });
+          }
+        }
+      }
+      this.notes = {};
+      this.modifiers = [];
+      if (noteSelections.length > 0) {
+        this._populateSelectArray(noteSelections);
+      }
+      const byStaff: Record<number, PasteNote[]> = this.notes;
+      restNotes.forEach((rest) => {
+        if (!byStaff[rest.selector.staff]) {
+          byStaff[rest.selector.staff] = [];
+        }
+        byStaff[rest.selector.staff].push(rest);
+      });
+      Object.keys(byStaff).forEach((staffStr) => {
+        const staff = parseInt(staffStr, 10);
+        byStaff[staff].sort((a, b) => SmoSelector.gt(a.selector, b.selector) ? 1 : -1);
+      });
+      voiceCopy.notes[v] = byStaff;
+      voiceCopy.modifiers[v] = this.modifiers;
+    });
+    this.notes = {};
+    this.modifiers = [];
+    this.voiceCopy = voiceCopy;
+    return true;
+  }
+  /**
+   * Paste a single copied voice into a voice of the destination measures, starting at the
+   * beginning of the destination measure.  The destination voice may be any existing voice,
+   * or the next empty one, which is created in each measure it is pasted into.
+   * @param destination staff and measure to paste at (the voice and tick are ignored)
+   * @param voice the destination voice (0-3)
+   * @returns the measures that were replaced
+   */
+  pasteVoice(destination: SmoSelector, voice: number): SmoSelection[] {
+    if (!this.score || !this.voiceCopy || this.voiceCopy.voices.length !== 1) {
+      return [];
+    }
+    if (voice < 0 || voice >= MAX_VOICES) {
+      return [];
+    }
+    return this._pasteCopiedVoice(destination, this.voiceCopy.voices[0], voice);
+  }
+  /**
+   * Paste all the copied voices, each into the voice of the same number, starting at the
+   * beginning of the destination measure.  Voices the destination doesn't have are created.
+   * @param destination staff and measure to paste at (the voice and tick are ignored)
+   * @returns the measures that were replaced
+   */
+  pasteAllVoices(destination: SmoSelector): SmoSelection[] {
+    if (!this.score || !this.voiceCopy) {
+      return [];
+    }
+    let rv: SmoSelection[] = [];
+    // ascending, so each voice can be created after the one before it
+    this.voiceCopy.voices.forEach((v) => {
+      rv = rv.concat(this._pasteCopiedVoice(destination, v, v));
+    });
+    return rv;
+  }
+  /**
+   * Paste voice `srcVoice` of the voice copy into voice `destVoice`, on each copied staff.
+   */
+  private _pasteCopiedVoice(destination: SmoSelector, srcVoice: number, destVoice: number): SmoSelection[] {
+    const copy = this.voiceCopy!;
+    let rv: SmoSelection[] = [];
+    // Slurs and the like are located by voice, so they are only carried if the voice is unchanged.
+    this.modifiers = [];
+    if (srcVoice === destVoice) {
+      copy.modifiers[srcVoice].forEach((mod) => {
+        this.modifiers.push(StaffModifierBase.deserialize(mod.serialize()));
+      });
+    }
+    for (let k = 0; k < copy.staffCount; ++k) {
+      const destStaff = destination.staff + k;
+      const srcNotes = copy.notes[srcVoice][copy.firstStaff + k];
+      if (destStaff >= this.score!.staves.length) {
+        break;
+      }
+      if (!srcNotes || srcNotes.length < 1) {
+        continue;
+      }
+      // pasteNoteSelections changes the notes it is given, so give it copies
+      const notes: PasteNote[] = srcNotes.map((pn) => {
+        const note = SmoNote.deserialize(pn.note.serialize());
+        const selector: SmoSelector = JSON.parse(JSON.stringify(pn.selector));
+        selector.voice = destVoice;
+        let tupletStart: SmoTupletTree | null = null;
+        if (pn.tupletStart) {
+          tupletStart = SmoTupletTree.deserialize(pn.tupletStart.serialize());
+          setTupletVoice(tupletStart.tuplet, destVoice);
+        }
+        return { note, selector, originalKey: pn.originalKey, tupletStart };
+      });
+      this.pasteNoteSelections({ staff: destStaff, measure: destination.measure, voice: destVoice, tick: 0, pitches: [] }, notes);
+      rv = rv.concat(this.replacementMeasures);
+    }
+    return rv;
+  }
   setSelections(score: SmoScore, selections: SmoSelection[]) {
+    // A normal copy replaces whatever was copied before, including voices
+    this.voiceCopy = null;
     this.notes = [];
     this.noteIndex = 0;
     this.score = score;
@@ -179,6 +466,7 @@ export class PasteBuffer {
 
   clearSelections() {
     this.notes = {};
+    this.voiceCopy = null;
   }
 
   _findModifier(selector: SmoSelector) {
@@ -252,6 +540,9 @@ export class PasteBuffer {
         if (measureSelection != null) {
           const clonedMeasure = SmoMeasure.cloneForPasteOrUndo(measureSelection.measure);
           clonedMeasure.svg = measureSelection.measure.svg;
+          // The destination voice may not exist in this measure yet (the first measure was
+          // aligned above); create it so later steps can look it up.
+          this._alignVoices(clonedMeasure, selector.voice);
           this.measures.push(clonedMeasure);
           // firstMeasureTickmap = measureSelection.measure.tickmapForVoice(selector.voice);
         }
@@ -284,10 +575,13 @@ export class PasteBuffer {
         selector.tick, lastMeasure.getClosestIndexFromTickCount(selector.voice, currentDuration), selector.voice);
     }
 
-    //if there are more than 2 measures remove tuplets from all but first and last measure.
+    // if there are more than 2 measures remove tuplets from all but first and last measure.
+    // Only the tuplets of the voice being pasted into are removed; the trees of other voices
+    // are kept, since those voices are not being replaced.
     if (this.measures.length > 2) {
-      for(let i = 1; i < this.measures.length - 2; i++) {
-        this.measures[i].tupletTrees = [];
+      for (let i = 1; i < this.measures.length - 1; i++) {
+        this.measures[i].tupletTrees = this.measures[i].tupletTrees.filter(
+          (tree) => tree.voice !== this.destination.voice);
       }
     }
   }

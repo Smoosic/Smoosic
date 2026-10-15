@@ -183,6 +183,7 @@ export class SuiApplication {
     // If there is a DOM container but the DOM not created yet, create the default version. 
     createDialogFactories();
     await this.createScore();
+    const promises: Promise<void>[] = [];
     if (this.config.mode === 'translate') {
       this.createUiDom();
       setTimeout(() => {
@@ -197,10 +198,9 @@ export class SuiApplication {
       const navigation = this.navigation
       if (navigation) {
         navigation.showProgressModal('Loading audio samples');
-        await SuiSampleMedia.samplePromise(SuiOscillator.audio, (percent) => {
+        promises.push(SuiSampleMedia.samplePromise(SuiOscillator.audio, (percent) => {
           navigation.setProgress(percent);
-        });
-        navigation.hideProgressModal();
+        }));
       }
       const queryString = new QueryParser();
       const languageSelect = queryString.pairs.find((x) => x['language']) ?? { 'language': 'en' }
@@ -214,7 +214,13 @@ export class SuiApplication {
       this.createUiDom();
       this.createView(this.score!);
     }
-    await this.view?.renderer.renderPromise();
+    if (this.view) {
+      promises.push(this.view?.renderer.renderPromise());
+      Promise.all(promises);
+    }
+    if (this.navigation) {
+      this.navigation.hideProgressModal()
+    }
     // Hide header at the top of some applications
     $('#link-hdr button').off('click').on('click', () => {
       $('#link-hdr').addClass('hide');

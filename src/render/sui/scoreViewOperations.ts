@@ -1363,8 +1363,119 @@ export class SuiScoreViewOperations extends SuiScoreView {
     await this.renderer.updatePromise();
   }
   /**
+   * The most voices any of the selected measures has, for the Copy Voices menu
+   */
+  getSelectionVoiceCount(): number {
+    let rv = 0;
+    this.tracker.getSelectedMeasures().forEach((sel) => {
+      rv = Math.max(rv, sel.measure.voices.length);
+    });
+    return rv;
+  }
+  /**
+   * Where a voice paste would go, in the full score: the selected staff and measure, and the
+   * measures from there that the copied voices cover (adding up measure lengths until the copy fits,
+   * but not past the last measure).  Null if nothing is selected or no voices are copied.
+   */
+  private _getVoicePasteRange(): { staff: number, firstMeasure: number, lastMeasure: number } | null {
+    if (!this.storePaste.hasVoiceCopy() || this.tracker.selections.length < 1) {
+      return null;
+    }
+    const altSelection = this._getEquivalentSelection(this.tracker.selections[0]);
+    if (altSelection === null) {
+      return null;
+    }
+    const staff = altSelection.selector.staff;
+    const measures = this.storeScore.staves[staff].measures;
+    const firstMeasure = altSelection.selector.measure;
+    const ticksToPaste = this.storePaste.getVoiceCopyTickCount();
+    let lastMeasure = firstMeasure;
+    let covered = measures[firstMeasure].getTicksFromThisOrAnyVoice(0);
+    while (covered < ticksToPaste && lastMeasure + 1 < measures.length) {
+      lastMeasure += 1;
+      covered += measures[lastMeasure].getTicksFromThisOrAnyVoice(0);
+    }
+    return { staff, firstMeasure, lastMeasure };
+  }
+  /**
+   * The number of voices at the paste destination, for the Paste Voice menu: the most voices in
+   * any measure the paste would cover, on the staves it would cover.  A voice number at or above
+   * this count is empty everywhere in the destination.
+   */
+  getDestinationVoiceCount(): number {
+    const range = this._getVoicePasteRange();
+    if (range === null) {
+      const measures = this.tracker.getSelectedMeasures();
+      return measures.length > 0 ? measures[0].measure.voices.length : 0;
+    }
+    const copy = this.storePaste.voiceCopy!;
+    let rv = 0;
+    for (let k = 0; k < copy.staffCount; ++k) {
+      const staff = this.storeScore.staves[range.staff + k];
+      if (!staff) {
+        break;
+      }
+      for (let m = range.firstMeasure; m <= range.lastMeasure; ++m) {
+        rv = Math.max(rv, staff.measures[m].voices.length);
+      }
+    }
+    return rv;
+  }
+  /**
+   * Copy a voice, or all the voices, of the selected measures.  The copy always covers whole
+   * measures, from the start of the first selected measure to the end of the last.
+   * @param voice the voice to copy (0-3), or 'all'
+   */
+  async copyVoices(voice: number | 'all'): Promise<void> {
+    const altAr: SmoSelection[] = [];
+    this.tracker.selections.forEach((sel) => {
+      const noteSelection = this._getEquivalentSelection(sel);
+      if (noteSelection !== null) {
+        altAr.push(noteSelection);
+      }
+    });
+    this.storePaste.setVoiceSelections(this.storeScore, altAr, voice);
+    await this.renderer.updatePromise();
+  }
+  /**
+   * Paste the voices copied with copyVoices, starting at the beginning of the first selected
+   * measure.  A voice that doesn't exist in a measure is created there first.
+   * @param voice the voice to paste into (0-3) for a single copied voice; 'new' to paste a single
+   * copied voice into a new voice after the existing ones; or 'all' to paste every copied voice
+   * into the voice with the same number
+   */
+  async pasteVoices(voice: number | 'all' | 'new'): Promise<void> {
+    const range = this._getVoicePasteRange();
+    if (range === null) {
+      return;
+    }
+    let destVoice: number | 'all' = voice === 'new' ? this.getDestinationVoiceCount() : voice;
+    if (destVoice !== 'all' && (destVoice < 0 || destVoice > 3)) {
+      // 'new' with all the voices already in use
+      return;
+    }
+    this.renderer.preserveScroll();
+    // The paste always begins at the start of the measure
+    const target: SmoSelector = { staff: range.staff, measure: range.firstMeasure, voice: 0, tick: 0, pitches: [] };
+    const measureRange = [range.firstMeasure, range.lastMeasure];
+    // One undo for the whole paste, including any voices it creates
+    this.storeUndo.grouping = true;
+    for (let i = measureRange[0]; i <= measureRange[1]; ++i) {
+      this._undoColumn('paste voices', i);
+      this.renderer.unrenderColumn(this.score.staves[0].measures[i]);
+    }
+    this.storeUndo.grouping = false;
+    if (destVoice === 'all') {
+      this.storePaste.pasteAllVoices(target);
+    } else {
+      this.storePaste.pasteVoice(target, destVoice);
+    }
+    this.replaceMeasureView(measureRange);
+    await this.renderer.updatePromise();
+  }
+  /**
    * clipboard paste action
-   * @returns 
+   * @returns
    */
   async paste(): Promise<void> {
     // We undo the whole score on a paste, since we don't yet know the

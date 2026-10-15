@@ -783,6 +783,8 @@ export abstract class SuiScoreView implements layoutProvider {
    */
   async changeScore(score: SmoScore) {
     this.storeUndo.reset();
+    // copied voices belong to the score they were copied from
+    this.storePaste.clearVoiceCopy();
     SuiAudioPlayer.stopPlayer();
     this.renderer.score = score;
     this.renderer.setViewport();
