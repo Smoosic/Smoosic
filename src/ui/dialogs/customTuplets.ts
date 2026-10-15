@@ -5,7 +5,6 @@ import { SmoMeasureFormat, SmoMeasureFormatNumberAttributes, SmoMeasueFormatBool
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { DialogDefinition, SuiDialogParams } from './dialog';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import {MakeTupletOperation} from "../../smo/xform/operations";
 
 declare var $: any;

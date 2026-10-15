@@ -7,7 +7,6 @@ import { DialogDefinition, SuiDialogParams } from './dialog';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
 import { SmoMeasure } from '../../smo/data/measure';
 import { SmoOperation } from '../../smo/xform/operations';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 declare var $: any;
 /**

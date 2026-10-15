@@ -10,7 +10,6 @@ import { SuiDialogAdapterBase, SuiComponentAdapter } from './adapter';
 import { addFileLink } from '../../common/htmlHelpers';
 import { SmoToMidi } from '../../smo/midi/smoToMidi';
 import { MidiToSmo } from '../../smo/midi/midiToSmo';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { SmoToVex } from '../../render/vex/toVex';
 import { parseMidi } from '../../common/midi-parser.js';
 import { replaceVueRoot, modalContainerId } from '../common';

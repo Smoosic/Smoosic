@@ -5,7 +5,6 @@ import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SvgBox } from '../../smo/data/common';
 import { SmoVolta } from '../../smo/data/measureModifiers';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 export type SmoVoltaNumberParam = 'startBar' | 'endBar' | 'xOffsetStart' | 'xOffsetEnd' | 'yOffset' | 'number';
 
@@ -31,7 +30,6 @@ export class SuiVoltaAdapter extends SuiComponentAdapter {
     }
   }
   async commit() {
-    return PromiseHelpers.emptyPromise();
   }
   updateVolta(param: SmoVoltaNumberParam, value: number) {
     this.volta[param] = value;

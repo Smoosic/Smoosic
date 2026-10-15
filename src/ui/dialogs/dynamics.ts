@@ -3,7 +3,6 @@ import { SmoDynamicText, SmoLyric } from '../../smo/data/noteModifiers';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SmoSelection } from '../../smo/xform/selections';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 /**
  * Edit or remove dynamice, a SmoNote attribute adapter
@@ -33,7 +32,6 @@ export class SuiDynamicDialogAdapter extends SuiComponentAdapter {
     this.view.undo();
   }
   async commit() {
-    return PromiseHelpers.emptyPromise();
   }
   get xOffset() {
     return this.modifier.xOffset;

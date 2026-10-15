@@ -4,7 +4,6 @@ import { DialogDefinition, SuiDialogParams } from './dialog';
 import { SmoStaffTextBracket, SmoTextBracketNumberType, SmoTextBracketStringType} from '../../smo/data/staffModifiers';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 declare var $: any;
 
@@ -35,7 +34,6 @@ export class SuiTextBracketAdapter extends SuiComponentAdapter {
     await this.view.removeStaffModifier(this.bracket);
   }
   async commit() {
-    return PromiseHelpers.emptyPromise();
   }
   async updateValue(param: SmoTextBracketNumberType, val: number) {
     const current = new SmoStaffTextBracket(this.bracket);

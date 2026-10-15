@@ -46,6 +46,7 @@
     "test": "exit 0",
     "test:attached-text": "ts-node -P tests/tsconfig.json tests/attachedTextMigration.ts",
     "test:global-layout-reposition": "ts-node -P tests/tsconfig.json tests/globalLayoutTextReposition.ts",
+    "test:promise-helpers": "ts-node -P tests/tsconfig.json tests/promiseHelpersUsage.ts",
     "test:score-change-state": "ts-node -P tests/tsconfig.json tests/scoreChangeState.ts",
     "test:page-divisions": "ts-node -P tests/tsconfig.json tests/pageDivisions.ts",
     "test:text-drag-placement":"ts-node -P tests/tsconfig.json tests/textDragPlacement.ts",

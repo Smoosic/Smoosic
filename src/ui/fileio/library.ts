@@ -1,7 +1,6 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { SuiXhrLoader } from './xhrLoader';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { smoSerialize } from '../../common/serializationHelpers';
 /**
  * @internal
@@ -81,10 +80,10 @@ export class SmoLibrary {
   static get parameterArray() {
     return ['children', 'metadata', 'format', 'url'];
   }
-  load() {
+  async load() {
     const self = this;
     if (this.loaded) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     const loader = new SuiXhrLoader(this.url!);
     return new Promise<void>((resolve) => {

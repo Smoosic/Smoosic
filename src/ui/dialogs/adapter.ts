@@ -10,7 +10,6 @@ import { CompleteNotifier } from '../common';
 import { BrowserEventSource } from '../eventSource';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { DialogDefinition, SuiDialogBase } from './dialog';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 declare var $: any;
 
 /**
@@ -51,9 +50,8 @@ export abstract class SuiComponentAdapter {
   }
   abstract commit(): Promise<any>;
   abstract cancel(): Promise<any>;
-  remove(): Promise<any> {
-    return PromiseHelpers.emptyPromise();
-   };
+  async remove(): Promise<any> {
+  }
 }
 
 /** 

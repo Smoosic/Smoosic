@@ -35,7 +35,6 @@ import { StaffModifierBase,
    SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
 import { SuiPiano } from './piano';
 import { SvgHelpers } from './svgHelpers';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { parseJsonText } from 'typescript';
 import {NoteEntryCaret} from "./NoteEntryCaret";
 declare var $: any;
@@ -411,7 +410,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
   async removeLyric(selector: SmoSelector, lyric: SmoLyric): Promise<void> {
     const selection = SmoSelection.noteFromSelector(this.score, selector);
     if (selection === null) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     this._undoSelection('remove lyric', selection);
     selection.note!.removeLyric(lyric);
@@ -452,7 +451,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
   async removeAnnotation(selector: SmoSelector, annotation: SmoLyric): Promise<void> {
     const selection = SmoSelection.noteFromSelector(this.score, selector);
     if (selection === null) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     this._undoSelection('remove annotation', selection);
     selection.note!.removeAnnotations(annotation);
@@ -1178,7 +1177,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
   async toggleBeamDirection(): Promise<void> {
     const selections = this.tracker.selections;
     if (selections.length < 1) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     const measureSelections = this.undoTrackerMeasureSelections('toggle beam direction');
     SmoOperation.toggleBeamDirection(selections);
@@ -1326,7 +1325,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
       }
       // The selection no longer exists, possibly deleted
       if (hintSel === null || hintSel.note === null) {
-        return PromiseHelpers.emptyPromise();
+        return;
       }
       const pitch = SmoMusic.getLetterNotePitch(hintSel.note.pitches[0],
         letter, hintSel.measure.keySignature);
@@ -1617,7 +1616,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
         modifier = StaffModifierBase.deserialize(original);
       } else {
         console.warn('update modifier: bad modifier');
-        return PromiseHelpers.emptyPromise();
+        return;
       }
     }
     const existing = this.score.staves[modifier.startSelector.staff]
@@ -1929,7 +1928,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
   async deleteMeasure(): Promise<void> {
     this._undoScore('Delete Measure');
     if (this.storeScore.staves[0].measures.length < 2) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     const selections = SmoSelection.getMeasureList(this.tracker.selections);
     // THe measures get renumbered, so keep the index at 0
@@ -2026,7 +2025,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
   async removeStaff(): Promise<void> {
     this._undoScore('Remove Instrument');
     if (this.storeScore.staves.length < 2 || this.score.staves.length < 2) {
-      return PromiseHelpers.emptyPromise();
+      return;
     }
     // if we are looking at a subset of the score,
     // revert to the full score view before removing the staff.

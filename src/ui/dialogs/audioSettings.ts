@@ -4,7 +4,6 @@ import { SmoAudioPlayerSettings, SmoAudioPlayerType, IsOscillatorType } from '..
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
 import { DialogDefinition, SuiDialogParams } from './dialog';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 declare var $: any;
 
@@ -65,7 +64,6 @@ export class SuiAudioSettingsAdapter extends SuiComponentAdapter {
     await this.view.updateAudioSettings(this.backup);
   }
   async commit() {
-    return PromiseHelpers.emptyPromise();
   }
 }
 /**

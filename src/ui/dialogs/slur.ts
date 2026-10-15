@@ -6,7 +6,6 @@ import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
 import { SmoOperation } from '../../smo/xform/operations';
 import { SmoScore } from '../../smo/data/score';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 declare var $: any;
 
@@ -44,7 +43,6 @@ async cancel() {
   await this.view.addOrUpdateStaffModifier(this.slur, this.backup);
 }
 async commit() {
-  return PromiseHelpers.emptyPromise();
 }
 get resetAll(): boolean {
   return false;

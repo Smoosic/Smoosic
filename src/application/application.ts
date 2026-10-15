@@ -26,7 +26,6 @@ import { BrowserEventSource } from '../ui/eventSource';
 import { SmoTranslationEditor } from '../ui/i18n/translationEditor';
 import { SmoTranslator } from '../ui/i18n/language';
 import { RibbonButtons } from '../ui/buttons/ribbon';
-import { PromiseHelpers } from '../common/promiseHelpers';
 import { SuiKeyCommands } from './keyCommands';
 import { SuiEventHandler } from './eventHandler';
 import { KeyBinding, ModalEventHandlerProxy, isTrackerKeyAction, isEditorKeyAction } from './common';
@@ -233,7 +232,7 @@ export class SuiApplication {
    */
   async createScore(): Promise<SmoScore | null> {
     if (this.config.mode === 'translate') {
-      return PromiseHelpers.emptyPromise();
+      return null;
     }
     if (this.config.remoteScore) {
       const loader = new SuiXhrLoader(this.config.remoteScore);

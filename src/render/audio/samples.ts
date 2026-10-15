@@ -1,7 +1,6 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 import { SmoAudioPitch } from '../../smo/data/music';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { Ref } from 'vue';
 import { SmoOscillatorInfo, SmoInstrument, SmoOscillatorInfoAllTypes,
   SmoOscillatorInfoNumberType, SmoOscillatorInfoNumberArType, SmoOscillatorInfoStringType, SmoOscillatorInfoStringNullType,

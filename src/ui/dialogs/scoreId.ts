@@ -5,7 +5,6 @@ import { SmoScoreInfo } from '../../smo/data/scoreModifiers';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
 import { DialogDefinition, SuiDialogParams, InstallDialog } from './dialog';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { reactive, watch, ref } from 'vue';
 import { replaceVueRoot, modalContainerId } from '../common';
 import scoreInfoApp from '../components/dialogs/scoreInfo.vue';

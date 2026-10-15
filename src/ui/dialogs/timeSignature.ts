@@ -8,7 +8,6 @@ import timeSignatureComp from '../components/dialogs/timeSignature.vue';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { replaceVueRoot, modalContainerId } from '../common';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { ref } from 'vue';
 declare var $: any;
 export const SuiTimeSignatureDialogVue = (parameters: SuiDialogParams) => {

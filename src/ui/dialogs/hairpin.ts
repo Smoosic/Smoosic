@@ -5,7 +5,6 @@ import { SmoStaffHairpin, } from '../../smo/data/staffModifiers';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { SvgBox } from '../../smo/data/common';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 declare var $: any;
 
@@ -34,7 +33,6 @@ export class SuiHairpinAdapter extends SuiComponentAdapter {
     await this.view.removeStaffModifier(this.hairpin);
   }
   async commit() {
-    return PromiseHelpers.emptyPromise();
   }
   async updateValue(param: SmoHairpinNumberParams, val: number) {
     const current = new SmoStaffHairpin(this.hairpin);

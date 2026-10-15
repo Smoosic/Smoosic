@@ -1,7 +1,5 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
-import { SuiRenderState } from "../render/sui/renderState";
-
 export type promiseFunction = () => void;
 export type promiseCondition = () => boolean;
 export type promiseInstance = () => Promise<any>;
@@ -22,6 +20,8 @@ export function TEmptyPromise<T>(obj: T):  Promise<T> {
   });
 }
 /**
+ * Helpers from before async/await was available.  The application itself no longer uses
+ * them; this class is kept, unchanged, for external applications that call it.
  * @internal
  */
 export class PromiseHelpers {

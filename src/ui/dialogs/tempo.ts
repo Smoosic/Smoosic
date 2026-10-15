@@ -6,7 +6,6 @@ import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
 import { DialogDefinition, SuiDialogParams } from './dialog';
 import { SuiComponentAdapter, SuiDialogAdapterBase } from './adapter';
 import { SmoMeasure } from '../../smo/data/measure';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 
 declare var $: any;
 /**
@@ -56,7 +55,6 @@ export class SuiTempoAdapter extends SuiComponentAdapter {
     this.edited = true;
   }
   async commit(){
-    return PromiseHelpers.emptyPromise();
   }
   get tempoText() {
     return this.SmoTempo.tempoText;

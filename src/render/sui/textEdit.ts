@@ -4,7 +4,6 @@ import { SuiInlineText, SuiTextBlock } from './textRender';
 import { SuiRenderState } from './renderState';
 import { SuiScroller } from './scroller';
 import { layoutDebug } from './layoutDebug';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { OutlineInfo, SuiTextStrokes, SvgHelpers, SuiTextStrokeName } from './svgHelpers';
 import { SmoScoreText, SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoLyric } from '../../smo/data/noteModifiers';

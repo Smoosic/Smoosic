@@ -7,7 +7,6 @@
 import { SmoMeasure } from '../../smo/data/measure';
 import { UndoBuffer, UndoEntry } from '../../smo/xform/undo';
 import { SmoRenderConfiguration } from './configuration';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { VxSystem } from '../vex/vxSystem';
 import { SmoScore } from '../../smo/data/score';
@@ -200,14 +199,20 @@ export class SuiRenderState implements SuiRendererBase {
     this.measureMapper!.scroller.restoreScrollState(scrollState);
   }
 
-  _renderStatePromise(condition: () => boolean): Promise<void> {
+  /**
+   * Wait until `condition` is true, polling at the demon poll interval.  The redraw demon
+   * (see pollRedrawTask) advances the render state on its own timer, so there is nothing to
+   * await directly.  Rendering is un-suspended during the wait and restored afterwards.
+   * The condition is first tested after one interval, not immediately.
+   * @param condition the render state to wait for
+   */
+  async _renderStatePromise(condition: () => boolean): Promise<void> {
     const oldSuspend = this.suspendRendering;
     this.suspendRendering = false;
-    const self = this;
-    const endAction = () => {
-      self.suspendRendering = oldSuspend;
-    };
-    return PromiseHelpers.makePromise(condition, endAction, null, this.demonPollTime);
+    do {
+      await this.delay2();
+    } while (!condition());
+    this.suspendRendering = oldSuspend;
   }
   // ### renderPromise
   // return a promise that resolves when the score is in a fully rendered state.

@@ -16,7 +16,6 @@ import { SuiScroller } from '../../render/sui/scroller';
 import { SmoNote } from '../../smo/data/note';
 import { EventHandler } from '../eventSource';
 import { SmoUiConfiguration } from '../configuration';
-import { PromiseHelpers } from '../../common/promiseHelpers';
 import { createApp, ref, Ref, watch, App } from 'vue';
 import { SuiNavigationDom } from '../navigation';
 import { layoutDebug, SuiNavigation } from '../../../typedoc';
@@ -419,7 +418,6 @@ export const suiDialogTranslate = (dialog: DialogDefinition, ctor: string): Dial
     return SuiDialogBase.getStaticText(this.staticText);
   }
   async commit(): Promise<any> {
-    return PromiseHelpers.emptyPromise();
   }
   get closeModalPromise(): Promise<any> {
     return this.closeDialogPromise;
