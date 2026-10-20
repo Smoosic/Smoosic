@@ -189,7 +189,9 @@ export class VxNote {
     }
     const vexL: Annotation = new VF.Annotation(text);
     vexL.setAttribute('id', annotation.attrs.id);
-    vexL.setFont(annotation.fontInfo.family, annotation.fontInfo.size, annotation.fontInfo.weight);
+    vexL.setFont(annotation.fontInfo.family, annotation.fontInfo.size, annotation.fontInfo.weight,
+      annotation.fontInfo.style
+    );
     vexL.setVerticalJustification(annotation.verticalJustify);
     vexL.setReportWidth(false);  // ignore width for formatting
     vexNote.addModifier(vexL);
