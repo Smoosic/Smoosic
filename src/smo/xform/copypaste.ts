@@ -733,7 +733,10 @@ export class PasteBuffer {
         return;
       }
       const selection: PasteNote = notes[this.noteIndex];
-      const note: SmoNote = selection.note;
+      // The paste buffer holds the note in concert pitch.  Work on a copy for this measure, since a
+      // note that doesn't fit is split and its remainder is pasted in the next measure by coming
+      // back through here: transposing the buffer's note in place would transpose that remainder twice.
+      const note: SmoNote = SmoNote.clone(selection.note);
       if (note.noteType === 'n') {
         const pitchAr: number[] = [];
         note.pitches.forEach((pitch, ix) => {
@@ -782,6 +785,9 @@ export class PasteBuffer {
         voice.notes.push(nnote);
         currentDuration += this.remainder;
         this.remainder = 0;
+        // The whole note has now been pasted, part in the previous measure and the rest here.
+        // Move on, or the loop would paste it again.
+        this.noteIndex += 1;
       } else {
         // The note won't fit, so we split it in 2 and paste the remainder in the next measure.
         // TODO:  tie the last note to this one.

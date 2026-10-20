@@ -93,6 +93,7 @@ export const InstallDialog = async (params: DialogInstallParams) => {
   const commitCb = async () => {
     complete.value = true;
     await params.commitCb();
+    params.dialogParams.view.groupUndo(false);
     trapper.close();
     params.dialogParams.view.navigation.hideDialogModal();
     dialogApp?.unmount();

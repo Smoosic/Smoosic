@@ -355,6 +355,60 @@ check('V4 paste choices, several copied voices', JSON.stringify(PasteBuffer.past
   check('V20 plain multi-measure paste works', same(voiceNotes(score3, 6, 0), voiceNotes(score3, 1, 0)));
 }
 
+// --- P1: a note split across a measure boundary is transposed once, not once per measure ---
+// (existing paste bug: the remainder in the next measure was transposed a second time)
+{
+  const score = buildScore();
+  // measure 1 becomes a single whole note
+  const src = score.staves[0].measures[1];
+  src.voices = [{ notes: [src.voices[0].notes[0]] }];
+  src.voices[0].notes[0].ticks = { numerator: 16384, denominator: 1, remainder: 0 };
+  // measures 8 and 9 belong to a transposing instrument (written 2 semitones above concert)
+  [8, 9].forEach((m) => {
+    const measure = score.staves[0].measures[m];
+    measure.transposeIndex = 2;
+    measure.keySignature = 'd';
+  });
+  const buffer = new PasteBuffer();
+  buffer.setSelections(score, selectNotes(score, 1, 0, 0));
+  // start on the third beat, so the whole note has to be split
+  buffer.pasteSelections({ staff: 0, measure: 8, voice: 0, tick: 2, pitches: [] });
+  const m8 = voiceNotes(score, 8, 0)!;
+  const m9 = voiceNotes(score, 9, 0)!;
+  check('P1 the first part is in measure 8, on the third beat', m8.length === 3, JSON.stringify(m8));
+  const first = m8[2].split(':')[0];
+  const rest = m9[0].split(':')[0];
+  check('P1 the remainder in measure 9 has the same pitch as the first part', first === rest, `first=${first} remainder=${rest}`);
+  // the split note is pasted once: its remainder fills the first half of measure 9 and the
+  // existing music follows, not a second copy of the note
+  const original9 = voiceNotes(buildScore(), 9, 0)!;
+  check('P2 the remainder is a half note', m9[0].endsWith(':8192'), JSON.stringify(m9));
+  check('P2 the split note is not pasted a second time', m9.length === 3 && m9[1] === original9[2] && m9[2] === original9[3],
+    `measure 9 = ${JSON.stringify(m9)}, existing = ${JSON.stringify(original9)}`);
+}
+
+// --- P3: after a split note, the notes copied after it follow, each pasted once ---
+{
+  const score = buildScore();
+  // measure 1 becomes two half notes
+  const src = score.staves[0].measures[1];
+  src.voices = [{ notes: [src.voices[0].notes[0], src.voices[0].notes[1]] }];
+  src.voices[0].notes.forEach((n) => { n.ticks = { numerator: 8192, denominator: 1, remainder: 0 }; });
+  const copied = voiceNotes(score, 1, 0)!;
+  const original9 = voiceNotes(buildScore(), 9, 0)!;
+  const buffer = new PasteBuffer();
+  buffer.setSelections(score, selectNotes(score, 1, 0, 1));
+  // start on the fourth beat: the first half note is split, one beat in measure 8 and one in measure 9
+  buffer.pasteSelections({ staff: 0, measure: 8, voice: 0, tick: 3, pitches: [] });
+  const m8 = voiceNotes(score, 8, 0)!;
+  const m9 = voiceNotes(score, 9, 0)!;
+  const pitchA = copied[0].split(':')[0];
+  const pitchB = copied[1].split(':')[0];
+  check('P3 measure 8 ends with one beat of the first note', m8[m8.length - 1] === `${pitchA}:4096`, JSON.stringify(m8));
+  check('P3 measure 9 is: rest of the first note, the second note, then the existing last beat',
+    JSON.stringify(m9) === JSON.stringify([`${pitchA}:4096`, `${pitchB}:8192`, original9[3]]), JSON.stringify(m9));
+}
+
 if (failures > 0) {
   console.log(`${failures} check(s) failed`);
   process.exitCode = 1;
