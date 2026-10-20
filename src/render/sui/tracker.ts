@@ -815,6 +815,46 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     const c2 = 'v' + (selector.voice + 1).toString() + '-active';
     $('body').addClass(c2);
   }
+  /**
+   * Replace the selection with all the notes of one voice in every measure that has a selection.
+   * The whole of each measure is used, not just the selected notes.  Only notes that have been
+   * rendered can be selected.  This changes only the selection: it makes no change to the score,
+   * creates no voice, and records no undo.  If there are no notes to select, nothing changes.
+   * @param voice the voice to select (0-3)
+   * @returns true if the selection was replaced
+   */
+  selectVoice(voice: number): boolean {
+    if (!this.score) {
+      return false;
+    }
+    const selectors = SmoSelection.getVoiceSelectors(this.score, this.selections, voice);
+    const mapped: SmoSelection[] = [];
+    selectors.forEach((selector) => {
+      const artifact = this.measureNoteMap[SmoSelector.getNoteKey(selector)];
+      if (artifact) {
+        mapped.push(artifact);
+      }
+    });
+    if (mapped.length < 1) {
+      return false;
+    }
+    this.selections = mapped;
+    this.pitchIndex = -1;
+    // Keep the active voice (used for entering notes) in step with the selection, as selecting a
+    // single note does.
+    const measuresDone: Record<string, boolean> = {};
+    mapped.forEach((selection) => {
+      const key = SmoSelector.getMeasureKey(selection.selector);
+      if (!measuresDone[key]) {
+        measuresDone[key] = true;
+        selection.measure.setActiveVoice(voice);
+      }
+    });
+    this.score.setActiveStaff(mapped[0].selector.staff);
+    this._createLocalModifiersList();
+    this.deferHighlight();
+    return true;
+  }
   // The user has just switched voices, select the active voice
   selectActiveVoice() {
     const selection = this.selections[0];

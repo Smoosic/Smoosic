@@ -124,6 +124,37 @@ const pasteVoiceMenuOption: SuiConfiguredMenuOption = {
 }
 
 /**
+ * One choice of the Select Voice submenu.  Shown only if the selected measures have that voice,
+ * and only when there is more than one voice to choose between.
+ * @category SuiMenu
+ */
+const selectVoiceChoice = (voice: number): SuiConfiguredMenuOption => ({
+  handler: async (menu: SuiMenuBase) => {
+    await menu.view.selectVoice(voice);
+  },
+  display: (menu: SuiMenuBase) => menu.view.getSelectVoiceChoices().indexOf(voice) >= 0,
+  menuChoice: {
+    icon: '',
+    text: `Voice ${voice + 1}`,
+    value: `selectVoice${voice}`
+  }
+});
+/**
+ * Select all the notes of one voice in the measures that are selected
+ * @category SuiMenu
+ */
+const selectVoiceMenuOption: SuiConfiguredMenuOption = {
+  handler: async () => { }, // unreachable -- subMenu takes precedence over handler
+  display: (menu: SuiMenuBase) => menu.view.getSelectVoiceChoices().length > 0,
+  subMenu: [0, 1, 2, 3].map((v) => selectVoiceChoice(v)),
+  menuChoice: {
+    icon: '',
+    text: 'Select Voice',
+    value: 'selectVoiceAction'
+  }
+}
+
+/**
  * Copy Ctrl^C action
  * @category SuiMenu
  */
@@ -143,5 +174,5 @@ const undoMenuOption: SuiConfiguredMenuOption = {
  * @category SuiMenu
  */
 const SuiEditMenuOptions: SuiConfiguredMenuOption[] = [
-  copyMenuOption, pasteMenuOption, pasteChordsMenuOption, copyVoicesMenuOption, pasteVoiceMenuOption, undoMenuOption
+  copyMenuOption, pasteMenuOption, pasteChordsMenuOption, copyVoicesMenuOption, pasteVoiceMenuOption, selectVoiceMenuOption, undoMenuOption
 ];

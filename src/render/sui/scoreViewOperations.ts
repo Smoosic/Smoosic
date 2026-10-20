@@ -1363,6 +1363,21 @@ export class SuiScoreViewOperations extends SuiScoreView {
     await this.renderer.updatePromise();
   }
   /**
+   * The voices that Select Voice can offer for the current selection: empty unless some selected
+   * measure has more than one voice.
+   */
+  getSelectVoiceChoices(): number[] {
+    return SmoSelection.voiceChoices(this.score, this.tracker.selections);
+  }
+  /**
+   * Select all the notes of a voice in the measures that currently have a selection.  Only the
+   * selection changes: no edit is made and no undo is recorded.
+   * @param voice the voice to select (0-3)
+   */
+  async selectVoice(voice: number): Promise<void> {
+    this.tracker.selectVoice(voice);
+  }
+  /**
    * The most voices any of the selected measures has, for the Copy Voices menu
    */
   getSelectionVoiceCount(): number {

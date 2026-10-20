@@ -588,6 +588,74 @@ export class SmoSelection {
     }
     return rv;
   }
+  /**
+   * The (staff, measure) pairs that have at least one selection, in staff then measure order.
+   */
+  private static _selectedMeasurePairs(selections: SmoSelection[]): { staff: number, measure: number }[] {
+    const seen: Record<string, boolean> = {};
+    const rv: { staff: number, measure: number }[] = [];
+    selections.forEach((sel) => {
+      const key = SmoSelector.getMeasureKey(sel.selector);
+      if (!seen[key]) {
+        seen[key] = true;
+        rv.push({ staff: sel.selector.staff, measure: sel.selector.measure });
+      }
+    });
+    rv.sort((a, b) => a.staff !== b.staff ? a.staff - b.staff : a.measure - b.measure);
+    return rv;
+  }
+  /**
+   * Which voices the user can choose to select, given the current selection.  Only the voices
+   * that exist in at least one measure that has a selection are offered; if every such measure has
+   * a single voice there is nothing to choose between, so the result is empty.
+   * @param score the score the selections are in
+   * @param selections the current selection
+   * @returns the voice numbers (0-3) to offer
+   */
+  static voiceChoices(score: SmoScore, selections: SmoSelection[]): number[] {
+    let maxVoices = 0;
+    SmoSelection._selectedMeasurePairs(selections).forEach((pair) => {
+      const measure = score.staves[pair.staff]?.measures[pair.measure];
+      if (measure) {
+        maxVoices = Math.max(maxVoices, measure.voices.length);
+      }
+    });
+    maxVoices = Math.min(maxVoices, 4);
+    const rv: number[] = [];
+    if (maxVoices < 2) {
+      return rv;
+    }
+    for (let i = 0; i < maxVoices; ++i) {
+      rv.push(i);
+    }
+    return rv;
+  }
+  /**
+   * All the notes (including rests) of one voice, in every measure that currently has a selection,
+   * on every staff that has a selection.  The whole of each measure is used, not just the selected
+   * notes, since different voices can have different numbers of notes that overlap in different ways.
+   * A measure that does not have the voice contributes nothing, and the voice is never created.
+   * @param score the score the selections are in
+   * @param selections the current selection
+   * @param voice the voice to select (0-3)
+   * @returns a selector for each note of the voice, in staff, measure and tick order
+   */
+  static getVoiceSelectors(score: SmoScore, selections: SmoSelection[], voice: number): SmoSelector[] {
+    const rv: SmoSelector[] = [];
+    if (voice < 0 || voice > 3) {
+      return rv;
+    }
+    SmoSelection._selectedMeasurePairs(selections).forEach((pair) => {
+      const measure = score.staves[pair.staff]?.measures[pair.measure];
+      if (!measure || voice >= measure.voices.length) {
+        return;
+      }
+      for (let tick = 0; tick < measure.voices[voice].notes.length; ++tick) {
+        rv.push({ staff: pair.staff, measure: pair.measure, voice, tick, pitches: [] });
+      }
+    });
+    return rv;
+  }
   static getMeasuresBetween(score: SmoScore, fromSelector: SmoSelector, toSelector: SmoSelector): SmoSelection[] {
     let i = 0;
     const rv: SmoSelection[] = [];
