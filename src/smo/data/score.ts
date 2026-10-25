@@ -10,7 +10,7 @@ import { SmoMeasure, SmoMeasureParams, ColumnMappedParams, SmoMeasureParamsSer }
 import { SmoNoteModifierBase, SmoLyric } from './noteModifiers';
 import {
   SmoTempo, SmoMeasureFormat, SmoMeasureModifierBase, SmoTimeSignature, TimeSignatureParameters,
-  SmoMeasureFormatParamsSer
+  SmoMeasureFormatParamsSer, SmoBarline, SmoRepeatSymbol
 } from './measureModifiers';
 import { StaffModifierBase, SmoInstrument } from './staffModifiers';
 import {
@@ -967,6 +967,8 @@ export class SmoScore {
    * @returns 
    */
   isMultimeasureRest(measureIndex: number, start: boolean, forceRest: boolean) {
+    // Superseded by isMultimeasureBlocked, isMultimeasureStartLandmark and isMultimeasureEndLandmark, which
+    // computeMultipartRest now uses.  Kept unchanged for applications that call it.
     let i = 0;
     for (i = 0; i < this.staves.length; ++i) {
       if (!forceRest && !this.staves[i].isRest(measureIndex)) {
@@ -1000,6 +1002,105 @@ export class SmoScore {
       }
     }
     return true;
+  }
+
+  /**
+   * True for the repeat symbols that belong at the end of a measure: To Coda, D.C. or D.S. (al Coda or
+   * al Fine), and Fine.  Segno and Coda belong at the start.
+   * @param symbol one of SmoRepeatSymbol.symbols
+   */
+  static isEndRepeatSymbol(symbol: number): boolean {
+    const symbols = SmoRepeatSymbol.symbols;
+    return [symbols.ToCoda, symbols.DcAlCoda, symbols.DcAlFine, symbols.DsAlCoda, symbols.DsAlFine,
+      symbols.Fine].indexOf(symbol) >= 0;
+  }
+  /**
+   * True for the repeat symbols that belong at the start of a measure: Segno and Coda
+   * @param symbol one of SmoRepeatSymbol.symbols
+   */
+  static isStartRepeatSymbol(symbol: number): boolean {
+    return symbol === SmoRepeatSymbol.symbols.Segno || symbol === SmoRepeatSymbol.symbols.Coda;
+  }
+  /**
+   * A measure that can never be part of a multimeasure rest: one under a volta ending on any
+   * staff, a measure that repeats the previous measure (the measure-repeat sign), or (kept from before)
+   * the first measure of a part with more than one staff.
+   * @param measureIndex
+   */
+  isMultimeasureBlocked(measureIndex: number): boolean {
+    for (let i = 0; i < this.staves.length; ++i) {
+      if (this.staves[i].getVoltasForMeasure(measureIndex).length > 0) {
+        return true;
+      }
+      if (this.staves[i].isRepeatSymbol(measureIndex)) {
+        return true;
+      }
+      if (measureIndex === 0 && i > 0 && this.staves[i].measureInstrumentMap[0]) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * A landmark that belongs to the start of a measure.  A multimeasure rest ends before such a
+   * measure, which starts the next one: a rehearsal mark, Segno or Coda, a repeat or double barline at
+   * the start of the measure, an instrument change, or (compared with the previous measure) a key
+   * signature, time signature or displayed tempo change.
+   * @param measureIndex
+   */
+  isMultimeasureStartLandmark(measureIndex: number): boolean {
+    const plainBar = [SmoBarline.barlines.singleBar, SmoBarline.barlines.noBar];
+    for (let i = 0; i < this.staves.length; ++i) {
+      const staff = this.staves[i];
+      const measure = staff.measures[measureIndex];
+      if (staff.isRehearsal(measureIndex)) {
+        return true;
+      }
+      const symbol = measure.getRepeatSymbol();
+      if (symbol && SmoScore.isStartRepeatSymbol(symbol.symbol)) {
+        return true;
+      }
+      if (measureIndex > 0 && staff.measureInstrumentMap[measureIndex]) {
+        return true;
+      }
+      if (plainBar.indexOf(measure.getStartBarline().barline) < 0) {
+        return true;
+      }
+    }
+    if (measureIndex > 0) {
+      const measure = this.staves[0].measures[measureIndex];
+      const prev = this.staves[0].measures[measureIndex - 1];
+      if (measure.keySignature !== prev.keySignature) {
+        return true;
+      }
+      if (!SmoTimeSignature.equal(measure.timeSignature, prev.timeSignature)) {
+        return true;
+      }
+      const tempo = measure.getTempo();
+      if (tempo.display && !SmoTempo.eq(tempo, prev.getTempo())) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * A landmark that belongs to the end of a measure.  A multimeasure rest ends after such a measure:
+   * To Coda, D.C. or D.S., Fine, or a repeat or double barline at the end of the measure.
+   * @param measureIndex
+   */
+  isMultimeasureEndLandmark(measureIndex: number): boolean {
+    const plainBar = [SmoBarline.barlines.singleBar, SmoBarline.barlines.noBar];
+    for (let i = 0; i < this.staves.length; ++i) {
+      const measure = this.staves[i].measures[measureIndex];
+      const symbol = measure.getRepeatSymbol();
+      if (symbol && SmoScore.isEndRepeatSymbol(symbol.symbol)) {
+        return true;
+      }
+      if (plainBar.indexOf(measure.getEndBarline().barline) < 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

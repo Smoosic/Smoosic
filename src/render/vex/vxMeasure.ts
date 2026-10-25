@@ -464,6 +464,17 @@ export class VxMeasure implements VxMeasureIf {
       const rep = new VF.Repetition(toVexSymbol(sym), sym.xOffset + this.smoMeasure.staffX, yOff);
       this.stave.getModifiers().push(rep);
     }
+    // A multimeasure rest ends at its last measure, which is hidden, so its D.S., D.C., To Coda or Fine
+    // symbol is carried here and drawn over the rest.
+    const endSym = this.smoMeasure.svg.multimeasureEndSymbol;
+    if (endSym && endSym.symbol !== SmoRepeatSymbol.symbols.None && this.smoMeasure.svg.multimeasureLength > 0 && this.firstInColumn) {
+      let yOff = endSym.yOffset;
+      if (this.smoMeasure.getRehearsalMark()) {
+        yOff -= 30;
+      }
+      const rep = new VF.Repetition(toVexSymbol(endSym), endSym.xOffset + this.smoMeasure.staffX, yOff);
+      this.stave.getModifiers().push(rep);
+    }
     const tms = this.smoMeasure.getMeasureText();
     // TODO: set font
     tms.forEach((tmb: SmoMeasureModifierBase) => {

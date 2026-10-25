@@ -95,6 +95,8 @@ export interface MeasureSvg {
   hideMultimeasure: boolean,
   multimeasureLength: number,
   multimeasureEndBarline: number,
+  /** the end symbol (D.S., D.C., To Coda, Fine) of the last measure of a multimeasure rest, drawn over the rest */
+  multimeasureEndSymbol: SmoRepeatSymbol | null,
   element: SVGSVGElement | null,
   tabStaveBox?: SvgBox,
   tabElement?: SVGSVGElement
@@ -376,6 +378,7 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       hideMultimeasure: false,
       multimeasureLength: 0,
       multimeasureEndBarline: SmoBarline.barlines['singleBar'],
+      multimeasureEndSymbol: null,
       element: null
     };
 

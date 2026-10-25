@@ -12,6 +12,7 @@ import { SmoNote } from '../../smo/data/note';
 import { SmoBeamer } from '../../smo/xform/beamers';
 import { SmoSelector } from '../../smo/xform/selections';
 import { SmoScore } from '../../smo/data/score';
+import { SmoOperation } from '../../smo/xform/operations';
 import { SmoStaffHairpin, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
 import { layoutDebug } from './layoutDebug';
 import { ScaledPageLayout, SmoLayoutManager, SmoPageLayout } from '../../smo/data/scoreModifiers';
@@ -356,6 +357,11 @@ export class SuiLayoutFormatter {
     let systemIndex = 0;
     if (!this.score.layoutManager) {
       return;
+    }
+    // Group empty measures into multimeasure rests for the current notes and landmarks, so edits made
+    // since the part was shown (a rehearsal mark, a key change...) take effect on every full layout.
+    if (this.score.isPartExposed()) {
+      SmoOperation.computeMultipartRest(this.score);
     }
     let scoreLayout = this.score.layoutManager.getScaledPageLayout(0);
     let y = 0;

@@ -1057,52 +1057,66 @@ export class SmoOperation {
     }
     score.setNoteInstrumentProperties();
   }
+  /**
+   * Group runs of empty measures into multimeasure rests, for parts that show them.  A landmark splits a run:
+   * a start landmark (rehearsal mark, key, time or tempo change, Segno, Coda, instrument change, repeat
+   * or double barline at the start of the measure) ends the rest before its measure and that measure
+   * starts the next rest; an end landmark (D.S., D.C., To Coda, Fine, repeat or double barline at the end of
+   * the measure) ends the rest after its measure.  Measures under a volta ending are never grouped.
+   * The result is recorded in each measure's svg record: the first measure of a rest has its length, end
+   * barline and end symbol, the others are hidden; every other measure is reset.
+   * @param score the score being displayed
+   */
   static computeMultipartRest(score: SmoScore) {
-    let i = 0;
-    let j = 0;
-    const measureRanges: Record<number, number> = {};
     const measureCount = score.staves[0].measures.length;
     if (score.staves[0].partInfo.expandMultimeasureRests === true) {
       return;
     }
-    while (i < measureCount) {
-      let forceRest = score.staves[0].measures[i].format.forceRest;
-      if (score.isMultimeasureRest(i, true, forceRest)) {
-        for (j = i + 1; j < measureCount; ++j) {
-          const restBreak = score.staves[0].measures[j].format.restBreak;
-          forceRest = score.staves[0].measures[j].format.forceRest;                    
-          if (!score.isMultimeasureRest(j, false, forceRest) || restBreak) {
-            break;          
-          }
-        }
-        if (j - i >= 2) {
-          measureRanges[i] = j;
-        }
-        i = j;
-      } else {
-        const startMeasure = i;
-        score.staves.forEach((staff) => {
-          staff.measures[startMeasure].svg.hideMultimeasure = false;
-        });
-        i += 1;
-      }
-    }
-    const multiKeys = Object.keys(measureRanges).map((x) => parseInt(x, 10));
-    multiKeys.forEach((key) => {
-      const endMeasure = measureRanges[key];
+    const isRestMeasure = (m: number) => {
+      return score.staves[0].measures[m].format.forceRest || score.staves.every((staff) => staff.isRest(m));
+    };
+    const reset = (m: number, hide: boolean) => {
       score.staves.forEach((staff) => {
-        const mmLength = endMeasure - key;
-        const svg = staff.measures[key].svg;
-        svg.multimeasureLength = mmLength;
-        if (svg.multimeasureLength > 1) {
-          svg.multimeasureEndBarline = staff.measures[endMeasure - 1].getEndBarline().barline;
-        }
-        staff.measures[key].svg.hideMultimeasure = false;
-        for (i = key + 1; i < endMeasure; ++i) {
-          staff.measures[i].svg.hideMultimeasure = true;
-        }
+        const svg = staff.measures[m].svg;
+        svg.multimeasureLength = 0;
+        svg.multimeasureEndBarline = SmoBarline.barlines.singleBar;
+        svg.multimeasureEndSymbol = null;
+        svg.hideMultimeasure = hide;
       });
-    });
+    };
+    let i = 0;
+    while (i < measureCount) {
+      if (score.isMultimeasureBlocked(i) || !isRestMeasure(i)) {
+        reset(i, false);
+        i += 1;
+        continue;
+      }
+      // measure i starts a block; it may carry start landmarks.  An end landmark closes the block.
+      let j = i + 1;
+      let closed = score.isMultimeasureEndLandmark(i);
+      while (!closed && j < measureCount && isRestMeasure(j) && !score.isMultimeasureBlocked(j)
+        && !score.staves[0].measures[j].format.restBreak && !score.isMultimeasureStartLandmark(j)) {
+        closed = score.isMultimeasureEndLandmark(j);
+        j += 1;
+      }
+      if (j - i >= 2) {
+        const last = j - 1;
+        reset(i, false);
+        score.staves.forEach((staff) => {
+          const svg = staff.measures[i].svg;
+          svg.multimeasureLength = j - i;
+          svg.multimeasureEndBarline = staff.measures[last].getEndBarline().barline;
+          const symbol = staff.measures[last].getRepeatSymbol();
+          svg.multimeasureEndSymbol = (symbol && SmoScore.isEndRepeatSymbol(symbol.symbol)) ? symbol : null;
+        });
+        for (let k = i + 1; k < j; ++k) {
+          reset(k, true);
+        }
+      } else {
+        reset(i, false);
+      }
+      i = j;
+    }
   }
 }
 
