@@ -48,12 +48,16 @@ const dynamicOptions: SelectOption[] = [
         <numberInputApp :domId="getId('y-line')" :initialValue="yOffsetLine" :precision="0" label="Y Line"
           :changeCb="(value: number) => updateNumberCb('yOffsetLine', value)" :inline="true" />
         <numberInputApp :domId="getId('y-offset-px')" :initialValue="yOffsetPixels" :precision="0" label="Y Offset Px"
-          :changeCb="(value: number) => updateNumberCb('yOffsetPixels', value)" :inline="true" />
+          :changeCb="(value: number) => updateNumberCb('yOffsetPixels', value)" 
+          :minValue="-1000" :maxValue="1000"
+          :inline="true" />
       </div>
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('x-offset')" :initialValue="xOffset" :precision="0" label="X Offset"
+        <numberInputApp :domId="getId('x-offset')" :initialValue="xOffset" :precision="0" 
+          label="X Offset"
+          :minValue="-1000" :maxValue="1000"
           :changeCb="(value: number) => updateNumberCb('xOffset', value)" :inline="true" />
       </div>
     </div>

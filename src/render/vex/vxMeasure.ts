@@ -266,7 +266,7 @@ export class VxMeasure implements VxMeasureIf {
     return modObj;
   }
 
-  renderNoteGlyph(smoNote: SmoNote, textObj: SmoDynamicText) {
+  renderDynamicsForNote(smoNote: SmoNote, textObj: SmoDynamicText) {
     var x = this.noteToVexMap[smoNote.attrs.id].getAbsoluteX() + textObj.xOffset;
     // the -3 is copied from vexflow textDynamics
     var y = this.stave!.getYForLine(textObj.yOffsetLine - 3) + textObj.yOffsetPixels;
@@ -277,11 +277,14 @@ export class VxMeasure implements VxMeasureIf {
     group.classList.add(textObj.attrs.id);
     // const duration = SmoMusic.closestVexDuration(smoNote.tickCount);
     for (var i = 0; i < textObj.text.length; i += 1 ) {
-      const { width , height } = renderDynamics(this.context.getContext(), VF.TextDynamics.GLYPHS[textObj.text[i]].code,
+      const ch = textObj.text[i];
+      const { width , height } = renderDynamics(this.context.getContext(), VF.TextDynamics.GLYPHS[ch].code,
         textObj.fontSize, x, y);
-      /* const { width , height } = renderDynamics(this.context.getContext(), VF.TextDynamics.GLYPHS[textObj.text[i]],
-        textObj.fontSize, x, y); */
-      x += width;
+      if (ch === 'f') {
+        x += width * 0.6;
+      } else {
+        x += width;
+      }
       maxh = Math.max(height, maxh);      
     }
     textObj.logicalBox = SvgHelpers.boxPoints(minx, y + this.context.box.y, x - minx, maxh);
@@ -290,7 +293,7 @@ export class VxMeasure implements VxMeasureIf {
     this.context.getContext().closeGroup();
   }
 
-  renderDynamics() {
+  renderDynamicsForMeasure() {
     this.smoMeasure.voices.forEach((voice) => {
       voice.notes.forEach((smoNote) => {
         const mods = smoNote.textModifiers.filter((mod) =>
@@ -298,7 +301,7 @@ export class VxMeasure implements VxMeasureIf {
         );
         mods.forEach((btm) => {
           const tm = btm as SmoDynamicText;
-          this.renderNoteGlyph(smoNote, tm);
+          this.renderDynamicsForNote(smoNote, tm);
         });
       });
     });
@@ -696,7 +699,7 @@ export class VxMeasure implements VxMeasureIf {
         this.multimeasureRest.draw();
       }
       // this._updateLyricDomSelectors();
-      this.renderDynamics();
+      this.renderDynamicsForMeasure();
       // this.smoMeasure.adjX = this.stave.start_x - (this.smoMeasure.staffX);
 
       this.context.getContext().closeGroup();

@@ -62,9 +62,9 @@ const orientationOptions: SelectOption[] = [
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('x-offset')" :initialValue="xOffset" :precision="0" label="X Offset"
+        <numberInputApp :domId="getId('x-offset')" :initialValue="xOffset" :precision="0" :minValue="-1000" :maxValue="1000" label="X Offset"
           :changeCb="(value: number) => updateNumberCb('xOffset', value)" :inline="true" />
-        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" label="Y Offset"
+        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" :minValue="-1000" :maxValue="1000" label="Y Offset"
           :changeCb="(value: number) => updateNumberCb('yOffset', value)" :inline="true" />
       </div>
     </div>
@@ -96,17 +96,17 @@ const orientationOptions: SelectOption[] = [
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('cp1x')" :initialValue="cp1x" :precision="0" label="Control Point 1 X"
+        <numberInputApp :domId="getId('cp1x')" :initialValue="cp1x" :precision="0" :minValue="-1000" :maxValue="1000" label="Control Point 1 X"
           :changeCb="(value: number) => updateNumberCb('cp1x', value)" :inline="true" />
-        <numberInputApp :domId="getId('cp1y')" :initialValue="cp1y" :precision="0" label="Control Point 1 Y"
+        <numberInputApp :domId="getId('cp1y')" :initialValue="cp1y" :precision="0" :minValue="-1000" :maxValue="1000" label="Control Point 1 Y"
           :changeCb="(value: number) => updateNumberCb('cp1y', value)" :inline="true" />
       </div>
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('cp2x')" :initialValue="cp2x" :precision="0" label="Control Point 2 X"
+        <numberInputApp :domId="getId('cp2x')" :initialValue="cp2x" :precision="0" :minValue="-1000" :maxValue="1000" label="Control Point 2 X"
           :changeCb="(value: number) => updateNumberCb('cp2x', value)" :inline="true" />
-        <numberInputApp :domId="getId('cp2y')" :initialValue="cp2y" :precision="0" label="Control Point 2 Y"
+        <numberInputApp :domId="getId('cp2y')" :initialValue="cp2y" :precision="0" :minValue="-1000" :maxValue="1000" label="Control Point 2 Y"
           :changeCb="(value: number) => updateNumberCb('cp2y', value)" :inline="true" />
       </div>
     </div>

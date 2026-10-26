@@ -112,7 +112,7 @@ const tempoTextOptions: SelectOption[] = [
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" label="Y Offset"
+        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" :minValue="-1000" :maxValue="1000" label="Y Offset"
           :changeCb="(value: number) => updateNumberCb('yOffset', value)" :inline="true" />
       </div>
     </div>

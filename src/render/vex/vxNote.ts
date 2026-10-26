@@ -14,10 +14,8 @@ import { SvgPage } from '../sui/svgPageMap';
 import { toVexBarlineType, vexBarlineType, vexBarlinePosition, toVexBarlinePosition, toVexSymbol,
   toVexTextJustification, toVexTextPosition, getVexChordBlocks, toVexStemDirection } from './smoAdapter';
 import { VexFlow, Stave,StemmableNote, Note, Beam, Tuplet, Voice,
-  Formatter, Accidental, Annotation, StaveNoteStruct, StaveText, StaveModifier, 
-  createStaveText, renderDynamics, applyStemDirection,
-  getVexNoteParameters, defaultNoteScale, defaultCueScale, getVexTuplets,
-  createStave, createVoice, getOrnamentGlyph, getSlashGlyph, getRepeatBar, getMultimeasureRest,
+  Accidental, Annotation, 
+   getOrnamentGlyph,
   addChordGlyph, StaveNote, PedalMarking,
   TabNote} from '../../common/vex';
 

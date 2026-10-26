@@ -29,15 +29,15 @@ const getId = (str: string) => {
       <div class="grow-row">
         <numberInputApp :domId="getId('number')" :initialValue="number" :precision="0" label="number"
           :changeCb="(value: number) => updateFieldCb('number', value)" :inline="true" />
-        <numberInputApp :domId="getId('x1-offset')" :initialValue="xOffsetStart" :precision="0" label="X1 Offset"
+        <numberInputApp :domId="getId('x1-offset')" :initialValue="xOffsetStart" :precision="0" :minValue="-1000" :maxValue="1000" label="X1 Offset"
           :changeCb="(value: number) => updateFieldCb('xOffsetStart', value)" :inline="true" />
       </div>
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('x2-offset')" :initialValue="xOffsetEnd" :precision="0" label="X2 Offset"
+        <numberInputApp :domId="getId('x2-offset')" :initialValue="xOffsetEnd" :precision="0" :minValue="-1000" :maxValue="1000" label="X2 Offset"
           :changeCb="(value: number) => updateFieldCb('xOffsetEnd', value)" :inline="true" />
-        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" label="Y Offset"
+        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" :minValue="-1000" :maxValue="1000" label="Y Offset"
           :changeCb="(value: number) => updateFieldCb('yOffset', value)" :inline="true" />
       </div>
     </div>

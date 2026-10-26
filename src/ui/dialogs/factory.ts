@@ -9,7 +9,6 @@ import { SuiVoltaAttributeDialog } from './volta';
 import { SuiLyricDialogVue } from './lyricVue';
 import { SuiChordChangeDialogVue } from './chordChangeVue';
 import { SuiTieAttributesDialog } from './tie';
-import { SuiDynamicModifierDialog } from './dynamics';
 import { SuiDialogNotifier, SmoDynamicComponentCtor, SuiBaseComponentParams } from './components/baseComponent';
 import { SuiButtonComponent, SuiButtonComposite, SuiButtonCompositeParams, SuiButtonComponentParams } from './components/button';
 import { CheckboxDropdownComponent, CheckboxDropdownComponentParams } from './components/checkdrop';
@@ -147,7 +146,6 @@ export const initDialogTranslationElements = () => {
   DialogTranslations.push(suiDialogTranslate(SuiPedalMarkingDialog.dialogElements, 'SuiPedalMarkingDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiTieAttributesDialog.dialogElements, 'SuiTieAttributesDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiSlurAttributesDialog.dialogElements, 'SuiSlurAttributesDialog'));
-  DialogTranslations.push(suiDialogTranslate(SuiDynamicModifierDialog.dialogElements, 'SuiDynamicModifierDialog'));
   DialogTranslations.push(suiDialogTranslate(SuiVoltaAttributeDialog.dialogElements, 'SuiVoltaAttributeDialog'));
 }
 export const initDialogConstructors = () => {

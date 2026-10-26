@@ -29,15 +29,15 @@ const getId = (str: string) => {
       <div class="grow-row">
         <numberInputApp :domId="getId('height')" :initialValue="height" :precision="0" label="Height"
           :changeCb="(value: number) => updateFieldCb('height', value)" :inline="true" />
-        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" label="Y Shift"
+        <numberInputApp :domId="getId('y-offset')" :initialValue="yOffset" :precision="0" :minValue="-1000" :maxValue="1000" label="Y Shift"
           :changeCb="(value: number) => updateFieldCb('yOffset', value)" :inline="true" />
       </div>
     </div>
     <div class="group">
       <div class="grow-row">
-        <numberInputApp :domId="getId('x-offset-right')" :initialValue="xOffsetRight" :precision="0" label="Right Shift"
+        <numberInputApp :domId="getId('x-offset-right')" :initialValue="xOffsetRight" :precision="0" :minValue="-1000" :maxValue="1000" label="Right Shift"
           :changeCb="(value: number) => updateFieldCb('xOffsetRight', value)" :inline="true" />
-        <numberInputApp :domId="getId('x-offset-left')" :initialValue="xOffsetLeft" :precision="0" label="Left Shift"
+        <numberInputApp :domId="getId('x-offset-left')" :initialValue="xOffsetLeft" :precision="0" :minValue="-1000" :maxValue="1000" label="Left Shift"
           :changeCb="(value: number) => updateFieldCb('xOffsetLeft', value)" :inline="true" />
       </div>
     </div>
