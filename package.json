@@ -46,6 +46,7 @@
     "test": "exit 0",
     "test:attached-text": "ts-node -P tests/tsconfig.json tests/attachedTextMigration.ts",
     "test:global-layout-reposition": "ts-node -P tests/tsconfig.json tests/globalLayoutTextReposition.ts",
+    "test:staff-line-geometry": "ts-node -P tests/tsconfig.json tests/staffLineGeometry.ts",
     "test:multimeasure-rest": "ts-node -P tests/tsconfig.json tests/multimeasureRest.ts",
     "test:select-voice": "ts-node -P tests/tsconfig.json tests/selectVoice.ts",
     "test:voice-copy-paste": "ts-node -P tests/tsconfig.json tests/voiceCopyPaste.ts",

@@ -11,6 +11,7 @@ import {SmoGraceNote} from "../../smo/data/noteModifiers";
 import {Note} from "../../common/vex";
 import {GraceNote, StaveNote} from "vexflow_smoosic";
 import {CaretDelegate} from "./NoteEntryMediator";
+import {staffLineFromY, yFromStaffLine, trackingLimits} from "./staffLineGeometry";
 
 declare var $: any;
 
@@ -53,6 +54,11 @@ export class NoteEntryCaret {
 	static readonly DEFAULT_NOTE_MODE: 'note' | 'rest' = 'note';
 
 	caretBoundaryBox: SvgBox;
+
+	// Where to stop tracking the mouse above and below the selected note's staff, in absolute
+	// coordinates (from the top of the first page).  Set when the selection is set; null until then.
+	trackingTop: number | null = null;
+	trackingBottom: number | null = null;
 
 	tracker: SuiTracker;
 	view: SuiScoreViewOperations;
@@ -123,6 +129,74 @@ export class NoteEntryCaret {
 		this.vexNoteHeadWidth = targetVexNote.getMetrics().glyphWidth!;
 		this.vexNoteXShift = targetVexNote.getXShift();
 		this._calculateDisplacedHeadPosition();
+		this._calculateTrackingLimits();
+	}
+
+	/**
+	 * Work out where to stop tracking the mouse above and below the selected note's staff.  The caret
+	 * leaves room for ledger lines, but if the staff above or below (or the previous or next system) is
+	 * close, that room overlaps it, and the notes there could not be selected.  So tracking stops at the
+	 * bottom of the staff above or previous system, or the top of the page, and at the top of the staff
+	 * below or next system, or the bottom of the page, whichever comes first.
+	 */
+	private _calculateTrackingLimits(): void {
+		this.trackingTop = null;
+		this.trackingBottom = null;
+		if (!this.selection || !this.context) {
+			return;
+		}
+		const measure = this.selection.measure;
+		const score = this.view.score;
+		// the index of the staff in the displayed score (which may be a part)
+		const staffId = this.selection.selector.staff;
+		const lineIndex = measure.svg.lineIndex;
+		const caretX = this.vexNoteAbsoluteX + this.vexNoteXShift + this.context.box.x;
+		const caretTop = measure.staffY - (NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT);
+		const staffTop = measure.staffY - (NoteEntryCaret.STAFF_LINE_HEIGHT / 2);
+
+		// The staff above in this system, or the last staff of the previous system
+		const above = staffId > 0
+			? NoteEntryCaret._neighborBounds(score.staves[staffId - 1]?.measures ?? [], lineIndex, caretX)
+			: NoteEntryCaret._neighborBounds(score.staves[score.staves.length - 1]?.measures ?? [], lineIndex - 1, caretX);
+		// The staff below in this system, or the first staff of the next system
+		const below = staffId < score.staves.length - 1
+			? NoteEntryCaret._neighborBounds(score.staves[staffId + 1]?.measures ?? [], lineIndex, caretX)
+			: NoteEntryCaret._neighborBounds(score.staves[0]?.measures ?? [], lineIndex + 1, caretX);
+
+		const limits = trackingLimits({
+			caretTop,
+			caretBottom: caretTop + NoteEntryCaret.CARET_HEIGHT,
+			staffTop,
+			staffBottom: staffTop + NoteEntryCaret.STAFF_HEIGHT,
+			pageTop: this.context.box.y,
+			pageBottom: this.context.box.y + this.context.box.height,
+			aboveBottom: above ? above.bottom : null,
+			belowTop: below ? below.top : null
+		});
+		this.trackingTop = limits.top;
+		this.trackingBottom = limits.bottom;
+	}
+
+	/**
+	 * The vertical extent of a neighboring staff or system, for the part of it under `caretX`.
+	 * @param measures the measures of the neighboring staff
+	 * @param lineIndex which system to look in
+	 * @param caretX the x position of the selected note, in absolute coordinates
+	 * @returns the top and bottom of the measure that covers `caretX`; if none does, of all the measures
+	 * in that system (so the stop is conservative); null if the system has no rendered measures
+	 */
+	private static _neighborBounds(measures: SmoMeasure[], lineIndex: number, caretX: number): { top: number, bottom: number } | null {
+		const boxes = measures.filter((mm) => mm.svg.lineIndex === lineIndex && mm.svg.logicalBox && mm.svg.logicalBox.width > 0)
+			.map((mm) => mm.svg.logicalBox);
+		if (boxes.length < 1) {
+			return null;
+		}
+		const covering = boxes.filter((bb) => caretX >= bb.x && caretX <= bb.x + bb.width);
+		const use = covering.length > 0 ? covering : boxes;
+		return {
+			top: Math.min(...use.map((bb) => bb.y)),
+			bottom: Math.max(...use.map((bb) => bb.y + bb.height))
+		};
 	}
 
 	public handleMouseDown(ev: any): void {
@@ -239,6 +313,8 @@ export class NoteEntryCaret {
 		this.vexNoteXShift = 0;
 		this.staffLineOnMouseUp = null;
 		this.staffLineOnMouseDown = null;
+		this.trackingTop = null;
+		this.trackingBottom = null;
 		this._unrenderPitchHighlight();
 	}
 
@@ -359,7 +435,21 @@ export class NoteEntryCaret {
     } else {
       point.y -= this.context.box.y;
     }
-		return SvgHelpers.doesBox1ContainBox2(this.caretBoundaryBox, point);
+		return SvgHelpers.doesBox1ContainBox2(this._getTrackingBox(), point);
+	}
+
+	/**
+	 * The part of the caret box in which the mouse is tracked: the caret box, cut off vertically at the stop
+	 * points (see {@link _calculateTrackingLimits}).  Local to the page, like the caret box.
+	 */
+	private _getTrackingBox(): SvgBox {
+		const box = this.caretBoundaryBox;
+		if (this.trackingTop === null || this.trackingBottom === null || !this.context) {
+			return box;
+		}
+		const top = Math.max(box.y, this.trackingTop - this.context.box.y);
+		const bottom = Math.min(box.y + box.height, this.trackingBottom - this.context.box.y);
+		return SvgHelpers.boxPoints(box.x, top, box.width, Math.max(bottom - top, 0));
 	}
 
 	private _renderPitchPreview(staffLine: number): void {
@@ -369,8 +459,8 @@ export class NoteEntryCaret {
 			//check if staffLine has a pitch on it
 			//in case it does, do not render pitch preview
 			if (!this.occupiedStaffLines.includes(staffLine)) {
-				const staffLineY = this._calculateYFromStaffLine(staffLine);
-				const adjustedY = staffLineY - this.context.box.y;
+				// already local to this page
+				const adjustedY = this._calculateYFromStaffLine(staffLine);
 
 				const x = this.vexNoteAbsoluteX + this.vexNoteXShift;
 				// Determine color based on drag state: black during drag, blue otherwise
@@ -608,7 +698,8 @@ export class NoteEntryCaret {
 	private _createLedgerLineElement(staffLine: number, color: string): SVGLineElement {
 		const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
 
-		const y = this._calculateYFromStaffLine(staffLine) - this.context!.box.y;
+		// already local to this page
+		const y = this._calculateYFromStaffLine(staffLine);
 		// const x = this.vexNoteAbsoluteX + this.vexNoteXShift;
 
 		const ledgerLineWidth = 15;
@@ -627,26 +718,36 @@ export class NoteEntryCaret {
 		return line;
 	}
 
+	/**
+	 * The distance from the top of the caret box down to the lowest ledger position, for converting
+	 * between y and staff line.
+	 */
+	private static get _bottomOffset(): number {
+		return NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT + NoteEntryCaret.STAFF_HEIGHT;
+	}
+
+	/**
+	 * The staff line under the mouse.  The mouse position, once converted to SVG coordinates, is
+	 * measured from the top of the first page, but the caret box is local to the page the selected note
+	 * is on, so the caret's position has to be brought into the same coordinates first.  (Without that,
+	 * every page after the first reports a staff line that is a whole page too low.)
+	 */
 	private _calculateStaffLineFromY(mouseY: number): number {
 		const scrollState = this.tracker?.scroller.scrollState;
 		const bb = SvgHelpers.boxPoints(0, mouseY + scrollState.y, 1, 1);
 		const mouseSvgPoint = this.tracker.renderer.pageMap.clientToSvg(bb);
 
-		const relativeY = mouseSvgPoint.y - this.caretBoundaryBox.y;
-
-		const firstLegderBellowStaffY = NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT + NoteEntryCaret.STAFF_HEIGHT;
-
-		// Calculate staff line position from Y coordinate
-		const staffLine = Math.round((firstLegderBellowStaffY - relativeY) / (NoteEntryCaret.STAFF_LINE_HEIGHT / 2)) / 2;
-
-		return staffLine;
+		const caretTopAbsolute = this.caretBoundaryBox.y + (this.context?.box.y ?? 0);
+		return staffLineFromY(mouseSvgPoint.y, caretTopAbsolute, NoteEntryCaret._bottomOffset, NoteEntryCaret.STAFF_LINE_HEIGHT);
 	}
 
+	/**
+	 * The y of a staff line, local to the page the selected note is on (the same coordinates the
+	 * caret box and the elements drawn on the page use).  Callers must not subtract the page's
+	 * offset again.
+	 */
 	private _calculateYFromStaffLine(staffLine: number): number {
-		const firstLegderBellowStaffY = NoteEntryCaret.LEDGER_POSITIONS_ABOVE * NoteEntryCaret.STAFF_LINE_HEIGHT + NoteEntryCaret.STAFF_HEIGHT;
-		const relativeY = firstLegderBellowStaffY - (staffLine * NoteEntryCaret.STAFF_LINE_HEIGHT);
-
-		return relativeY + this.caretBoundaryBox.y;
+		return yFromStaffLine(staffLine, this.caretBoundaryBox.y, NoteEntryCaret._bottomOffset, NoteEntryCaret.STAFF_LINE_HEIGHT);
 	}
 
 	private _unrender(): void {
