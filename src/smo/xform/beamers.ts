@@ -207,7 +207,8 @@ export class SmoBeamer {
       return;
     }
 
-    if (this.measure.timeSignature.actualBeats % 4 === 0) {
+    if (this.measure.timeSignature.actualBeats % 4 === 0 || 
+      this.measure.timeSignature.actualBeats === 2) {
       if (this.duration < 8192 && this.allEighth()) {
         return;
       } else if (this.duration === 8192) {

@@ -309,8 +309,12 @@ export class SuiLayoutFormatter {
     const dvar = sumArray(durations.map((ll) => Math.pow(ll - davg, 2)));
     const dpads = Math.pow(dvar / durations.length, 0.5) / davg;
     const unalignedPadding = 2;
-
-    const padmax = Math.max(dpads, wpads) * contexts.length * unalignedPadding;
+    let padmax = 0;
+    if (dpads > wpads) {
+      padmax = dpads * contexts.length * vexGlyph.dimensions.noteHead.width;
+    } else {
+      padmax = wpads * contexts.length * unalignedPadding;
+    }
     const unalignedPad = unalignedPadding * unalignedCtxCount;
     let maxWidth = Math.max(adjX + minTotalWidth + Math.max(unalignedPad, padmax), maxCfgWidth);
     if (scoreLayout.maxMeasureSystem > 0 && !isPickup && !measureToSkip) {
