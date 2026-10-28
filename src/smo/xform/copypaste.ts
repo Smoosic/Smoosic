@@ -837,8 +837,9 @@ export class PasteBuffer {
         voice.notes.push(nnote);
       });
       diffToAdjustRemainingTuplets += lmap.length;
-      existingIndex++;
     }
+    // existingIndex is the note the paste ended in (or at the end of).  The rest of that note was
+    // filled in above, so continue with the note after it.
     for (let i = existingIndex + 1; i < measure.voices[voiceIndex].notes.length; i++) {
       voice.notes.push(SmoNote.clone(measure.voices[voiceIndex].notes[i]));
     }
