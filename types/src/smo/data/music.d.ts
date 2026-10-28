@@ -55,16 +55,6 @@ export interface VexNoteValue {
     int_val: number;
 }
 /**
- * Describe the music theory role of an accidental vs. the key signature.
- * Used to determine default enharmonic spelling.
- * @category SmoTransform
- */
-export interface KeySignatureRole {
-    letter: PitchLetter;
-    accidental: string;
-    role: string;
-}
-/**
  * Helper functions that build on the VX music theory routines, and other
  * utilities I wish were in VF.Music but aren't
  * ## Note on pitch and duration format
@@ -181,35 +171,84 @@ export declare class SmoMusic {
    * an array of clefs and the xml information they map to
    */
     static clefLedgerShift: Record<string, number>;
+    /**
+     * Spelling is computed on the 'line of fifths': every spelling has an integer position,
+     * F=-1, C=0, G=1, D=2, A=3, E=4, B=5, plus 7 for each sharp and minus 7 for each flat.
+     * Neighbors are a fifth apart, and enharmonic spellings differ by 12.  A major key is
+     * identified by its number of sharps (+) or flats (-), which is also the position of its tonic.
+     * The 7 tones of key `k` are the positions `k - 1` through `k + 5`.
+     */
+    static get letterFifths(): Record<PitchLetter, number>;
+    /** letters in line-of-fifths order, starting with position -1 */
+    static get fifthsLetters(): PitchLetter[];
+    /** semitones above c for the natural letters */
+    static get naturalValues(): Record<PitchLetter, number>;
+    /** the lowest and highest line-of-fifths positions that need no more than a double accidental */
+    static get minFifths(): number;
+    static get maxFifths(): number;
+    /** sharps (positive) minus flats, from an accidental string like '#', 'bb' or 'n' */
+    static accidentalCount(accidental: string | undefined): number;
+    /** inverse of accidentalCount, 'n' for natural */
+    static accidentalFromCount(count: number): string;
+    /** position of the pitch on the line of fifths */
+    static pitchFifths(pitch: Pitch): number;
+    /** the pitch at the given line-of-fifths position.  The octave is not adjusted. */
+    static fifthsToPitch(fifths: number, octave: number): Pitch;
+    /**
+     * Sharps (positive) or flats (negative) in a major key signature, which is also the
+     * position of its tonic on the line of fifths.  Unknown keys are treated as C.
+     * @param keySignature a key like 'c', 'F#', 'Bb'
+     */
+    static keyFifths(keySignature: string): number;
+    /**
+     * The signed 'distance' of a pitch from a key: the number of sharps (positive) or flats
+     * (negative) that must be added to the key signature for the pitch to be in the key.
+     * It is the number of steps around the circle of fifths to the nearest key containing the
+     * pitch, e.g. from C major, Bb is -1 (F major) and A# is 5 (B major).
+     */
+    static distanceFromKey(pitch: Pitch, keySignature: string): number;
+    static fifthsDistance(fifths: number, keyFifths: number): number;
+    /**
+     * The number of half steps above c0 that the pitch sounds.  Unlike smoPitchToInt, this is correct
+     * for every spelling, e.g. b#3 sounds the same as c4 and cb4 the same as b3.
+     */
+    static soundingValue(pitch: Pitch): number;
+    /** the pitch spelled at the given line-of-fifths position that sounds `value` half steps above c0 */
+    static pitchForSounding(fifths: number, value: number): Pitch;
+    /**
+     * Choose a spelling for a sounding pitch that is closest to the key: the one that needs the fewest
+     * sharps or flats added to the key signature.  If sharp and flat spellings are equally far, use the flat.
+     * @param value half steps above c0
+     * @param keySignature
+     */
+    static spellSoundingValue(value: number, keySignature: string): Pitch;
+    /**
+     * The destination key when a key is transposed by a number of half steps.  Of the 2 or 3 enharmonic
+     * keys, the one with the fewest sharps/flats is used, and flats if there is a tie.  With no offset
+     * the key is unchanged.
+     * @param keySignature the starting key
+     * @param offset half steps, may be negative
+     * @returns a key in the same case convention as keySignature (e.g. 'Bb' or 'bb')
+     */
+    static keyForOffset(keySignature: string, offset: number): string;
     static scaleTones: string[];
+    /**
+     * The tones of the key, by letter, e.g. for 'g' f is 'f#' and c is 'cn'.
+     * @param keySignature
+     */
     static getScaleTonesForKey(keySignature: string): Record<string, string>;
-    /**
-     * The purpose of this table is to keep consistent enharmonic spelling when transposing
-     * instruments in different keys.  It is not theoritically complete, e.g.
-     * there is no reason to distinguish between #5 used as a leading tone for vi- or
-     * as an augmented chord, the spelling is the same.  It does not show a preference
-     * for notes that don't have an obvious purpose in the key, e.g. it does not try to compute the
-     * equivalent to 'e#' in the key of 'c'.  The computation of the 'intended key area' is
-     * beyond the scope of a music program to interpret.
-     */
-    static get enharmonicRoles(): Record<string, KeySignatureRole[]>;
-    /**
-     * Find the harmonic role for the given pitch
-     * @param smoPitch
-     * @param keySignature
-     * @returns
-     */
-    static findRoleOfPitch(smoPitch: Pitch, keySignature: string): string;
-    /**
-     * Given a harmonic role, find the pitch that matches it.  If there is no one, just
-     * return the raw transposition
-     * @param role
-     * @param keySignature
-     * @param transposedPitch
-     * @returns
-     */
-    static findPitchForRole(role: string, keySignature: string, transposedPitch: Pitch): Pitch;
     static rawTranspose(pitch: Pitch, offset: number): Pitch;
+    /**
+     * Transpose a pitch from one key to another, keeping its relationship to the key.  Every pitch
+     * moves by the same number of steps around the circle of fifths as the key does, so a note that
+     * was in the key stays in the key, and a note that was N sharps/flats outside the key is still
+     * N sharps/flats outside the key (c# in C becomes d# in D).  The sounding pitch is always
+     * `offset` half steps from the original, even if the keys and offset don't agree.
+     * @param pitch
+     * @param originalKey key signature of the pitch
+     * @param destinationKey key signature to spell the pitch for
+     * @param offset half steps
+     */
     static transposePitchForKey(pitch: Pitch, originalKey: string, destinationKey: string, offset: number): Pitch;
     /**
      * convert from SMO to VEX format so we can use the VexFlow tables and methods
@@ -319,7 +358,10 @@ export declare class SmoMusic {
     static closestTonic(smoPitch: Pitch, vexKey: string, direction: number): Pitch;
     static toValidKeySignature(vexKey: string): string;
     /**
-     * When transposing, get the enharmonic that most closely fits the key
+     * When transposing, get the enharmonic that most closely fits the key.  If the pitch is not in
+     * the key, this is the spelling that needs the fewest sharps/flats added to the key signature
+     * to include it (Bb rather than A# in C, since F major is 1 flat away and B major 5 sharps),
+     * and the flat spelling if the sharp and flat spellings are equally far.
      * `getEnharmonicInKey` returns an alternate to the given pitch, or the same pitch.
      * `getKeyFriendlyEnharmonic` return a pitch for a given key, given the letter name only
      * @param smoPitch

@@ -413,18 +413,34 @@ export class SmoOperation {
     });
   }
 
+  /**
+   * Transpose the whole score by a number of half steps.  The destination key of each measure is
+   * computed from its current key, and each pitch is spelled so that its distance from the new key
+   * matches its distance from the old key (e.g. e natural in Eb becomes g# in G).
+   * @param score
+   * @param offset half steps, may be negative
+   */
   static transposeScore(score: SmoScore, offset: number) {
-    score.staves.forEach((staff, staffIx) => {
-      staff.measures.forEach((measure, measureIx) => {
-        measure.voices.forEach((voice, voiceIx) => {
-          voice.notes.forEach((note, tickIx) => {
-            const selection = SmoSelection.noteSelection(
-              score,staffIx, measureIx, voiceIx, tickIx);
-            if (selection) {
-              this.transpose(selection, offset);
-            }
+    if (offset === 0) {
+      return;
+    }
+    score.staves.forEach((staff) => {
+      staff.measures.forEach((measure) => {
+        const originalKey = measure.keySignature;
+        const destinationKey = SmoMusic.keyForOffset(originalKey, offset);
+        measure.voices.forEach((voice) => {
+          voice.notes.forEach((note) => {
+            SmoNote.transpose(note, [], offset, originalKey, destinationKey);
+            note.getGraceNotes().forEach((graceNote) => {
+              SmoNote.transpose(graceNote, [], offset, originalKey, destinationKey);
+            });
           });
         });
+        measure.setKeySignature(destinationKey);
+      });
+      Object.keys(staff.keySignatureMap).forEach((measureIndex) => {
+        const ix = parseInt(measureIndex, 10);
+        staff.keySignatureMap[ix] = SmoMusic.keyForOffset(staff.keySignatureMap[ix], offset);
       });
     });
   }

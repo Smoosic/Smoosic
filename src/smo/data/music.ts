@@ -130,17 +130,6 @@ export interface VexNoteValue {
   int_val: number
 };
 /**
- * Describe the music theory role of an accidental vs. the key signature. 
- * Used to determine default enharmonic spelling.
- * @category SmoTransform
- */
-export interface KeySignatureRole {
-  letter: PitchLetter,
-  accidental: string,
-  role: string
-};
-
-/**
  * Helper functions that build on the VX music theory routines, and other
  * utilities I wish were in VF.Music but aren't
  * ## Note on pitch and duration format
@@ -519,333 +508,189 @@ export class SmoMusic {
       'subbass':  7,
       'french': -1
     }
-    static scaleTones: string[] = ['tonic', '2', '3', '4', '5', '6', '7'];
-    static getScaleTonesForKey(keySignature: string): Record<string, string> {
-      const key = SmoMusic.enharmonicRoles[keySignature];
-      const rv: Record<string, string> = {};
-      key.forEach((role) => {
-        if (SmoMusic.scaleTones.indexOf(role.role) >= 0) {
-          rv[role.letter] = role.letter + role.accidental;
-        }
-      });
-      return rv;
-    }
   /**
-   * The purpose of this table is to keep consistent enharmonic spelling when transposing 
-   * instruments in different keys.  It is not theoritically complete, e.g.
-   * there is no reason to distinguish between #5 used as a leading tone for vi- or
-   * as an augmented chord, the spelling is the same.  It does not show a preference
-   * for notes that don't have an obvious purpose in the key, e.g. it does not try to compute the
-   * equivalent to 'e#' in the key of 'c'.  The computation of the 'intended key area' is
-   * beyond the scope of a music program to interpret.
+   * Spelling is computed on the 'line of fifths': every spelling has an integer position,
+   * F=-1, C=0, G=1, D=2, A=3, E=4, B=5, plus 7 for each sharp and minus 7 for each flat.
+   * Neighbors are a fifth apart, and enharmonic spellings differ by 12.  A major key is
+   * identified by its number of sharps (+) or flats (-), which is also the position of its tonic.
+   * The 7 tones of key `k` are the positions `k - 1` through `k + 5`.
    */
-  static get enharmonicRoles(): Record<string, KeySignatureRole[]> {
-    const tbl: Record<string, KeySignatureRole[]> =
-      { 'c' : [
-        { letter: 'c', accidental: 'n', role: 'tonic' },
-        { letter: 'c', accidental: '#', role: '7/2' },
-        { letter: 'd', accidental: 'b', role: 'b9' },
-        { letter: 'd', accidental: 'n', role: '2' },
-        { letter: 'd', accidental: '#', role: '7/3'},
-        { letter: 'e', accidental: 'b', role: 'b3'},
-        { letter: 'e', accidental: 'n', role: '3'},
-        { letter: 'f', accidental: 'n', role: '4'},
-        { letter: 'f', accidental: '#', role: '#11'},
-        { letter: 'g', accidental: 'b', role: 'b5'},
-        { letter: 'g', accidental: 'n', role: '5'},
-        { letter: 'g', accidental: '#', role: '7/6'},
-        { letter: 'a', accidental: 'b', role: 'b6'},
-        { letter: 'a', accidental: 'n', role: '6'},
-        { letter: 'a', accidental: '#', role: '7/7'},
-        { letter: 'b', accidental: 'b', role: 'b7'},
-        { letter: 'b', accidental: 'n', role: '7'}
-      ], 'c#': [
-        { letter: 'c', accidental: '#', role: 'tonic' },
-        { letter: 'c', accidental: '##', role: '7/2' },
-        { letter: 'd', accidental: 'n', role: 'b9' },
-        { letter: 'd', accidental: '#', role: '2' },
-        { letter: 'd', accidental: '##', role: '#2'},
-        { letter: 'f', accidental: 'b', role: 'b3'},
-        { letter: 'e', accidental: '#', role: '3'},
-        { letter: 'f', accidental: '#', role: '4'},
-        { letter: 'f', accidental: '##', role: '#11'},
-        { letter: 'g', accidental: 'n', role: 'b5'},
-        { letter: 'g', accidental: '#', role: '5'},
-        { letter: 'g', accidental: '##', role: '7/6'},
-        { letter: 'a', accidental: 'n', role: 'b6'},
-        { letter: 'a', accidental: '#', role: '6'},
-        { letter: 'a', accidental: '##', role: '7/7'},
-        { letter: 'b', accidental: 'n', role: 'b7'},
-        { letter: 'b', accidental: '#', role: '7'}
-      ], 'db': [
-        { letter: 'd', accidental: 'b', role: 'tonic' },
-        { letter: 'd', accidental: 'n', role: '7/2' },
-        { letter: 'e', accidental: 'bb', role: 'b9' },
-        { letter: 'e', accidental: 'b', role: '2' },
-        { letter: 'e', accidental: 'n', role: '7/3'},
-        { letter: 'f', accidental: 'b', role: 'b3'},
-        { letter: 'f', accidental: 'n', role: '3'},
-        { letter: 'g', accidental: 'b', role: '4'},
-        { letter: 'g', accidental: 'n', role: '#11'},
-        { letter: 'a', accidental: 'bb', role: 'b5'},
-        { letter: 'a', accidental: 'b', role: '5'},
-        { letter: 'a', accidental: 'n', role: '7/6'},
-        { letter: 'b', accidental: 'bb', role: 'b6'},
-        { letter: 'b', accidental: 'b', role: '6'},
-        { letter: 'b', accidental: 'n', role: '7/7'},
-        { letter: 'c', accidental: 'b', role: 'b7'},
-        { letter: 'c', accidental: 'n', role: '7'}
-      ], 'd': [
-        { letter: 'd', accidental: 'n', role: 'tonic' },
-        { letter: 'd', accidental: '#', role: '7/2' },
-        { letter: 'e', accidental: 'b', role: 'b9' },
-        { letter: 'e', accidental: 'n', role: '2' },
-        { letter: 'e', accidental: '#', role: '7/3'},
-        { letter: 'f', accidental: 'n', role: 'b3'},
-        { letter: 'f', accidental: '#', role: '3'},
-        { letter: 'g', accidental: 'n', role: '4'},
-        { letter: 'g', accidental: '#', role: '#11'},
-        { letter: 'a', accidental: 'b', role: 'b5'},
-        { letter: 'a', accidental: 'n', role: '5'},
-        { letter: 'a', accidental: '#', role: '7/6'},
-        { letter: 'b', accidental: 'b', role: 'b6'},
-        { letter: 'b', accidental: 'n', role: '6'},
-        { letter: 'b', accidental: '#', role: '7/7'},
-        { letter: 'c', accidental: 'n', role: 'b7'},
-        { letter: 'c', accidental: '#', role: '7'}
-      ], 'eb': [
-        { letter: 'e', accidental: 'b', role: 'tonic' },
-        { letter: 'e', accidental: 'n', role: '7/2' },
-        { letter: 'f', accidental: 'b', role: 'b9' },
-        { letter: 'f', accidental: 'n', role: '2' },
-        { letter: 'f', accidental: '#', role: '7/3'},
-        { letter: 'g', accidental: 'b', role: 'b3'},
-        { letter: 'g', accidental: 'n', role: '3'},
-        { letter: 'a', accidental: 'b', role: '4'},
-        { letter: 'a', accidental: 'n', role: '#11'},
-        { letter: 'b', accidental: 'bb', role: 'b5'},
-        { letter: 'b', accidental: 'b', role: '5'},
-        { letter: 'b', accidental: 'n', role: '7/6'},
-        { letter: 'c', accidental: 'b', role: 'b6'},
-        { letter: 'c', accidental: 'n', role: '6'},
-        { letter: 'c', accidental: '#', role: '7/7'},
-        { letter: 'd', accidental: 'b', role: 'b7'},
-        { letter: 'd', accidental: 'n', role: '7'}
-      ], 'e': [
-        { letter: 'e', accidental: 'n', role: 'tonic' },
-        { letter: 'e', accidental: '#', role: '7/2' },
-        { letter: 'f', accidental: 'n', role: 'b9' },
-        { letter: 'f', accidental: '#', role: '2' },
-        { letter: 'f', accidental: '##', role: '7/3'},
-        { letter: 'g', accidental: 'n', role: 'b3'},
-        { letter: 'g', accidental: '#', role: '3'},
-        { letter: 'a', accidental: 'n', role: '4'},
-        { letter: 'a', accidental: '#', role: '#11'},
-        { letter: 'b', accidental: 'b', role: 'b5'},
-        { letter: 'b', accidental: 'n', role: '5'},
-        { letter: 'b', accidental: '#', role: '7/6'},
-        { letter: 'c', accidental: 'n', role: 'b6'},
-        { letter: 'c', accidental: '#', role: '6'},
-        { letter: 'c', accidental: '##', role: '7/7'},
-        { letter: 'd', accidental: 'n', role: 'b7'},
-        { letter: 'd', accidental: '#', role: '7'}
-      ], 'f': [
-        { letter: 'f', accidental: 'n', role: 'tonic' },
-        { letter: 'f', accidental: '#', role: '7/2' },
-        { letter: 'g', accidental: 'b', role: 'b9' },
-        { letter: 'g', accidental: 'n', role: '2' },
-        { letter: 'g', accidental: '#', role: '7/3'},
-        { letter: 'a', accidental: 'b', role: 'b3'},
-        { letter: 'a', accidental: 'n', role: '3'},
-        { letter: 'b', accidental: 'b', role: '4'},
-        { letter: 'b', accidental: 'n', role: '#11'},
-        { letter: 'c', accidental: 'b', role: 'b5'},
-        { letter: 'c', accidental: 'n', role: '5'},
-        { letter: 'c', accidental: '#', role: '7/6'},
-        { letter: 'd', accidental: 'b', role: 'b6'},
-        { letter: 'd', accidental: 'n', role: '6'},
-        { letter: 'd', accidental: '#', role: '7/7'},
-        { letter: 'e', accidental: 'b', role: 'b7'},
-        { letter: 'e', accidental: 'n', role: '7'}
-      ], 'f#': [
-        { letter: 'f', accidental: '#', role: 'tonic' },
-        { letter: 'f', accidental: '##', role: '7/2' },
-        { letter: 'g', accidental: 'n', role: 'b9' },
-        { letter: 'g', accidental: '#', role: '2' },
-        { letter: 'g', accidental: '##', role: '#2'},
-        { letter: 'a', accidental: 'n', role: 'b3'},
-        { letter: 'a', accidental: '#', role: '3'},
-        { letter: 'b', accidental: 'n', role: '4'},
-        { letter: 'b', accidental: '#', role: '#11'},
-        { letter: 'c', accidental: 'n', role: 'b5'},
-        { letter: 'c', accidental: '#', role: '5'},
-        { letter: 'c', accidental: '##', role: '7/6'},
-        { letter: 'd', accidental: 'n', role: 'b6'},
-        { letter: 'd', accidental: '#', role: '6'},
-        { letter: 'd', accidental: '##', role: '7/7'},
-        { letter: 'e', accidental: 'n', role: 'b7'},
-        { letter: 'e', accidental: '#', role: '7'}
-      ],  'gb': [
-        { letter: 'g', accidental: 'b', role: 'tonic' },
-        { letter: 'g', accidental: 'n', role: '7/2' },
-        { letter: 'a', accidental: 'bb', role: 'b9' },
-        { letter: 'a', accidental: 'b', role: '2' },
-        { letter: 'a', accidental: 'n', role: '7/3'},
-        { letter: 'a', accidental: 'bb', role: 'b3'},
-        { letter: 'b', accidental: 'b', role: '3'},
-        { letter: 'c', accidental: 'b', role: '4'},
-        { letter: 'c', accidental: 'n', role: '#11'},
-        { letter: 'd', accidental: 'bb', role: 'b5'},
-        { letter: 'd', accidental: 'b', role: '5'},
-        { letter: 'd', accidental: 'n', role: '7/6'},
-        { letter: 'e', accidental: 'bb', role: 'b6'},
-        { letter: 'e', accidental: 'b', role: '6'},
-        { letter: 'e', accidental: 'n', role: '7/7'},
-        { letter: 'f', accidental: 'b', role: 'b7'},
-        { letter: 'f', accidental: 'n', role: '7'}
-      ], 'g': [
-        { letter: 'g', accidental: 'n', role: 'tonic' },
-        { letter: 'g', accidental: '#', role: '7/2' },
-        { letter: 'g', accidental: 'b', role: 'b9' },
-        { letter: 'a', accidental: 'n', role: '2' },
-        { letter: 'a', accidental: '#', role: '7/3'},
-        { letter: 'b', accidental: 'b', role: 'b3'},
-        { letter: 'b', accidental: 'n', role: '3'},
-        { letter: 'c', accidental: 'n', role: '4'},
-        { letter: 'c', accidental: '#', role: '#11'},
-        { letter: 'd', accidental: 'b', role: 'b5'},
-        { letter: 'd', accidental: 'n', role: '5'},
-        { letter: 'd', accidental: '#', role: '7/6'},
-        { letter: 'e', accidental: 'b', role: 'b6'},
-        { letter: 'e', accidental: 'n', role: '6'},
-        { letter: 'e', accidental: '#', role: '7/7'},
-        { letter: 'f', accidental: 'n', role: 'b7'},
-        { letter: 'f', accidental: '#', role: '7'}
-      ],'ab': [
-        { letter: 'a', accidental: 'b', role: 'tonic' },
-        { letter: 'a', accidental: 'n', role: '7/2' },
-        { letter: 'b', accidental: 'bb', role: 'b9' },
-        { letter: 'b', accidental: 'b', role: '2' },
-        { letter: 'b', accidental: 'n', role: '7/3' },
-        { letter: 'b', accidental: 'bb', role: 'b3' },
-        { letter: 'c', accidental: 'n', role: '3' },
-        { letter: 'd', accidental: 'b', role: '4' },
-        { letter: 'd', accidental: 'n', role: '#11' },
-        { letter: 'e', accidental: 'bb', role: 'b5' },
-        { letter: 'e', accidental: 'b', role: '5' },
-        { letter: 'e', accidental: 'n', role: '7/6' },
-        { letter: 'f', accidental: 'b', role: 'b6' },
-        { letter: 'f', accidental: 'n', role: '6' },
-        { letter: 'f', accidental: '#', role: '7/7' },
-        { letter: 'g', accidental: 'b', role: 'b7' },
-        { letter: 'g', accidental: 'n', role: '7' }
-      ], 'a': [
-        { letter: 'a', accidental: 'n', role: 'tonic' },
-        { letter: 'a', accidental: '#', role: '7/2' },
-        { letter: 'b', accidental: 'b', role: 'b9' },
-        { letter: 'b', accidental: 'n', role: '2' },
-        { letter: 'b', accidental: '#', role: '7/3'},
-        { letter: 'c', accidental: 'n', role: 'b3'},
-        { letter: 'c', accidental: '#', role: '3'},
-        { letter: 'd', accidental: 'n', role: '4'},
-        { letter: 'd', accidental: '#', role: '#11'},
-        { letter: 'e', accidental: 'b', role: 'b5'},
-        { letter: 'e', accidental: 'n', role: '5'},
-        { letter: 'e', accidental: '#', role: '7/6'},
-        { letter: 'f', accidental: 'n', role: 'b6'},
-        { letter: 'f', accidental: '#', role: '6'},
-        { letter: 'f', accidental: '##', role: '7/7'},
-        { letter: 'g', accidental: 'n', role: 'b7'},
-        { letter: 'g', accidental: '#', role: '7'}
-      ], 'bb': [
-        { letter: 'b', accidental: 'b', role: 'tonic' },
-        { letter: 'b', accidental: 'n', role: '7/2' },
-        { letter: 'c', accidental: 'b', role: 'b9' },
-        { letter: 'c', accidental: 'n', role: '2' },
-        { letter: 'c', accidental: '#', role: '7/3'},
-        { letter: 'd', accidental: 'b', role: 'b3'},
-        { letter: 'd', accidental: 'n', role: '3'},
-        { letter: 'e', accidental: 'b', role: '4'},
-        { letter: 'e', accidental: 'n', role: '#11'},
-        { letter: 'f', accidental: 'b', role: 'b5'},
-        { letter: 'f', accidental: 'n', role: '5'},
-        { letter: 'f', accidental: '#', role: '7/6'},
-        { letter: 'g', accidental: 'b', role: 'b6'},
-        { letter: 'g', accidental: 'n', role: '6'},
-        { letter: 'g', accidental: '#', role: '7/7'},
-        { letter: 'a', accidental: 'b', role: 'b7'},
-        { letter: 'a', accidental: 'n', role: '7'}
-      ], 'b': [
-        { letter: 'b', accidental: 'n', role: 'tonic' },
-        { letter: 'b', accidental: '#', role: '7/2' },
-        { letter: 'c', accidental: 'n', role: 'b9' },
-        { letter: 'c', accidental: '#', role: '2' },
-        { letter: 'c', accidental: '##', role: '7/3'},
-        { letter: 'd', accidental: 'n', role: 'b3'},
-        { letter: 'd', accidental: '#', role: '3'},
-        { letter: 'e', accidental: 'n', role: '4'},
-        { letter: 'e', accidental: '#', role: '#11'},
-        { letter: 'f', accidental: 'n', role: 'b5'},
-        { letter: 'f', accidental: '#', role: '5'},
-        { letter: 'f', accidental: '##', role: '7/6'},
-        { letter: 'g', accidental: 'n', role: 'b6'},
-        { letter: 'g', accidental: '#', role: '6'},
-        { letter: 'g', accidental: '##', role: '7/7'},
-        { letter: 'a', accidental: 'n', role: 'b7'},
-        { letter: 'a', accidental: '#', role: '7'}
-      ]};
-    return tbl;
+  static get letterFifths(): Record<PitchLetter, number> {
+    return { f: -1, c: 0, g: 1, d: 2, a: 3, e: 4, b: 5 };
+  }
+  /** letters in line-of-fifths order, starting with position -1 */
+  static get fifthsLetters(): PitchLetter[] {
+    return ['f', 'c', 'g', 'd', 'a', 'e', 'b'];
+  }
+  /** semitones above c for the natural letters */
+  static get naturalValues(): Record<PitchLetter, number> {
+    return { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+  }
+  /** the lowest and highest line-of-fifths positions that need no more than a double accidental */
+  static get minFifths(): number {
+    return -15;
+  }
+  static get maxFifths(): number {
+    return 19;
+  }
+  /** sharps (positive) minus flats, from an accidental string like '#', 'bb' or 'n' */
+  static accidentalCount(accidental: string | undefined): number {
+    let rv = 0;
+    for (const ch of accidental ?? '') {
+      rv += ch === '#' ? 1 : (ch === 'b' ? -1 : 0);
+    }
+    return rv;
+  }
+  /** inverse of accidentalCount, 'n' for natural */
+  static accidentalFromCount(count: number): string {
+    if (count === 0) {
+      return 'n';
+    }
+    return count > 0 ? '#'.repeat(count) : 'b'.repeat(-count);
+  }
+  /** position of the pitch on the line of fifths */
+  static pitchFifths(pitch: Pitch): number {
+    return SmoMusic.letterFifths[pitch.letter.toLowerCase() as PitchLetter] +
+      7 * SmoMusic.accidentalCount(pitch.accidental);
+  }
+  /** the pitch at the given line-of-fifths position.  The octave is not adjusted. */
+  static fifthsToPitch(fifths: number, octave: number): Pitch {
+    const accidentalCount = Math.floor((fifths + 1) / 7);
+    const letter = SmoMusic.fifthsLetters[fifths - 7 * accidentalCount + 1];
+    return { letter, accidental: SmoMusic.accidentalFromCount(accidentalCount), octave };
   }
   /**
-   * Find the harmonic role for the given pitch
-   * @param smoPitch 
-   * @param keySignature 
-   * @returns 
+   * Sharps (positive) or flats (negative) in a major key signature, which is also the
+   * position of its tonic on the line of fifths.  Unknown keys are treated as C.
+   * @param keySignature a key like 'c', 'F#', 'Bb'
    */
-  static findRoleOfPitch(smoPitch: Pitch, keySignature: string) {
-    const keyRoles = SmoMusic.enharmonicRoles[keySignature];
-    if (!keyRoles) {
-      return '';
+  static keyFifths(keySignature: string): number {
+    const key = (keySignature ?? '').toLowerCase();
+    const base = SmoMusic.letterFifths[key[0] as PitchLetter];
+    if (typeof (base) === 'undefined') {
+      return 0;
     }
-    const keyRole = keyRoles.find((x) => x.letter === smoPitch.letter.toLocaleLowerCase() && x.accidental === smoPitch.accidental.toLowerCase());
-    if (!keyRole) {
-      return '';
-    }
-    return keyRole.role;
+    return base + 7 * SmoMusic.accidentalCount(key.substring(1));
   }
   /**
-   * Given a harmonic role, find the pitch that matches it.  If there is no one, just
-   * return the raw transposition
-   * @param role 
-   * @param keySignature 
-   * @param transposedPitch 
-   * @returns 
+   * The signed 'distance' of a pitch from a key: the number of sharps (positive) or flats
+   * (negative) that must be added to the key signature for the pitch to be in the key.
+   * It is the number of steps around the circle of fifths to the nearest key containing the
+   * pitch, e.g. from C major, Bb is -1 (F major) and A# is 5 (B major).
    */
-  static findPitchForRole(role: string, keySignature: string, transposedPitch: Pitch): Pitch {
-    const keyRoles = SmoMusic.enharmonicRoles[keySignature];
-    if (!keyRoles) {
-      return JSON.parse(JSON.stringify(transposedPitch));
+  static distanceFromKey(pitch: Pitch, keySignature: string): number {
+    return SmoMusic.fifthsDistance(SmoMusic.pitchFifths(pitch), SmoMusic.keyFifths(keySignature));
+  }
+  static fifthsDistance(fifths: number, keyFifths: number): number {
+    if (fifths > keyFifths + 5) {
+      return fifths - (keyFifths + 5);
     }
-    const keyRole = keyRoles.find((x) => x.role === role);
-    if (!keyRole) {
-      return JSON.parse(JSON.stringify(transposedPitch));
+    if (fifths < keyFifths - 1) {
+      return fifths - (keyFifths - 1);
     }
-    let octave = transposedPitch.octave;
-    if ((transposedPitch.letter === 'a' || transposedPitch.letter === 'b') && keyRole.letter === 'c') {
-      octave += 1;
+    return 0;
+  }
+  /**
+   * The number of half steps above c0 that the pitch sounds.  Unlike smoPitchToInt, this is correct
+   * for every spelling, e.g. b#3 sounds the same as c4 and cb4 the same as b3.
+   */
+  static soundingValue(pitch: Pitch): number {
+    return (pitch.octave ?? 0) * 12 + SmoMusic.naturalValues[pitch.letter.toLowerCase() as PitchLetter] +
+      SmoMusic.accidentalCount(pitch.accidental);
+  }
+  /** the pitch spelled at the given line-of-fifths position that sounds `value` half steps above c0 */
+  static pitchForSounding(fifths: number, value: number): Pitch {
+    const pitch = SmoMusic.fifthsToPitch(fifths, 0);
+    pitch.octave = Math.round((value - SmoMusic.soundingValue(pitch)) / 12);
+    return pitch;
+  }
+  /**
+   * Choose a spelling for a sounding pitch that is closest to the key: the one that needs the fewest
+   * sharps or flats added to the key signature.  If sharp and flat spellings are equally far, use the flat.
+   * @param value half steps above c0
+   * @param keySignature
+   */
+  static spellSoundingValue(value: number, keySignature: string): Pitch {
+    const key = SmoMusic.keyFifths(keySignature);
+    const pitchClass = ((value % 12) + 12) % 12;
+    const start = (7 * pitchClass) % 12;
+    let best = start;
+    let bestDistance = Infinity;
+    for (let candidate = start - 24; candidate <= start + 12; candidate += 12) {
+      if (candidate < SmoMusic.minFifths || candidate > SmoMusic.maxFifths) {
+        continue;
+      }
+      // candidates are in ascending order, so on a tie the lower (flat side) one stays
+      const distance = Math.abs(SmoMusic.fifthsDistance(candidate, key));
+      if (distance < bestDistance) {
+        best = candidate;
+        bestDistance = distance;
+      }
     }
-    return { letter: keyRole.letter, accidental: keyRole.accidental, octave };
+    return SmoMusic.pitchForSounding(best, value);
+  }
+  /**
+   * The destination key when a key is transposed by a number of half steps.  Of the 2 or 3 enharmonic
+   * keys, the one with the fewest sharps/flats is used, and flats if there is a tie.  With no offset
+   * the key is unchanged.
+   * @param keySignature the starting key
+   * @param offset half steps, may be negative
+   * @returns a key in the same case convention as keySignature (e.g. 'Bb' or 'bb')
+   */
+  static keyForOffset(keySignature: string, offset: number): string {
+    if (offset === 0) {
+      return keySignature;
+    }
+    const residue = (((SmoMusic.keyFifths(keySignature) + 7 * offset) % 12) + 12) % 12;
+    const pitch = SmoMusic.fifthsToPitch(residue < 6 ? residue : residue - 12, 0);
+    let rv = pitch.letter + (pitch.accidental === 'n' ? '' : pitch.accidental);
+    if (keySignature.length > 0 && keySignature[0] === keySignature[0].toUpperCase()) {
+      rv = rv[0].toUpperCase() + rv.substring(1);
+    }
+    return rv;
+  }
+  static scaleTones: string[] = ['tonic', '2', '3', '4', '5', '6', '7'];
+  /**
+   * The tones of the key, by letter, e.g. for 'g' f is 'f#' and c is 'cn'.
+   * @param keySignature
+   */
+  static getScaleTonesForKey(keySignature: string): Record<string, string> {
+    const key = SmoMusic.keyFifths(keySignature);
+    const rv: Record<string, string> = {};
+    SmoMusic.fifthsLetters.forEach((letter) => {
+      const accidentalCount = Math.floor((key + 5 - SmoMusic.letterFifths[letter]) / 7);
+      rv[letter] = letter + SmoMusic.accidentalFromCount(accidentalCount);
+    });
+    return rv;
   }
   static rawTranspose(pitch: Pitch, offset: number) {
     return SmoMusic.smoIntToPitch(SmoMusic.smoPitchToInt(pitch) + offset);
   }
+  /**
+   * Transpose a pitch from one key to another, keeping its relationship to the key.  Every pitch
+   * moves by the same number of steps around the circle of fifths as the key does, so a note that
+   * was in the key stays in the key, and a note that was N sharps/flats outside the key is still
+   * N sharps/flats outside the key (c# in C becomes d# in D).  The sounding pitch is always
+   * `offset` half steps from the original, even if the keys and offset don't agree.
+   * @param pitch
+   * @param originalKey key signature of the pitch
+   * @param destinationKey key signature to spell the pitch for
+   * @param offset half steps
+   */
   static transposePitchForKey(pitch: Pitch, originalKey: string, destinationKey: string, offset: number): Pitch {
-    const transposedPitch = SmoMusic.getEnharmonicInKey(SmoMusic.rawTranspose(pitch, offset), destinationKey);
-    const role = SmoMusic.findRoleOfPitch(pitch, originalKey);
-    if (role.length) {
-      return SmoMusic.findPitchForRole(role, destinationKey, transposedPitch);
+    let shift = SmoMusic.keyFifths(destinationKey) - SmoMusic.keyFifths(originalKey);
+    // 7 steps around the circle of fifths is 1 half step (mod 12)
+    let error = ((7 * offset - shift) % 12 + 12) % 12;
+    if (error > 6) {
+      error -= 12;
     }
-    return transposedPitch;
+    shift += error;
+    const value = SmoMusic.soundingValue(pitch) + offset;
+    const fifths = SmoMusic.pitchFifths(pitch) + shift;
+    if (fifths < SmoMusic.minFifths || fifths > SmoMusic.maxFifths) {
+      return SmoMusic.spellSoundingValue(value, destinationKey);
+    }
+    return SmoMusic.pitchForSounding(fifths, value);
   }
 
   /**
@@ -1199,7 +1044,10 @@ export class SmoMusic {
   }
 
   /**
-   * When transposing, get the enharmonic that most closely fits the key
+   * When transposing, get the enharmonic that most closely fits the key.  If the pitch is not in
+   * the key, this is the spelling that needs the fewest sharps/flats added to the key signature
+   * to include it (Bb rather than A# in C, since F major is 1 flat away and B major 5 sharps),
+   * and the flat spelling if the sharp and flat spellings are equally far.
    * `getEnharmonicInKey` returns an alternate to the given pitch, or the same pitch.
    * `getKeyFriendlyEnharmonic` return a pitch for a given key, given the letter name only
    * @param smoPitch
@@ -1207,48 +1055,10 @@ export class SmoMusic {
    * @returns
    */
   static getEnharmonicInKey(smoPitch: Pitch, keySignature: string): Pitch {
-    let match = false;
-    let rv = '';
     if (typeof (smoPitch.octave) === 'undefined') {
       smoPitch.octave = 1;
     }
-    const sharpKey = keySignature.indexOf('#') >= 0;
-    const flatKey = keySignature.indexOf('b') >= 0;
-    const ar = SmoMusic.getEnharmonics(SmoMusic.pitchToVexKey(smoPitch));
-    rv = SmoMusic.stripVexOctave(SmoMusic.pitchToVexKey(smoPitch));
-    const scaleMap: Record<string, string> = SmoMusic.getScaleTonesForKey(keySignature);
-    // new VF.Music().createScaleMap(keySignature);
-    ar.forEach((vexKey) => {
-      if (vexKey.length === 1) {
-        vexKey += 'n';
-      }
-      if (vexKey === scaleMap[vexKey[0]]) {
-        rv = vexKey;
-        match = true;
-      } else if (!match) {
-        // In the absence of a match of a key tone, we bias towards more
-        // 'common', like Bb is more common than A#, esp. as a chord.  This maybe
-        // just be my horn player bias towards flat keys
-        if (vexKey === 'a#' && !sharpKey) {
-          rv = 'bb';
-        } else if (vexKey === 'g#' && !sharpKey) {
-          rv = 'ab';
-        } else if (vexKey === 'c#' && !sharpKey) {
-          rv = 'db';
-        } else if (vexKey === 'd#' && !sharpKey) {
-          rv = 'eb';
-        } else if (vexKey === 'f#' && flatKey) {
-          rv = 'gb';
-        }
-      }
-    });
-    const smoRv: Pitch = SmoMusic.pitchKeyToPitch(SmoMusic.vexToSmoKey(rv));
-    smoRv.octave = smoPitch.octave;
-    const rvi = SmoMusic.smoPitchToInt(smoRv);
-    const ori = SmoMusic.smoPitchToInt(smoPitch);
-    // handle the case of c0 < b0, pitch-wise
-    smoRv.octave += Math.sign(ori - rvi);
-    return smoRv;
+    return SmoMusic.spellSoundingValue(SmoMusic.soundingValue(smoPitch), keySignature);
   }
   /**
    * fix the enharmonic to match the key, if possible
@@ -1470,7 +1280,7 @@ export class SmoMusic {
       'F#': 6,
       'Bb': 2,
       'Ab': 4,
-      'Gg': 6,
+      'Gb': 6,
       'G': 1,
       'F': 1,
       'Eb': 3,

@@ -55,6 +55,7 @@
     "test:page-divisions": "ts-node -P tests/tsconfig.json tests/pageDivisions.ts",
     "test:text-drag-placement":"ts-node -P tests/tsconfig.json tests/textDragPlacement.ts",
     "test:rehearsal-measure-number": "ts-node -P tests/tsconfig.json tests/rehearsalMarkMeasureNumber.ts",
+    "test:key-distance-transposition": "ts-node -P tests/tsconfig.json tests/keyDistanceTransposition.ts",
     "server": "node ./build/index.js",
     "build": "node ./build/build.js",
     "types": "node ./build/build.js types",
