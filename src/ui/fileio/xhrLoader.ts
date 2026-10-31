@@ -1,6 +1,8 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2021.
 
+import { SmoScoreArchive } from './scoreArchive';
+
 declare var JSZip: any;
 
 /**
@@ -68,5 +70,29 @@ export class SuiXhrLoader {
     req.open('GET', this.path);
     req.send();
     return promise;
+  }
+  /**
+   * Load a score file, either a compressed '.smz' archive or a '.json' file in the abbreviated or full
+   * form.  The kind of file is recognized from its contents, not the name.
+   * @returns promise resolved with the JSON text of the score, which `SmoScore.deserialize` reads
+   * @throws Error with a message that can be shown to the user
+   */
+  async loadScoreAsync(): Promise<string> {
+    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.addEventListener('load', () => {
+        if (req.status >= 400) {
+          reject(new Error(`The file could not be loaded (${req.status}).`));
+        } else {
+          resolve(req.response as ArrayBuffer);
+        }
+      });
+      req.addEventListener('error', () => reject(new Error('The file could not be loaded.')));
+      req.responseType = 'arraybuffer';
+      req.open('GET', this.path);
+      req.send();
+    });
+    this.value = await SmoScoreArchive.unpack(buffer);
+    return this.value;
   }
 }

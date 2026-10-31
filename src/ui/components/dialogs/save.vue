@@ -4,12 +4,12 @@ import dialogContainer from './dialogContainer.vue';
 
 interface Props {
   domId: string,
-  contents: Ref<string>,
+  contents: Ref<string | Uint8Array>,
   suggestedName: string,
   extension: Ref<string>,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>,
-  changeExtensionCb: (value: string) => void
+  changeExtensionCb: (value: string) => void | Promise<void>
 }
 const props = defineProps < Props > ();
 const { domId, commitCb, contents, cancelCb, extension, suggestedName } = { ...props };
@@ -20,7 +20,7 @@ const getId = (str: string) => {
 }
 const selectedExtension = ref(extension.value);
 const extensions = [
-  { text: 'Smoosic', value: '.json' },
+  { text: 'Smoosic (compressed)', value: '.smz' },
   { text: 'MusicXML', value: '.xml' },
   { text: 'midi', value: '.mid' },
   { text: 'vex', value: '.js' },
@@ -32,7 +32,14 @@ if (!filename.value.endsWith(extension.value)) {
 }
 const mimeType = 'application/octet-stream'
 const saveLink = useTemplateRef('saveLink');
+// The contents of some formats are computed asynchronously.  Remember the latest request so saving
+// never uses the contents of a format that was just replaced.
+let pendingContents: Promise<void> | void = undefined;
+const formatChanged = () => {
+  pendingContents = changeExtensionCb(selectedExtension.value);
+};
 const saveFileCb = async () => {
+  await pendingContents;
   if (!filename.value.endsWith(extension.value)) {
     filename.value = filename.value + extension.value;
   }
@@ -75,7 +82,7 @@ onMounted(() => {
         <label class="input-group-text" :for="getId('format-select')">File Format:</label>
         <div class="col-md-6">
           <select :id="getId('format-select')" v-model="selectedExtension"
-            @change="changeExtensionCb(selectedExtension)" class="form-control">
+            @change="formatChanged" class="form-control">
             <option v-for="option in extensions" :key="option.value" :value="option.value">
               {{ option.text }}
             </option>

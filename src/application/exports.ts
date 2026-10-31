@@ -68,6 +68,7 @@ import { SuiButtonComposite, SuiButtonComponent } from '../ui/dialogs/components
 import { SuiButtonArrayComponent, SuiButtonArrayMSComponent } from '../ui/dialogs/components/buttonArray';
 import { SuiToggleComponent, SuiToggleComposite } from '../ui/dialogs/components/toggle';
 import { SuiFileDownloadComponent } from '../ui/dialogs/components/fileDownload';
+import { SmoScoreArchive } from '../ui/fileio/scoreArchive';
 import { SuiRockerComponent, SuiRockerComposite } from '../ui/dialogs/components/rocker';
 import { SuiFontComponent } from '../ui/dialogs/components/fontComponent';
 import { SuiTreeComponent } from '../ui/dialogs/components/tree';
@@ -199,6 +200,7 @@ export * from '../smo/data/note';
 export * from '../smo/data/noteModifiers';
 export * from '../smo/data/partInfo';
 export * from '../smo/data/score';
+export * from '../ui/fileio/scoreArchive';
 export * from '../smo/data/scoreModifiers';
 export * from '../smo/data/scoreText';
 export * from '../smo/data/staffModifiers';
@@ -365,7 +367,7 @@ SuiPitchComposite,
   SuiAudioPlayer, SuiOscillator, SuiSampleMedia, SuiSampler, SuiReverb,
 
   // Smo Music Objects
-  SmoScore,  SmoScorePreferences, scoreModifierDynamicCtorInit,  engravingFontTypes, isEngravingFont,
+  SmoScore,  SmoScoreArchive,  SmoScorePreferences, scoreModifierDynamicCtorInit,  engravingFontTypes, isEngravingFont,
   XmlToSmo,  SmoToXml,  MidiToSmo,  SmoToMidi,  SmoMusic,  SmoAudioPitch,  SmoMeasure,  SmoNamespace, SmoDynamicCtor,
   SmoSystemStaff,  SmoNote, IsPitchLetter, ScoreRoadMapBuilder,
   // staff modifier

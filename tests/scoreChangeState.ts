@@ -80,6 +80,8 @@ check('S7 empty extension is not a full save', isFullSaveFormat('') === false);
 check('S7 unknown extension is not a full save', isFullSaveFormat('.pdf') === false);
 check('S7 .JSON matches case-insensitively', isFullSaveFormat('.JSON') === true);
 check('S7 non-string input is not a full save', isFullSaveFormat(undefined as any) === false);
+check('S8 .smz is a full save', isFullSaveFormat('.smz') === true);
+check('S8 .SMZ with spaces matches', isFullSaveFormat(' .SMZ ') === true);
 
 // --- S8-S11: formatScoreTitle ---
 check('S8 unchanged score shows its name', formatScoreTitle('My Song', false) === 'My Song');

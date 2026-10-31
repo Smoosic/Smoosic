@@ -31,6 +31,7 @@ import { SuiButtonComposite, SuiButtonComponent } from '../ui/dialogs/components
 import { SuiButtonArrayComponent, SuiButtonArrayMSComponent } from '../ui/dialogs/components/buttonArray';
 import { SuiToggleComponent, SuiToggleComposite } from '../ui/dialogs/components/toggle';
 import { SuiFileDownloadComponent } from '../ui/dialogs/components/fileDownload';
+import { SmoScoreArchive } from '../ui/fileio/scoreArchive';
 import { SuiRockerComponent, SuiRockerComposite } from '../ui/dialogs/components/rocker';
 import { SuiFontComponent } from '../ui/dialogs/components/fontComponent';
 import { SuiTreeComponent } from '../ui/dialogs/components/tree';
@@ -137,6 +138,7 @@ export * from '../smo/data/note';
 export * from '../smo/data/noteModifiers';
 export * from '../smo/data/partInfo';
 export * from '../smo/data/score';
+export * from '../ui/fileio/scoreArchive';
 export * from '../smo/data/scoreModifiers';
 export * from '../smo/data/scoreText';
 export * from '../smo/data/staffModifiers';
@@ -310,7 +312,7 @@ export declare const Smo: {
     SuiMicrotoneDialogVue: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => void;
     SuiNoteHeadDialog: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => void;
     SuiEndingsDialogVue: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => void;
-    SuiFileSaveDialog: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => Promise<void>;
+    SuiFileSaveDialog: (parameters: import("../ui/dialogs/dialog").SuiDialogParams, onClosed?: (outcome: import("../render/sui/scoreChangeState").SaveOutcome) => void) => Promise<void>;
     SuiPrintDialog: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => Promise<void>;
     SuiDialogBase: typeof SuiDialogBase;
     createAndDisplayDialog: typeof createAndDisplayDialog;
@@ -361,6 +363,7 @@ export declare const Smo: {
     SuiSampler: typeof SuiSampler;
     SuiReverb: typeof SuiReverb;
     SmoScore: typeof SmoScore;
+    SmoScoreArchive: typeof SmoScoreArchive;
     SmoScorePreferences: typeof SmoScorePreferences;
     scoreModifierDynamicCtorInit: () => void;
     engravingFontTypes: import("../smo/data/score").engravingFontType[];

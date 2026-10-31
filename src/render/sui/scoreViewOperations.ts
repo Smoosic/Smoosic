@@ -30,6 +30,7 @@ import { SuiOscillator } from '../audio/oscillator';
 import { XmlToSmo } from '../../smo/mxml/xmlToSmo';
 import { SuiAudioPlayer } from '../audio/player';
 import { SuiXhrLoader } from '../../ui/fileio/xhrLoader';
+import { SmoScoreArchive } from '../../ui/fileio/scoreArchive';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { StaffModifierBase, 
    SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
@@ -213,8 +214,7 @@ export class SuiScoreViewOperations extends SuiScoreView {
    */
   async loadRemoteJson(url: string) : Promise<any> {
     const req = new SuiXhrLoader(url);
-    await req.loadAsync();
-    const score = SmoScore.deserialize(req.value);
+    const score = await SmoScoreArchive.load(await req.loadScoreAsync());
     await this.changeScore(score);
   }
   /**

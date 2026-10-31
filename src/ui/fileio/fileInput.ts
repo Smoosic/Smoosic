@@ -9,15 +9,24 @@ export class SuiFileInput {
   binary: boolean = false;
   value: any;
   event: any;
-  constructor(evt: any) {
+  /**
+   * @param evt the change event of a file input
+   * @param scoresAsBytes if true, read '.json' as well as '.smz' as bytes, so a score file can be
+   * recognized by its contents rather than its name.  By default, only '.smz' (which is a zip, and
+   * can't be read as text) is read as bytes.
+   */
+  constructor(evt: any, scoresAsBytes: boolean = false) {
     this.compressed = false;
     this.binary = false;
     this.value = null;
     this.event = evt;
-    if (evt.target.files[0].name.endsWith('.mxl')) {
+    const name: string = evt.target.files[0].name.toLowerCase();
+    if (name.endsWith('.mxl')) {
       this.compressed = true;
       this.binary = true;
-    } else if (evt.target.files[0].name.endsWith('.mid')) {
+    } else if (name.endsWith('.mid')) {
+      this.binary = true;
+    } else if (name.endsWith('.smz') || (scoresAsBytes && name.endsWith('.json'))) {
       this.binary = true;
     }
   }

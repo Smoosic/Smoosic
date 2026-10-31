@@ -2,6 +2,7 @@
 // Copyright (c) Aaron David Newman 2021.
 import { SuiDialogBase, SuiDialogParams, DialogDefinition, InstallDialog } from './dialog';
 import { SmoScore } from '../../smo/data/score';
+import { SmoScoreArchive } from '../fileio/scoreArchive';
 import { XmlToSmo } from '../../smo/mxml/xmlToSmo';
 import { SmoToXml } from '../../smo/mxml/smoToXml';
 import { SuiScoreViewOperations } from '../../render/sui/scoreViewOperations';
@@ -35,7 +36,7 @@ export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
     if (evt.target.files.length > 0) {
       filename = evt.target.files[0].name;
     }
-    const localFile = new SuiFileInput(evt);
+    const localFile = new SuiFileInput(evt, true);
     await localFile.loadAsync();
     uploadedFile = localFile.value;
     enable.value = true;
@@ -67,29 +68,38 @@ export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
     }
     return null;
   }
-  const convertJson = (): SmoScore | null => {
-    if (uploadedFile && uploadedFile.length > 0) {
-      try {
-        return SmoScore.deserialize(uploadedFile);
-      } catch (e) {
-        console.warn('unable to score ' + e);
-      }
+  // A .smz archive, or a .json file in the abbreviated or the full (validation) form.  The kind is
+  // recognized from the contents.  If the file can't be read, remember why so the user can be told.
+  let loadError: string | null = null;
+  const convertScoreFile = async (): Promise<SmoScore | null> => {
+    try {
+      return await SmoScoreArchive.load(uploadedFile);
+    } catch (e: any) {
+      console.warn('unable to read score file: ' + e);
+      loadError = e?.message ?? 'The file could not be read.';
     }
     return null;
   }
   const commitCb = async () => {
     pendingScore = null;
-    if (filename.endsWith('.mid') || filename.endsWith('.midi')) {
+    loadError = null;
+    const lowerName = filename.toLowerCase();
+    if (lowerName.endsWith('.mid') || lowerName.endsWith('.midi')) {
       pendingScore = convertMidi();
     }
-    else if (filename.endsWith('.xml') || filename.endsWith('.mxml') || filename.endsWith('.mxl')) {
+    else if (lowerName.endsWith('.xml') || lowerName.endsWith('.mxml') || lowerName.endsWith('.mxl')) {
       pendingScore = convertXml();
     }
-    else if (filename.endsWith('.json')) {
-      pendingScore = convertJson();
+    else if (lowerName.endsWith('.json') || lowerName.endsWith('.smz')) {
+      pendingScore = await convertScoreFile();
     }
   }
   const afterCloseCb = async () => {
+    if (loadError !== null) {
+      // The open score is not touched.  Say why the file couldn't be opened.
+      await showLoadError(parameters, loadError);
+      return;
+    }
     if (pendingScore && await confirmReplaceScore(parameters)) {
       await parameters.view.changeScore(pendingScore);
     }
@@ -109,6 +119,25 @@ export const SuiFileUploadDialog = async (parameters: SuiDialogParams) => {
     commitCb,
     cancelCb,
     afterCloseCb
+  });
+}
+
+/**
+ * Tell the user a file could not be opened.  The open score is left as it is.
+ * @param parameters dialog parameters
+ * @param message why the file could not be read
+ */
+export const showLoadError = async (parameters: SuiDialogParams, message: string) => {
+  const okCb = async () => {}
+  const rootId = replaceVueRoot(modalContainerId);
+  const appParams = { domId: rootId, okCb, message, headline: 'Could not open file' };
+  await InstallDialog({
+    root: rootId,
+    app: messageDialog,
+    dialogParams: parameters,
+    appParams,
+    commitCb: okCb,
+    cancelCb: okCb
   });
 }
 
@@ -152,10 +181,9 @@ export const confirmReplaceScore = async (parameters: SuiDialogParams): Promise<
 export const SuiFileSaveDialog  = async (parameters: SuiDialogParams, onClosed?: (outcome: SaveOutcome) => void) => {
   const page = 0;
   const contents: Ref<any> = ref('');
-  const getSmoContent = () => {
-    const json = parameters.view.storeScore.serialize();
-    const jsonText = JSON.stringify(json);
-    return jsonText;
+  // The Smoosic format is a compressed archive of the complete score (.smz).
+  const getSmoContent = async (): Promise<Uint8Array> => {
+    return await SmoScoreArchive.pack(parameters.view.storeScore);
   }
   const getSmoValidationContent = () => {
     const json = parameters.view.storeScore.serialize({ useDictionary: false, skipStaves: false, preserveStaffIds: false });
@@ -176,12 +204,20 @@ export const SuiFileSaveDialog  = async (parameters: SuiDialogParams, onClosed?:
     const vexText = SmoToVex.convert(parameters.view.storeScore, { div: 'smoo', page });
     return vexText;
   };
-  contents.value = getSmoContent();
-  const extension: Ref<string> = ref('.json');
+  contents.value = await getSmoContent();
+  const extension: Ref<string> = ref('.smz');
   const suggestedName = parameters.view.score.scoreInfo.name;
-  const changeExtensionCb = (ext: string) => {
-    if (ext === '.json') {
-      contents.value = getSmoContent();
+  // Packing the archive is asynchronous.  If the user picks another format while it is running, the
+  // later choice wins, so ignore the result of an older request.
+  let latestRequest = 0;
+  const changeExtensionCb = async (ext: string) => {
+    const request = ++latestRequest;
+    if (ext === '.smz') {
+      const packed = await getSmoContent();
+      if (request !== latestRequest) {
+        return;
+      }
+      contents.value = packed;
     } else if (ext === '.xml') {
       contents.value = getMusicXmlContent();
     } else if (ext === '.mid' || ext === '.midi') {
@@ -193,7 +229,12 @@ export const SuiFileSaveDialog  = async (parameters: SuiDialogParams, onClosed?:
       extension.value = '.json';
       return;
     } else {
-      contents.value = getSmoContent();
+      const packed = await getSmoContent();
+      if (request !== latestRequest) {
+        return;
+      }
+      contents.value = packed;
+      ext = '.smz';
     }
     extension.value = ext;
   }

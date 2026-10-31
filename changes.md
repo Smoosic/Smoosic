@@ -1,6 +1,15 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 10-30-2026
+Compressed score files.
+
+* Scores now save as `.smz` (Smoosic zipped), a zip archive holding the complete score.  The file is much smaller than the `.json` we saved before.  The key-abbreviation dictionary is no longer used for new files, since compression does a better job.
+* Open accepts `.smz` as well as `.json`.  Older `.json` scores, in the abbreviated form or the full 'validation' form, open as before.  A file is recognized by its contents, so a renamed file still opens.
+* The 'Validation (large)' save option is unchanged: plain, complete, uncompressed `.json`.
+* If a file can't be opened, a message says why and the current score is left alone.
+* Scores saved as `.smz` can't be opened by older versions of Smoosic.  Use the validation format to share a plain text file.
+
 ## 10-27-2026
 Better enharmonic spelling when transposing.
 

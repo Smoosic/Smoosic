@@ -490,7 +490,7 @@ export class SmoScore {
    */
   serialize(options?: SmoScoreSerializeOptions): SmoScoreParamsSer {
     const skipStaves = options?.skipStaves ?? false;
-    const useDictionary = options?.skipStaves ?? true;
+    const useDictionary = options?.useDictionary ?? true;
     const preserveIds = options?.preserveStaffIds ?? false;
     let obj: Partial<SmoScoreParamsSer> = {
       layoutManager: { ctor: 'SmoLayoutManager', ...SmoLayoutManager.defaults },

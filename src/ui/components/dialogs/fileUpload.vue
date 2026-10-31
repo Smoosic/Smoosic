@@ -30,7 +30,7 @@ const getId = (str: string) => {
     :classes="'text-center container'">
     <div class="row" :id="getId('loadFile')" data-param="loadFile" :class="{ hide: quantizeCb}">
       <div class="col">
-        <input type="file" class="form-control" accept=".json,.mid,.midi,.xml,.mxl" @change="uploadCb"
+        <input type="file" class="form-control" accept=".smz,.json,.mid,.midi,.xml,.mxl" @change="uploadCb"
           :id="getId('loadFile-input')">
       </div>
     </div>
@@ -40,7 +40,7 @@ const getId = (str: string) => {
       </div>
       <div class="row" :id="getId('loadFile')" data-param="loadFile">
         <div class="col">
-          <input type="file" class="form-control" accept=".json,.mid,.midi,.xml,.mxl" @change="uploadCb"
+          <input type="file" class="form-control" accept=".smz,.json,.mid,.midi,.xml,.mxl" @change="uploadCb"
             :id="getId('loadFile-input')">
         </div>
       </div>

@@ -242,8 +242,19 @@ export class SuiApplication {
     }
     if (this.config.remoteScore) {
       const loader = new SuiXhrLoader(this.config.remoteScore);
-      const file = await loader.loadAsync();
-      this.score = this.tryParse(file as string);
+      const remote = this.config.remoteScore.toLowerCase();
+      let file: string = '';
+      if (remote.endsWith('xml') || remote.endsWith('mxl')) {
+        file = await loader.loadAsync() as string;
+      } else {
+        // a '.smz' archive or a '.json' score.  If it can't be read, tryParse falls back to a default score.
+        try {
+          file = await loader.loadScoreAsync();
+        } catch (e) {
+          console.warn('could not load remote score: ' + e);
+        }
+      }
+      this.score = this.tryParse(file);
       return this.score;
     } else if (this.config.initialScore) {
       if (typeof (this.config.initialScore) === 'string') {

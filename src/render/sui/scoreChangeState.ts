@@ -25,12 +25,17 @@ export type UnsavedChoice = 'save' | 'discard' | 'cancel';
 export type AfterSaveStep = 'load' | 'prompt' | 'abort';
 
 /**
- * Whether a file extension holds the whole score.  Only a save in the full Smoosic
+ * Whether a file extension holds the whole score.  Only a save in a full Smoosic
  * format can clear the unsaved-changes indicator, since the other formats lose information.
- * @param extension e.g. '.json'
+ * The full formats are the compressed '.smz' and the plain '.json' (validation) form.
+ * @param extension e.g. '.smz'
  */
 export function isFullSaveFormat(extension: string): boolean {
-  return typeof (extension) === 'string' && extension.trim().toLowerCase() === '.json';
+  if (typeof (extension) !== 'string') {
+    return false;
+  }
+  const ext = extension.trim().toLowerCase();
+  return ext === '.smz' || ext === '.json';
 }
 
 /**
