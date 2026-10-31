@@ -317,6 +317,10 @@ export class SmoSelection {
     const staff = score.staves[staffIndex];
     const measure = staff.measures[measureIndex];
     const note = measure.voices[voiceIndex].notes[tickIndex];
+    const isOk = note?.pitches && note.pitches.length;
+    if (!isOk) {
+      throw 'SmoSelecton:pitchSelection, invalid note in backing score';
+    }
     pitches = typeof (pitches) !== 'undefined' ? pitches : [];
     const pa: number[] = [];
     pitches.forEach((ix) => {
