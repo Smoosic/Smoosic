@@ -31,6 +31,7 @@ import { XmlToSmo } from '../../smo/mxml/xmlToSmo';
 import { SuiAudioPlayer } from '../audio/player';
 import { SuiXhrLoader } from '../../ui/fileio/xhrLoader';
 import { SmoScoreArchive } from '../../ui/fileio/scoreArchive';
+import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { StaffModifierBase, 
    SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
@@ -1517,29 +1518,43 @@ export class SuiScoreViewOperations extends SuiScoreView {
     await this.renderer.updatePromise();
   }
   /**
-   * Paste only the chords.
+   * @returns true if notes have been copied, so there is something to paste
    */
-  async pasteChords(): Promise<void> {
-        // We undo the whole score on a paste, since we don't yet know the
-    // extent of the overlap
+  hasCopiedNotes(): boolean {
+    return this.storePaste.hasNotes();
+  }
+  /**
+   * Paste only some kinds of marking (dynamics, lyrics, annotations, chords, articulations, ornaments)
+   * from the copied notes onto the notes at the current selection.  The notes themselves are not changed.
+   * @param options the kinds to paste, and whether they replace or are added to the destination's markings
+   */
+  async pasteAttributes(options: PasteAttributeOptions): Promise<void> {
+    if (!this.storePaste.hasNotes() || this.tracker.selections.length < 1) {
+      return;
+    }
+    const firstSelection = this.tracker.selections[0];
+    const altSelection = this._getEquivalentSelection(firstSelection);
+    if (altSelection === null) {
+      return;
+    }
+    const altTarget = JSON.parse(JSON.stringify(altSelection.selector));
+    altTarget.tick = firstSelection.selector.tick;
+    // Find out which measures the paste will change before changing them.  The copied duration isn't
+    // enough, since a copied note can go to a destination note that starts later.
+    const extent = this.storePaste.getAttributePasteExtent(altTarget);
+    if (extent === null) {
+      return;
+    }
     this.renderer.preserveScroll();
-    const selections: SmoSelection[]  = this.getPasteMeasureList();
-    const firstSelection = selections[0];
-    const measureEnd = selections[selections.length - 1].selector.measure;
-    const measureRange = [firstSelection.selector.measure, measureEnd];
+    // Group the undo of all the affected measures into one step.
     this.storeUndo.grouping = true;
-    // Undo the paste by selecting all the affected measures
-    for (let i = measureRange[0]; i <= measureRange[1]; ++i) {
+    for (let i = extent.firstMeasure; i <= extent.lastMeasure; ++i) {
       this._undoColumn('paste', i);
       this.renderer.unrenderColumn(this.score.staves[0].measures[i]);
     }
     this.storeUndo.grouping = false;
-    const altSelection = this._getEquivalentSelection(firstSelection);
-    const altTarget = altSelection!.selector;
-    altTarget.tick = this.tracker.selections[0].selector.tick;
-    this.storePaste.pasteChords(altTarget);
-    // Refresh those measures.
-    this.replaceMeasureView(measureRange);
+    this.storePaste.pasteAttributes(altTarget, options);
+    this.replaceMeasureView([extent.firstMeasure, extent.lastMeasure]);
     await this.renderer.updatePromise();
   }
   /**

@@ -13,6 +13,7 @@ import { UndoBuffer } from '../../smo/xform/undo';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
 import { BatchSelectionOperation } from '../../smo/xform/operations';
 import { FontInfo } from '../../common/vex';
+import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { StaffModifierBase, SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
 /**
@@ -323,14 +324,61 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      */
     copy(): Promise<void>;
     /**
+     * The voices that Select Voice can offer for the current selection: empty unless some selected
+     * measure has more than one voice.
+     */
+    getSelectVoiceChoices(): number[];
+    /**
+     * Select all the notes of a voice in the measures that currently have a selection.  Only the
+     * selection changes: no edit is made and no undo is recorded.
+     * @param voice the voice to select (0-3)
+     */
+    selectVoice(voice: number): Promise<void>;
+    /**
+     * The most voices any of the selected measures has, for the Copy Voices menu
+     */
+    getSelectionVoiceCount(): number;
+    /**
+     * Where a voice paste would go, in the full score: the selected staff and measure, and the
+     * measures from there that the copied voices cover (adding up measure lengths until the copy fits,
+     * but not past the last measure).  Null if nothing is selected or no voices are copied.
+     */
+    private _getVoicePasteRange;
+    /**
+     * The number of voices at the paste destination, for the Paste Voice menu: the most voices in
+     * any measure the paste would cover, on the staves it would cover.  A voice number at or above
+     * this count is empty everywhere in the destination.
+     */
+    getDestinationVoiceCount(): number;
+    /**
+     * Copy a voice, or all the voices, of the selected measures.  The copy always covers whole
+     * measures, from the start of the first selected measure to the end of the last.
+     * @param voice the voice to copy (0-3), or 'all'
+     */
+    copyVoices(voice: number | 'all'): Promise<void>;
+    /**
+     * Paste the voices copied with copyVoices, starting at the beginning of the first selected
+     * measure.  A voice that doesn't exist in a measure is created there first.
+     * @param voice the voice to paste into (0-3) for a single copied voice; 'new' to paste a single
+     * copied voice into a new voice after the existing ones; or 'all' to paste every copied voice
+     * into the voice with the same number
+     */
+    pasteVoices(voice: number | 'all' | 'new'): Promise<void>;
+    /**
      * clipboard paste action
      * @returns
      */
     paste(): Promise<void>;
     /**
-     * Paste only the chords.
+     * @returns true if notes have been copied, so there is something to paste
      */
-    pasteChords(): Promise<void>;
+    hasCopiedNotes(): boolean;
+    /**
+     * Paste only some kinds of marking (dynamics, lyrics, annotations, chords, articulations, ornaments)
+     * from the copied notes onto the notes at the current selection.  The notes themselves are not changed.
+     * @param options the kinds to paste, and whether they replace or are added to the destination's markings
+     */
+    pasteAttributes(options: PasteAttributeOptions): Promise<void>;
     /**
      * specify a note head other than the default for the duration
      * @param head
@@ -443,6 +491,16 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
     tie(): Promise<void>;
     updateZoom(zoomFactor: number): Promise<void>;
     /**
+     * Keep text groups in the same visual position when a layout changes: rescale by the
+     * svg scale ratio, and by the page width/height ratios.  Groups are de-duplicated by
+     * identity, since a part's staves (and the view and store copies, after a part update)
+     * can share the same text group objects, and scaling one twice would double-apply it.
+     * @param textGroups groups to adjust
+     * @param previousLayout layout before the change
+     * @param layout layout after the change
+     */
+    static repositionTextGroups(textGroups: SmoTextGroup[], previousLayout: SmoGlobalLayout, layout: SmoGlobalLayout): void;
+    /**
      * set global page for score, zoom etc.
      * @param layout global SVG settings
      * @param previousLayout the layout as it was immediately before this change.  Callers must
@@ -529,6 +587,14 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * Save the score to local storage.
      */
     quickSave(): void;
+    /**
+     * Called when the user has saved the score to a file.  Only a save in the full Smoosic
+     * format counts: other formats (MusicXML, MIDI...) lose information, so the score still
+     * has unsaved changes.  The save dialog doesn't know which formats are lossy; we do.
+     * @param extension the extension of the file that was saved, e.g. '.json'
+     * @returns true if the score is now considered saved
+     */
+    recordSave(extension: string): boolean;
     updateRepeatCount(count: number): Promise<any>;
     /**
      * Update the measure formatting parameters for the current selection

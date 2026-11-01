@@ -1,6 +1,15 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 10-31-2026
+Paste Special.
+
+* The Edit menu has a new **Paste Special...** command, which replaces **Paste Chords**.  After a Copy, it opens a dialog where you choose which of the things attached to the copied notes to paste: dynamics, lyrics, annotations, chords, articulations and ornaments.  Only the kinds you choose are pasted.  Pitches, rhythms and everything else on the destination notes are left alone, so you can move these markings to another part, or another place in the same part.
+* The dialog can either replace the markings the destination notes already have for the chosen kinds, or add to them.  In both cases a dynamic, or a lyric of the same verse, is never doubled.
+* The copied and destination notes are lined up by elapsed time, the same way Paste Chords did.  With the same rhythm, that is note for note.  Chords are spelled for the destination if it is a transposing instrument; the other kinds are pasted as they are.
+* For people using Smoosic as a library: `PasteBuffer.pasteChords` and the view's `pasteChords` are gone.  Use `pasteAttributes({ kinds: ['chords'], mode: 'replace' })`.  Unlike Paste Chords, replace mode also clears a destination note's chords when the copied note has none.
+* `SmoNote.removeAllAnnotations` used to remove every lyric and chord as well as the annotations.  It now removes only annotations.
+
 ## 10-30-2026
 Compressed score files.
 

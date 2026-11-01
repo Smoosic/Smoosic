@@ -163,6 +163,7 @@ export * from '../ui/common';
 export * from '../ui/configuration';
 export * from '../ui/dialogs/adapter';
 export * from '../ui/dialogs/addMeasure';
+export * from '../ui/dialogs/pasteSpecial';
 export * from '../ui/dialogs/articulation';
 export * from '../ui/dialogs/audioSettings';
 export * from '../ui/dialogs/clefChange';
@@ -298,6 +299,7 @@ export declare const Smo: {
     SuiPageLayoutDialogVue: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => void;
     SuiMeasureFormatDialogVue: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => Promise<void>;
     SuiInsertMeasuresVue: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => Promise<void>;
+    SuiPasteSpecialDialog: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => Promise<void>;
     SuiTimeSignatureDialogVue: (parameters: import("../ui/dialogs/dialog").SuiDialogParams) => void;
     SuiSlurAttributesDialog: typeof SuiSlurAttributesDialog;
     SuiPedalMarkingDialog: typeof SuiPedalMarkingDialog;

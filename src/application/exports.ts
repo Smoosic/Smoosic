@@ -34,6 +34,7 @@ import { SuiModifierDialogFactory } from '../ui/dialogs/factory';
 import { SuiTransposeScoreDialogVue} from '../ui/dialogs/transposeScore';
 import { SuiMeasureFormatDialogVue } from '../ui/dialogs/measureFormat';
 import { SuiInsertMeasuresVue } from '../ui/dialogs/addMeasure';
+import { SuiPasteSpecialDialog } from '../ui/dialogs/pasteSpecial';
 import { SuiInstrumentDialogVue } from '../ui/dialogs/instrument';
 import { SuiTimeSignatureDialogVue } from '../ui/dialogs/timeSignature';
 import { SuiTempoDialog } from '../ui/dialogs/tempo';
@@ -225,6 +226,7 @@ export * from '../ui/common';
 export * from '../ui/configuration';
 export * from '../ui/dialogs/adapter';
 export * from '../ui/dialogs/addMeasure';
+export * from '../ui/dialogs/pasteSpecial';
 export * from '../ui/dialogs/articulation';
 export * from '../ui/dialogs/audioSettings';
 export * from '../ui/dialogs/clefChange';
@@ -332,7 +334,7 @@ export const Smo = {
   SuiScoreViewDialogVue, SuiGlobalLayoutDialogVue, SuiScoreIdentificationDialogVue, 
   GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
-  SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue,
+  SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue, SuiPasteSpecialDialog,
   SuiTimeSignatureDialogVue, 
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
   SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,

@@ -4,7 +4,7 @@ import { SmoSelection, SmoSelector } from './selections';
 import { SmoNote } from '../data/note';
 import { SmoMeasure, SmoVoice } from '../data/measure';
 import { StaffModifierBase } from '../data/staffModifiers';
-import { SmoLyric } from '../data/noteModifiers';
+import { SmoLyric, SmoNoteModifierBase, SmoDynamicText, SmoArticulation, SmoOrnament } from '../data/noteModifiers';
 import {SmoTuplet, SmoTupletTree, SmoTupletTreeParams} from '../data/tuplet';
 import { SmoMusic } from '../data/music';
 import { SvgHelpers } from '../../render/sui/svgHelpers';
@@ -25,6 +25,104 @@ export interface PasteNote {
   originalKey: string,
   tupletStart: SmoTupletTree | null
 }
+
+/**
+ * The kinds of marking attached to notes that Paste Special can paste on their own
+ * @category SmoTransform
+ */
+export type PasteAttributeKind = 'dynamics' | 'lyrics' | 'annotations' | 'chords' | 'articulations' | 'ornaments';
+/**
+ * Replace: the destination note loses its markings of the chosen kinds first.  Add: it keeps them.
+ * @category SmoTransform
+ */
+export type PasteAttributeMode = 'replace' | 'add';
+/**
+ * What to paste with {@link PasteBuffer.pasteAttributes}
+ * @category SmoTransform
+ */
+export interface PasteAttributeOptions {
+  kinds: PasteAttributeKind[],
+  mode: PasteAttributeMode
+}
+/**
+ * A copied note and the destination note its markings go to
+ * @category SmoTransform
+ */
+export interface PasteAttributePair {
+  copied: PasteNote,
+  destination: SmoSelection
+}
+/**
+ * How one kind of marking is cleared from a note and pasted onto it
+ */
+interface PasteAttributeHandler {
+  clear: (note: SmoNote) => void,
+  paste: (copied: PasteNote, destination: SmoSelection, onto: SmoNote) => void
+}
+/** An independent copy of a note modifier: a new object with a new id and no shared state */
+const cloneModifier = <T extends SmoNoteModifierBase>(item: T): T =>
+  SmoNoteModifierBase.deserialize(item.serialize() as any) as T;
+const removeLyricsOfParser = (note: SmoNote, parser: number) => {
+  note.textModifiers = note.textModifiers.filter((mod) =>
+    !(mod.attrs.type === 'SmoLyric' && (mod as SmoLyric).parser === parser));
+}
+/** How each kind of marking is cleared and pasted.  Adding replaces a marking with the same key (same verse, same articulation...) */
+const pasteAttributeHandlers: Record<PasteAttributeKind, PasteAttributeHandler> = {
+  dynamics: {
+    clear: (note) => {
+      note.textModifiers = note.textModifiers.filter((mod) => mod.attrs.type !== 'SmoDynamicText');
+    },
+    paste: (copied, destination, onto) => {
+      copied.note.getModifiers('SmoDynamicText').forEach((dynamic) => {
+        onto.addDynamic(cloneModifier(dynamic as SmoDynamicText));
+      });
+    }
+  },
+  lyrics: {
+    clear: (note) => removeLyricsOfParser(note, SmoLyric.parsers.lyric),
+    paste: (copied, destination, onto) => {
+      copied.note.getTrueLyrics().forEach((lyric) => {
+        onto.addLyric(cloneModifier(lyric));
+      });
+    }
+  },
+  annotations: {
+    clear: (note) => removeLyricsOfParser(note, SmoLyric.parsers.annotation),
+    paste: (copied, destination, onto) => {
+      copied.note.getAnnotations().forEach((annotation) => {
+        onto.addAnnotation(cloneModifier(annotation));
+      });
+    }
+  },
+  chords: {
+    clear: (note) => removeLyricsOfParser(note, SmoLyric.parsers.chord),
+    paste: (copied, destination, onto) => {
+      // The copy is in concert pitch.  Spell the chords for the key of the destination.
+      copied.note.getChords().forEach((chord) => {
+        onto.addLyric(SmoLyric.transposeChordToKey(
+          chord, destination.measure.transposeIndex, copied.originalKey, destination.measure.keySignature));
+      });
+    }
+  },
+  articulations: {
+    clear: (note) => note.clearArticulations(),
+    paste: (copied, destination, onto) => {
+      copied.note.getArticulations().forEach((articulation) => {
+        onto.setArticulation(cloneModifier(articulation as SmoArticulation), true);
+      });
+    }
+  },
+  ornaments: {
+    clear: (note) => {
+      note.ornaments = [];
+    },
+    paste: (copied, destination, onto) => {
+      copied.note.getOrnaments().forEach((ornament) => {
+        onto.setOrnament(cloneModifier(ornament as SmoOrnament), true);
+      });
+    }
+  }
+};
 
 /**
  * Used when pasting staff modifiers like slurs to calculate the
@@ -81,6 +179,9 @@ export class PasteBuffer {
   staffSelectors: SmoSelector[] = [];
   /** voices copied by setVoiceSelections, or null.  Separate from the notes copied by setSelections */
   voiceCopy: VoiceCopy | null = null;
+  /** The kinds of marking Paste Special offers, in the order the dialog shows them */
+  static readonly attributeKinds: PasteAttributeKind[] =
+    ['dynamics', 'lyrics', 'annotations', 'chords', 'articulations', 'ornaments'];
   constructor() {
     this.notes = {};
     this.noteIndex = 0;
@@ -93,6 +194,12 @@ export class PasteBuffer {
 
   setScore(score: SmoScore) {
     this.score = score;
+  }
+  /**
+   * @returns true if notes have been copied with {@link setSelections}
+   */
+  hasNotes(): boolean {
+    return Object.keys(this.notes).some((staff) => this.notes[parseInt(staff, 10)].length > 0);
   }
   getCopyBufferTickCount() {
     let maxRv = 0;
@@ -862,48 +969,6 @@ export class PasteBuffer {
     }
     serializedMeasure.voices = voices;
   }
-  pasteChordNotes(selector: SmoSelector, notes: PasteNote[]): PasteNote[] {
-    if (notes.length < 1) {
-      return [];
-    }
-    if (!this.score) {
-      return [];
-    }
-    let srcTick = 0;
-    let destTick = 0;
-    let srcIndex = 0;
-    let selection = SmoSelection.noteSelection(this.score!, selector.staff, selector.measure, selector.voice, selector.tick);   
-    while (selection && selection.note && srcIndex < notes.length) {
-      const srcNote = notes[srcIndex].note;
-      const chords = srcNote.getChords();
-      if (selection && selection.note) {
-        const destNote = selection.note;
-        if (chords.length) {
-          chords.forEach((chord) => {
-            destNote.removeLyric(chord);
-          });
-          chords.forEach((chord) => {
-            if (selection) {
-            const nchord = SmoLyric.transposeChordToKey(
-              chord, selection.measure.transposeIndex,notes[srcIndex].originalKey, selection.measure.keySignature);
-              destNote.addLyric(nchord);
-            }
-          });
-        }
-        srcTick += srcNote.tickCount;
-        while (selection && selection.note && destTick < srcTick) {
-          destTick += selection.note.tickCount;
-          if (selection && selection.note) {
-            const curSelector = selection.selector;
-            selection = SmoSelection.nextNoteSelection(this.score, 
-              curSelector.staff, curSelector.measure, curSelector.voice, curSelector.tick);
-          }
-        }
-        srcIndex += 1;
-      }
-    }
-    return notes;
-  }
   pasteIntoScore(score: SmoScore, selector: SmoSelector, func:(selector: SmoSelector, notes: PasteNote[]) => PasteNote[]) {
     let lowest: SmoSelector = SmoSelector.default;
     const enforceRect = true;
@@ -946,14 +1011,108 @@ export class PasteBuffer {
       this.notes[j] = func(lowest, notes);
     }
   }
-  pasteChords(selector: SmoSelector) {
+  /**
+   * Decide which destination note each copied note's markings go to, without changing anything.
+   * The two parts are lined up by elapsed time, the way the former Paste Chords command did: a copied note starts
+   * when the copied notes before it have finished, and goes to the first destination note, counting from
+   * `selector`, that starts at or after that time.  If the parts have the same rhythm, that is one note to
+   * one note.  If not, a long destination note can get the markings of several copied notes, and destination
+   * notes in between get none.  Elapsed time is a total of note durations (`tickCount`); `selector.tick`
+   * is the position of a note within its voice, and is never added to a duration.
+   * @param selector where the first copied note goes
+   * @param notes the copied notes of one staff, in order
+   * @returns the pairs in copied-note order; there is none for a copied note after the destination part ends
+   */
+  alignAttributeNotes(selector: SmoSelector, notes: PasteNote[]): PasteAttributePair[] {
+    const pairs: PasteAttributePair[] = [];
+    if (!this.score || notes.length < 1) {
+      return pairs;
+    }
+    let copiedElapsed = 0;
+    let destinationElapsed = 0;
+    let selection = SmoSelection.noteSelection(this.score, selector.staff, selector.measure, selector.voice, selector.tick);
+    for (let i = 0; i < notes.length && selection && selection.note; ++i) {
+      pairs.push({ copied: notes[i], destination: selection });
+      copiedElapsed += notes[i].note.tickCount;
+      while (selection && selection.note && destinationElapsed < copiedElapsed) {
+        destinationElapsed += selection.note.tickCount;
+        const current: SmoSelector = selection.selector;
+        selection = SmoSelection.nextNoteSelection(this.score, current.staff, current.measure, current.voice, current.tick);
+      }
+    }
+    return pairs;
+  }
+  /**
+   * The measures that {@link pasteAttributes} would change at `selector`, found without changing anything.
+   * The copied duration is not enough to know this, since a copied note can go to a destination note that
+   * starts later (see {@link alignAttributeNotes}).
+   * @param selector where the first copied note goes
+   * @returns the first and last measure, or null if nothing would be pasted
+   */
+  getAttributePasteExtent(selector: SmoSelector): { firstMeasure: number, lastMeasure: number } | null {
+    if (!this.score) {
+      return null;
+    }
+    let firstMeasure = Number.MAX_SAFE_INTEGER;
+    let lastMeasure = -1;
+    const func = (staffSelector: SmoSelector, notes: PasteNote[]) => {
+      this.alignAttributeNotes(staffSelector, notes).forEach((pair) => {
+        firstMeasure = Math.min(firstMeasure, pair.destination.selector.measure);
+        lastMeasure = Math.max(lastMeasure, pair.destination.selector.measure);
+      });
+      return notes;
+    }
+    this.pasteIntoScore(this.score, selector, func);
+    return lastMeasure < 0 ? null : { firstMeasure, lastMeasure };
+  }
+  /**
+   * Paste only the chosen kinds of marking (dynamics, lyrics, annotations, chords, articulations, ornaments)
+   * onto the destination notes.  Pitches, durations and the kinds not chosen are not changed.  Chords are
+   * spelled for the destination's key; the other kinds are copied as they are.  See {@link alignAttributeNotes}
+   * for which destination note each copied note goes to.
+   * @param selector where the first copied note goes
+   * @param options which kinds to paste, and whether they replace the destination's markings of those kinds
+   */
+  pasteAttributes(selector: SmoSelector, options: PasteAttributeOptions) {
     if (!this.score) {
       return;
     }
-    const func = (selector: SmoSelector, notes: PasteNote[]) => {
-      return this.pasteChordNotes(selector, notes);
+    const kinds = PasteBuffer.attributeKinds.filter((kind) => options.kinds.indexOf(kind) >= 0);
+    if (kinds.length < 1) {
+      return;
+    }
+    const func = (staffSelector: SmoSelector, notes: PasteNote[]) => {
+      this._pasteAttributeNotes(staffSelector, notes, kinds, options.mode);
+      return notes;
     }
     this.pasteIntoScore(this.score, selector, func);
+  }
+  _pasteAttributeNotes(selector: SmoSelector, notes: PasteNote[], kinds: PasteAttributeKind[], mode: PasteAttributeMode) {
+    // A destination note can be aligned to several copied notes.  Collect them first, in order, so
+    // that replace clears the note once and then adds everything.
+    const groups: Map<string, { destination: SmoSelection, copied: PasteNote[] }> = new Map();
+    this.alignAttributeNotes(selector, notes).forEach((pair) => {
+      const at = pair.destination.selector;
+      const key = `${at.staff}-${at.measure}-${at.voice}-${at.tick}`;
+      const group = groups.get(key);
+      if (group) {
+        group.copied.push(pair.copied);
+      } else {
+        groups.set(key, { destination: pair.destination, copied: [pair.copied] });
+      }
+    });
+    groups.forEach((group) => {
+      const onto = group.destination.note;
+      if (!onto) {
+        return;
+      }
+      if (mode === 'replace') {
+        kinds.forEach((kind) => pasteAttributeHandlers[kind].clear(onto));
+      }
+      group.copied.forEach((copied) => {
+        kinds.forEach((kind) => pasteAttributeHandlers[kind].paste(copied, group.destination, onto));
+      });
+    });
   }
   pasteSelections(selector: SmoSelector) {
     if (!this.score) {

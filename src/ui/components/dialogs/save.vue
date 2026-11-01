@@ -36,7 +36,7 @@ const saveLink = useTemplateRef('saveLink');
 // never uses the contents of a format that was just replaced.
 let pendingContents: Promise<void> | void = undefined;
 const formatChanged = () => {
-  pendingContents = changeExtensionCb(selectedExtension.value);
+  pendingContents = props.changeExtensionCb(selectedExtension.value);
 };
 const saveFileCb = async () => {
   await pendingContents;

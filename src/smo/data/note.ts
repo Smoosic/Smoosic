@@ -585,7 +585,7 @@ export class SmoNote implements Transposable {
   }
   removeAllAnnotations() {
     const tms = this.textModifiers.filter((mod: SmoNoteModifierBase) =>
-      mod.attrs.type !== 'SmoLyric' && (mod as SmoLyric).parser !== SmoLyric.parsers.annotation
+      mod.attrs.type !== 'SmoLyric' || (mod as SmoLyric).parser !== SmoLyric.parsers.annotation
     );
     this.textModifiers = tms;
   }

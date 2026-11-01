@@ -1,5 +1,6 @@
 import { SuiMenuBase, SuiMenuParams, SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { PasteBuffer } from '../../smo/xform/copypaste';
+import { SuiPasteSpecialDialog } from '../dialogs/pasteSpecial';
 
 declare var $: any;
 /**
@@ -42,17 +43,27 @@ const pasteMenuOption: SuiConfiguredMenuOption = {
 }
 
 /**
- * Copy Ctrl^C action
+ * Paste only some of the things attached to the copied notes (dynamics, lyrics, annotations, chords,
+ * articulations, ornaments) onto the notes at the selection.  Only offered when something has been copied.
  * @category SuiMenu
  */
-const pasteChordsMenuOption: SuiConfiguredMenuOption = {
+const pasteSpecialMenuOption: SuiConfiguredMenuOption = {
   handler: async (menu: SuiMenuBase) => {
-    await menu.view.pasteChords();
-  }, display: (menu: SuiMenuBase) => true,
+    SuiPasteSpecialDialog({
+      view: menu.view,
+      completeNotifier: menu.completeNotifier,
+      startPromise: menu.closePromise,
+      eventSource: menu.eventSource,
+      tracker: menu.tracker,
+      ctor: 'SuiPasteSpecialDialog',
+      id: 'pasteSpecial',
+      modifier: null
+    });
+  }, display: (menu: SuiMenuBase) => menu.view.hasCopiedNotes(),
   menuChoice: {
     icon: '',
-    text: 'Paste Chords',
-    value: 'pasteChordsAction'
+    text: 'Paste Special...',
+    value: 'pasteSpecialAction'
   }
 }
 
@@ -174,5 +185,5 @@ const undoMenuOption: SuiConfiguredMenuOption = {
  * @category SuiMenu
  */
 const SuiEditMenuOptions: SuiConfiguredMenuOption[] = [
-  copyMenuOption, pasteMenuOption, pasteChordsMenuOption, copyVoicesMenuOption, pasteVoiceMenuOption, selectVoiceMenuOption, undoMenuOption
+  copyMenuOption, pasteMenuOption, pasteSpecialMenuOption, copyVoicesMenuOption, pasteVoiceMenuOption, selectVoiceMenuOption, undoMenuOption
 ];
