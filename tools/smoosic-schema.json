@@ -1669,6 +1669,18 @@
           "defaultTripleDuration": {
             "type": "integer",
             "default": 6144
+          },
+          "autosaveInterval": {
+            "type": "integer",
+            "default": 10,
+            "minimum": 5,
+            "maximum": 60
+          },
+          "autosaveCount": {
+            "type": "integer",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 20
           }
         }
       },

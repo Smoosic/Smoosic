@@ -16,6 +16,7 @@ import { SuiAudioAnimationParams } from '../audio/musicCursor';
 import { Ref } from 'vue';
 import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { layoutDebug } from './layoutDebug';
+import { AutosaveStore, AutosaveScheduler } from './autosave';
 /**
  * Indicates a stave is/is not displayed in the score
  * @category SuiRender
@@ -44,11 +45,33 @@ export declare abstract class SuiScoreView implements layoutProvider {
     scroller: SuiScroller;
     storePaste: PasteBuffer;
     selectedPart: Ref<string>;
+    /**
+     * true if the score has been edited since it was last saved in the full Smoosic
+     * format or loaded.  Displayed in the sidebar; session state only, not serialized.
+     */
+    scoreChanged: Ref<boolean>;
+    /** the name of the open score, for display */
+    scoreName: Ref<string>;
+    /** the rolling set of autosaved snapshots, or null if browser storage can't be used */
+    autosaveStore: AutosaveStore | null;
+    /** decides when a snapshot is taken: one interval after the first change since the last one */
+    autosaveScheduler: AutosaveScheduler;
     config: SmoRenderConfiguration;
     audioAnimation: SuiAudioAnimationParams;
     debug: layoutDebug;
     navigation: SuiNavigation;
     constructor(config: SmoRenderConfiguration, score: SmoScore, undoBuffer: UndoBuffer);
+    /** Note that the score has been edited since it was last saved or loaded */
+    markScoreChanged(): void;
+    /**
+     * Add a snapshot of the whole score to the autosave set.  Called by the scheduler.  It never
+     * reports a failure and never changes the saved/unsaved state of the score, or Quick Save.
+     */
+    takeAutosave(): Promise<void>;
+    /** Note that the score has been saved in full, or that a new score was loaded */
+    markScoreSaved(): void;
+    /** Update the displayed score name from the score's information */
+    refreshScoreName(): void;
     getLayout(): SmoGlobalLayout | undefined;
     isLayoutHorizontal(): boolean;
     getFlowDimensionExtent(box: SvgBox): number;

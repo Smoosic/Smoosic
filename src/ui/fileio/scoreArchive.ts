@@ -51,6 +51,38 @@ export class SmoScoreArchive {
     return await zip.generateAsync({ type: 'uint8array' });
   }
 
+  /**
+   * Text form of archive bytes, for storage that holds only text
+   * @param bytes archive contents
+   */
+  static toBase64(bytes: Uint8Array): string {
+    let binary = '';
+    const chunk = 0x8000;
+    for (let ii = 0; ii < bytes.length; ii += chunk) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(ii, ii + chunk)));
+    }
+    return btoa(binary);
+  }
+
+  /**
+   * The inverse of toBase64
+   * @param text text made by toBase64
+   * @throws Error with a message that can be shown to the user
+   */
+  static fromBase64(text: string): Uint8Array {
+    let binary = '';
+    try {
+      binary = atob(text);
+    } catch (e) {
+      throw new Error('The stored score is damaged and could not be read.');
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let ii = 0; ii < binary.length; ii++) {
+      bytes[ii] = binary.charCodeAt(ii);
+    }
+    return bytes;
+  }
+
   private static stripBom(text: string): string {
     return text.length > 0 && text.charCodeAt(0) === 0xfeff ? text.substring(1) : text;
   }

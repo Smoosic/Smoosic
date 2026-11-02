@@ -323,6 +323,9 @@ export class SmoSelection {
     }
     pitches = typeof (pitches) !== 'undefined' ? pitches : [];
     const pa: number[] = [];
+    if (note.pitches.length < pitches.length) {
+      throw 'SmoSelecton:pitchSelection, invalid note in backing score 2';
+    }
     pitches.forEach((ix) => {
       pa.push(JSON.parse(JSON.stringify(note.pitches[ix])));
     });

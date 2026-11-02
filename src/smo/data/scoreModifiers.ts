@@ -144,6 +144,44 @@ export interface SmoScorePreferencesParams {
   transposingScore: boolean;
   showPartNames: boolean;
   horizontalDisplay?: boolean;
+  /** minutes between autosaves, 5-60 */
+  autosaveInterval?: number;
+  /** number of autosaves to keep, 1-20 */
+  autosaveCount?: number;
+}
+/**
+ * The limits and defaults for the autosave settings.
+ * @category SmoObject
+ */
+export const autosaveLimits = {
+  minInterval: 5,
+  maxInterval: 60,
+  defaultInterval: 10,
+  minCount: 1,
+  maxCount: 20,
+  defaultCount: 10
+};
+const clampWholeNumber = (value: unknown, min: number, max: number, def: number): number => {
+  if (typeof (value) !== 'number' || !Number.isFinite(value)) {
+    return def;
+  }
+  return Math.min(Math.max(Math.round(value), min), max);
+}
+/**
+ * @param value minutes between autosaves, from a file or the user
+ * @returns a whole number from 5 to 60; 10 if the value is not a number
+ * @category SmoObject
+ */
+export const clampAutosaveInterval = (value: unknown): number => {
+  return clampWholeNumber(value, autosaveLimits.minInterval, autosaveLimits.maxInterval, autosaveLimits.defaultInterval);
+}
+/**
+ * @param value number of autosaves to keep, from a file or the user
+ * @returns a whole number from 1 to 20; 10 if the value is not a number
+ * @category SmoObject
+ */
+export const clampAutosaveCount = (value: unknown): number => {
+  return clampWholeNumber(value, autosaveLimits.minCount, autosaveLimits.maxCount, autosaveLimits.defaultCount);
 }
 /**
  * Some default SMO behavior
@@ -167,6 +205,8 @@ export class SmoScorePreferences {
   transposingScore: boolean = false;
   showPartNames: boolean = false;
   horizontalDisplay: boolean;
+  autosaveInterval: number = autosaveLimits.defaultInterval;
+  autosaveCount: number = autosaveLimits.defaultCount;
   static get defaults(): SmoScorePreferencesParams {
     return {
       autoPlay: true,
@@ -177,7 +217,9 @@ export class SmoScorePreferences {
       showPiano: false,
       hideEmptyLines: false,
       transposingScore: false,
-      showPartNames: false
+      showPartNames: false,
+      autosaveInterval: autosaveLimits.defaultInterval,
+      autosaveCount: autosaveLimits.defaultCount
     };
   }
   constructor(params: SmoScorePreferencesParams) {
@@ -196,6 +238,9 @@ export class SmoScorePreferences {
         this.showPartNames = false;
       }
     }
+    // legacy, added later.  Also keeps a bad value in a file from stopping or flooding autosave.
+    this.autosaveInterval = clampAutosaveInterval(params?.autosaveInterval);
+    this.autosaveCount = clampAutosaveCount(params?.autosaveCount);
       this.horizontalDisplay = params.horizontalDisplay ?? false;
   }
   serialize(): SmoScorePreferencesParams {

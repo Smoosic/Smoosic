@@ -1,6 +1,15 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-1-2026
+Autosave and Recovery.
+
+* While you work, Smoosic now keeps a rolling set of snapshots of the whole score in the browser's local storage.  The first change after a snapshot starts a timer, and when it runs out a new snapshot is taken.  A score that hasn't changed isn't snapshotted again, and quick edits make one snapshot, not many.  The oldest snapshots are dropped to stay within the number you choose, and if the browser runs out of room.  Quick Save is unchanged.
+* The File menu has a new **Recovery** command.  It lists the snapshots, newest first, with the date, time and name of the score.  Pick one to load it.  Snapshots are not deleted by recovering, so you can try another.  If the open score has unsaved changes you are asked about them first, and the recovered score counts as unsaved until you save it to a file.
+* Smoosic Preferences has a new **Autosave** section: minutes between autosaves (5 to 60, default 10) and autosaves to keep (1 to 20, default 10).  They are saved with the score as `autosaveInterval` and `autosaveCount` in the score preferences.  Scores saved before this opened with the defaults.
+* The snapshots are shared by every score opened in the browser, so the count limits all of them together.
+* For people using Smoosic as a library: `SmoScorePreferences` has the two new fields, and `SuiScoreView` has `listSnapshots()` and `recoverSnapshot(id)`.  The two new properties are in `tools/smoosic-schema.json`; the separate SmoSchema repository needs them too.
+
 ## 10-31-2026
 Paste Special.
 

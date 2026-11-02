@@ -28,6 +28,8 @@ import { SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { ref, Ref } from 'vue';
 import { SvgBox, SvgPoint } from '../../smo/data/common';
 import { layoutDebug } from './layoutDebug';
+import { AutosaveStore, AutosaveScheduler, createLocalAutosaveStorage } from './autosave';
+import { SmoScoreArchive } from '../../ui/fileio/scoreArchive';
 
 declare var $: any;
 
@@ -67,6 +69,10 @@ export abstract class SuiScoreView implements layoutProvider {
   scoreChanged: Ref<boolean> = ref(false);
   /** the name of the open score, for display */
   scoreName: Ref<string> = ref('');
+  /** the rolling set of autosaved snapshots, or null if browser storage can't be used */
+  autosaveStore: AutosaveStore | null = null;
+  /** decides when a snapshot is taken: one interval after the first change since the last one */
+  autosaveScheduler: AutosaveScheduler;
   config: SmoRenderConfiguration;
   audioAnimation: SuiAudioAnimationParams;
   debug: layoutDebug;
@@ -100,6 +106,12 @@ export abstract class SuiScoreView implements layoutProvider {
     this.storeUndo = new UndoBuffer();
     // Recording an undo step means the score is about to change.
     this.storeUndo.onAddBuffer = () => this.markScoreChanged();
+    const autosaveStorage = createLocalAutosaveStorage();
+    this.autosaveStore = autosaveStorage ? new AutosaveStore(autosaveStorage) : null;
+    this.autosaveScheduler = new AutosaveScheduler({
+      set: (cb: () => void, ms: number) => window.setTimeout(cb, ms),
+      clear: (handle: unknown) => window.clearTimeout(handle as number)
+    }, () => this.takeAutosave());
     this.refreshScoreName();
     this.staffMap = this.defaultStaffMap;
     SuiScoreView.Instance = this; // for debugging
@@ -109,6 +121,29 @@ export abstract class SuiScoreView implements layoutProvider {
   /** Note that the score has been edited since it was last saved or loaded */
   markScoreChanged() {
     this.scoreChanged.value = true;
+    if (this.autosaveStore) {
+      this.autosaveScheduler.noteChange(this.score.preferences.autosaveInterval);
+    }
+  }
+  /**
+   * Add a snapshot of the whole score to the autosave set.  Called by the scheduler.  It never
+   * reports a failure and never changes the saved/unsaved state of the score, or Quick Save.
+   */
+  async takeAutosave(): Promise<void> {
+    const store = this.autosaveStore;
+    if (!store) {
+      return;
+    }
+    try {
+      // Always the full score, not the part on display.  pack() serializes the score before its
+      // first await, so the snapshot is one consistent state even if editing continues.
+      const title = this.score.scoreInfo?.name ?? '';
+      const count = this.score.preferences.autosaveCount;
+      const bytes = await SmoScoreArchive.pack(this.storeScore);
+      store.add(SmoScoreArchive.toBase64(bytes), title, Date.now(), count);
+    } catch (e) {
+      // not reported while the user is editing
+    }
   }
   /** Note that the score has been saved in full, or that a new score was loaded */
   markScoreSaved() {
@@ -783,6 +818,8 @@ export abstract class SuiScoreView implements layoutProvider {
    */
   async changeScore(score: SmoScore) {
     this.storeUndo.reset();
+    // a change in the old score is not a change in this one
+    this.autosaveScheduler.reset();
     // copied voices belong to the score they were copied from
     this.storePaste.clearVoiceCopy();
     SuiAudioPlayer.stopPlayer();

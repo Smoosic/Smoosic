@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, Ref } from 'vue';
-import { SmoScorePreferences } from '../../../smo/data/scoreModifiers';
+import { SmoScorePreferences, autosaveLimits, clampAutosaveInterval, clampAutosaveCount } from '../../../smo/data/scoreModifiers';
 import { SelectOption } from '../../common';
 import selectComp from './select.vue';
 import dialogContainer from './dialogContainer.vue';
 import toggle from './toggle.vue';
+import numberInput from './numberInput.vue';
 
 interface Props {
   domId: string,
@@ -27,6 +28,12 @@ const defaultTripleDurations: SelectOption[] = [
   { label: '1/8', value: '2048' }
 ];
 
+const updateAutosaveInterval = async (value: number) => {
+  preferences.autosaveInterval = clampAutosaveInterval(value);
+}
+const updateAutosaveCount = async (value: number) => {
+  preferences.autosaveCount = clampAutosaveCount(value);
+}
 const getDomId = () => {
   return `attr-modal-dialog-${domId}`;
 }
@@ -89,6 +96,21 @@ const updateNumber = (type: numberTypes) => {
         <selectComp :domId="getId('duration-select2')" label="Default Duration (triple meter)"
           :initialValue="preferences.defaultTripleDuration.toString()" :selections="defaultTripleDurations"
           :changeCb="updateNumber('defaultTripleDuration')" />
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col text-start fw-bold">Autosave</div>
+    </div>
+    <div class="row align-items-baseline" :id="getId('autosave-row')">
+      <div class="col col-6 text-start">
+        <numberInput :domId="getId('autosave-interval')" label="Minutes between autosaves" :precision="0"
+          :minValue="autosaveLimits.minInterval" :maxValue="autosaveLimits.maxInterval"
+          :initialValue="preferences.autosaveInterval" :changeCb="updateAutosaveInterval" />
+      </div>
+      <div class="col col-6 text-start">
+        <numberInput :domId="getId('autosave-count')" label="Autosaves to keep" :precision="0"
+          :minValue="autosaveLimits.minCount" :maxValue="autosaveLimits.maxCount"
+          :initialValue="preferences.autosaveCount" :changeCb="updateAutosaveCount" />
       </div>
     </div>
   </dialogContainer>

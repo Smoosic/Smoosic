@@ -35,6 +35,7 @@ import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { StaffModifierBase, 
    SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
+import { AutosaveEntry } from './autosave';
 import { SuiPiano } from './piano';
 import { SvgHelpers } from './svgHelpers';
 import { parseJsonText } from 'typescript';
@@ -247,10 +248,22 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this._undoScorePreferences('Update preferences');
     const oldXpose = this.score.preferences.transposingScore;
     const curXpose = pref.transposingScore;
+    const oldAutosaveInterval = this.score.preferences.autosaveInterval;
+    const oldAutosaveCount = this.score.preferences.autosaveCount;
     const currentLayout = this.score.layoutManager?.getGlobalLayout();
     const oldDisplayMode =  currentLayout ? currentLayout.displayMode : 'vertical';
     this.score.updateScorePreferences(new SmoScorePreferences(pref));
     this.storeScore.updateScorePreferences(new SmoScorePreferences(pref));
+    // new autosave settings take effect now: drop snapshots beyond a lower count, and restart
+    // a waiting snapshot with the new interval
+    if (this.autosaveStore) {
+      if (this.score.preferences.autosaveCount !== oldAutosaveCount) {
+        this.autosaveStore.trim(this.score.preferences.autosaveCount);
+      }
+      if (this.score.preferences.autosaveInterval !== oldAutosaveInterval) {
+        this.autosaveScheduler.retime(this.score.preferences.autosaveInterval);
+      }
+    }
     const newLayout = this.score.layoutManager?.getGlobalLayout();
     const displayMode = newLayout ? newLayout.displayMode : 'vertical';
     if (oldDisplayMode !== displayMode) {
@@ -2298,6 +2311,36 @@ export class SuiScoreViewOperations extends SuiScoreView {
     staffParams.measureInstrumentMap[0] = new SmoInstrument(instrumentParams);
     this.addStaff(staffParams);
     return this.renderer.updatePromise();
+  }
+  /**
+   * The autosaved snapshots, newest first, for the Recovery dialog.
+   * @returns each snapshot, with `available` false if its stored text is missing or damaged
+   */
+  listSnapshots(): (AutosaveEntry & { available: boolean })[] {
+    if (!this.autosaveStore) {
+      return [];
+    }
+    const store = this.autosaveStore;
+    return store.list().reverse().map((entry) => {
+      return { ...entry, available: store.read(entry.id) !== null };
+    });
+  }
+  /**
+   * Replace the open score with an autosaved snapshot.  The snapshot is kept, and the recovered
+   * score counts as having unsaved changes.  The caller asks about unsaved changes in the open
+   * score first.
+   * @param id the snapshot's id, from listSnapshots
+   * @throws Error with a message for the user; the open score is left as it was
+   */
+  async recoverSnapshot(id: number): Promise<void> {
+    const text = this.autosaveStore ? this.autosaveStore.read(id) : null;
+    if (text === null) {
+      throw new Error('That autosave is no longer available.');
+    }
+    const score = await SmoScoreArchive.load(SmoScoreArchive.fromBase64(text));
+    await this.changeScore(score);
+    // changeScore treats a new score as saved, but this one has not been saved to a file
+    this.markScoreChanged();
   }
   /**
    * Save the score to local storage.

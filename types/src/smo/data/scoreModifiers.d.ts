@@ -117,7 +117,35 @@ export interface SmoScorePreferencesParams {
     transposingScore: boolean;
     showPartNames: boolean;
     horizontalDisplay?: boolean;
+    /** minutes between autosaves, 5-60 */
+    autosaveInterval?: number;
+    /** number of autosaves to keep, 1-20 */
+    autosaveCount?: number;
 }
+/**
+ * The limits and defaults for the autosave settings.
+ * @category SmoObject
+ */
+export declare const autosaveLimits: {
+    minInterval: number;
+    maxInterval: number;
+    defaultInterval: number;
+    minCount: number;
+    maxCount: number;
+    defaultCount: number;
+};
+/**
+ * @param value minutes between autosaves, from a file or the user
+ * @returns a whole number from 5 to 60; 10 if the value is not a number
+ * @category SmoObject
+ */
+export declare const clampAutosaveInterval: (value: unknown) => number;
+/**
+ * @param value number of autosaves to keep, from a file or the user
+ * @returns a whole number from 1 to 20; 10 if the value is not a number
+ * @category SmoObject
+ */
+export declare const clampAutosaveCount: (value: unknown) => number;
 /**
  * Some default SMO behavior
  * @param autoPlay play a new note or chord
@@ -140,6 +168,8 @@ export declare class SmoScorePreferences {
     transposingScore: boolean;
     showPartNames: boolean;
     horizontalDisplay: boolean;
+    autosaveInterval: number;
+    autosaveCount: number;
     static get defaults(): SmoScorePreferencesParams;
     constructor(params: SmoScorePreferencesParams);
     serialize(): SmoScorePreferencesParams;

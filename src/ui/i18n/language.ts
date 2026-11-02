@@ -137,6 +137,7 @@ export class SmoTranslator {
       'SuiPageLayoutDialog',
       'SuiPartInfoDialog',
       'SuiPrintFileDialog',
+      'SuiRecoveryDialog',
       'SuiSaveFileDialog',
       'SuiSaveMidiDialog',
       'SuiSaveXmlDialog',

@@ -27,6 +27,17 @@ export declare class SmoScoreArchive {
      * @returns the bytes of a `.smz` file
      */
     static pack(score: SmoScore): Promise<Uint8Array>;
+    /**
+     * Text form of archive bytes, for storage that holds only text
+     * @param bytes archive contents
+     */
+    static toBase64(bytes: Uint8Array): string;
+    /**
+     * The inverse of toBase64
+     * @param text text made by toBase64
+     * @throws Error with a message that can be shown to the user
+     */
+    static fromBase64(text: string): Uint8Array;
     private static stripBom;
     /**
      * Get the score document text from the contents of a score file.

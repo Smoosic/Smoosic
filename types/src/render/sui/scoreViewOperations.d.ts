@@ -16,6 +16,7 @@ import { FontInfo } from '../../common/vex';
 import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { StaffModifierBase, SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
+import { AutosaveEntry } from './autosave';
 /**
  * MVVM-like operations on the displayed score.
  *
@@ -583,6 +584,21 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @returns
      */
     addStaffSimple(params: Partial<SmoInstrumentParams>): Promise<void>;
+    /**
+     * The autosaved snapshots, newest first, for the Recovery dialog.
+     * @returns each snapshot, with `available` false if its stored text is missing or damaged
+     */
+    listSnapshots(): (AutosaveEntry & {
+        available: boolean;
+    })[];
+    /**
+     * Replace the open score with an autosaved snapshot.  The snapshot is kept, and the recovered
+     * score counts as having unsaved changes.  The caller asks about unsaved changes in the open
+     * score first.
+     * @param id the snapshot's id, from listSnapshots
+     * @throws Error with a message for the user; the open score is left as it was
+     */
+    recoverSnapshot(id: number): Promise<void>;
     /**
      * Save the score to local storage.
      */

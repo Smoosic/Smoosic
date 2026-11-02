@@ -6,6 +6,7 @@ import {
   SuiPrintDialog,
   confirmReplaceScore
 } from '../dialogs/fileDialogs';
+import { SuiRecoveryDialog } from '../dialogs/recovery';
 import { SmoScore } from '../../smo/data/score';
 
 declare var $: any;
@@ -45,6 +46,25 @@ const systemQuickSave: SuiConfiguredMenuOption = {
     icon: 'mi save',
     text: 'Quick Save',
     value: 'quickSave'
+  }
+}
+const systemRecoveryOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiRecoveryDialog({
+      ctor: 'SuiRecoveryDialog',
+      id: 'recovery',
+      modifier: null,
+      completeNotifier: menu.completeNotifier,
+      tracker: menu.tracker,
+      eventSource: menu.eventSource,
+      view: menu.view,
+      startPromise: menu.closePromise
+    });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: 'mi history',
+    text: 'Recovery',
+    value: 'recovery'
   }
 }
 const systemPrintOption: SuiConfiguredMenuOption = {
@@ -125,7 +145,7 @@ const suiImportMidiOption: SuiConfiguredMenuOption = {
 }
 
 const SuiFileMenuOptions: SuiConfiguredMenuOption[] = [
-systemNewScoreOption,systemQuickSave, systemPrintOption, suiFileSaveOption,
+systemNewScoreOption,systemQuickSave, systemRecoveryOption, systemPrintOption, suiFileSaveOption,
 suiFileOpenOption,
 suiImportMidiOption
 ]

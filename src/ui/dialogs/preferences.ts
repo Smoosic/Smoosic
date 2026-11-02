@@ -24,6 +24,7 @@ export const SuiScorePreferencesDialogVue = (parameters: SuiDialogParams) => {
   });
 
   const cancelCb = async () => {
+    // Autosaves dropped because the count was lowered while the dialog was open are not brought back.
     const p1 = JSON.stringify(preferences);
     const p2 = JSON.stringify(backup);
     if (p1 !== p2) {
