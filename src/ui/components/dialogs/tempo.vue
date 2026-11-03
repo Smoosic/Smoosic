@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, Ref } from 'vue';
 import numberInputApp from './numberInput.vue';
 import selectComp from './select.vue';
 import toggle from './toggle.vue';
@@ -29,6 +30,13 @@ const props = defineProps<Props>();
 const { domId, label, commitCb, cancelCb } = { ...props };
 const getId = (str: string) => {
   return `${domId}-${str}`;
+}
+// The dialog is mounted with the values as they were when it opened, and the props don't change
+// as the user edits.  Keep the mode locally so the custom text field appears as soon as it is chosen.
+const currentMode: Ref<string> = ref(props.tempoMode);
+const changeMode = (value: string) => {
+  currentMode.value = value;
+  props.updateSelectCb('tempoMode', value);
 }
 const tempoModeOptions: SelectOption[] = [
   { value: 'duration', label: 'Duration (Beats/Minute)' },
@@ -66,10 +74,10 @@ const tempoTextOptions: SelectOption[] = [
     <div class="row mb-2">
       <div class="col col-12">
         <selectComp :domId="getId('tempo-mode')" :label="'Tempo Mode'" :selections="tempoModeOptions"
-          :initialValue="tempoMode" :changeCb="(value: string) => updateSelectCb('tempoMode', value)" />
+          :initialValue="currentMode" :changeCb="changeMode" />
       </div>
     </div>
-    <div v-if="tempoMode === 'custom'" class="row mb-2">
+    <div v-if="currentMode === 'custom'" class="row mb-2">
       <div class="col col-9">
         <input type="text" class="form-control" :id="getId('custom-text')" :value="customText"
           @change="($event) => updateTextCb(($event.target as HTMLInputElement).value)">

@@ -78,6 +78,11 @@ watch(displayString, async (newValue: string, oldValue: string) => {
   if (newValue === oldValue) {
     return;
   }
+  // The string is changed one key at a time.  Wait until it is a valid time signature (or empty,
+  // to remove it) before updating the score.
+  if (newValue.length > 0 && !SmoTimeSignature.isValidDisplayString(newValue)) {
+    return;
+  }
   const ts = new SmoTimeSignature(timeSignature.value);
   ts.displayString = newValue;
   await props.updateTimeSignatureCb(ts);

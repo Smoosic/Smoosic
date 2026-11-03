@@ -56,6 +56,7 @@
     "test:text-drag-placement":"ts-node -P tests/tsconfig.json tests/textDragPlacement.ts",
     "test:rehearsal-measure-number": "ts-node -P tests/tsconfig.json tests/rehearsalMarkMeasureNumber.ts",
     "test:key-distance-transposition": "ts-node -P tests/tsconfig.json tests/keyDistanceTransposition.ts",
+    "test:time-signature-display": "ts-node -P tests/tsconfig.json tests/timeSignatureDisplay.ts",
     "test:autosave": "ts-node -P tests/tsconfig.json tests/autosave.ts",
     "test:paste-special": "ts-node -P tests/tsconfig.json tests/pasteSpecial.ts",
     "test:score-archive": "ts-node -P tests/tsconfig.json tests/scoreArchive.ts",

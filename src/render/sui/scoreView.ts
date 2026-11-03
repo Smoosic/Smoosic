@@ -645,9 +645,17 @@ export abstract class SuiScoreView implements layoutProvider {
       staff.setMappedStaffId(this.staffMap[staff.staffId]);
     });
   }
+  /**
+   * Show the displayed part again, from the stored score.  Does nothing if a part is not displayed.
+   * A part can be several staves, e.g. a piano part, so a single displayed staff is not the test.
+   */
   resetPartView() {
-    if (this.staffMap.length === 1) {
-      const staff = this.storeScore.staves[this.staffMap[0]];
+    const staff = this.storeScore.staves[this.staffMap[0]];
+    if (!staff) {
+      return;
+    }
+    const info = staff.partInfo;
+    if (this.staffMap.length === 1 || (info.stavesBefore === 0 && this.staffMap.length === info.stavesAfter + 1)) {
       this.exposePart(staff);
     }
   }

@@ -941,6 +941,14 @@ export class SmoTimeSignature extends SmoMeasureModifierBase {
     }
     return (ts1.useSymbol === ts2.useSymbol && ts1.displayString === ts2.displayString && ts1.display === ts2.display);
   }
+  /**
+   * Whether a string can be shown as the time signature in place of the real one.  It has the
+   * form 'n/n', or several of those joined by '+', such as '3/4' or '3/8+2/4'.
+   * @param value the string to check
+   */
+  static isValidDisplayString(value: string): boolean {
+    return typeof (value) === 'string' && /^\s*\d+\s*\/\s*\d+(\s*\+\s*\d+\s*\/\s*\d+)*\s*$/.test(value);
+  }
   static createFromPartial(value: Partial<TimeSignatureParameters>) {
     const params = SmoTimeSignature.defaults;
     smoSerialize.serializedMerge(SmoTimeSignature.parameters, value, params);
@@ -950,8 +958,19 @@ export class SmoTimeSignature extends SmoMeasureModifierBase {
   times: TimeSignatureTime[] = [{ actualBeats: 4, beatDuration: 4 }];
   useSymbol: boolean = false;
   display: boolean = true;
-  displayString: string = '';
+  /** the string as it was set; use displayString, which checks it.  Not private, so the class can be wrapped by Vue refs. */
+  _displayString: string = '';
   index: number = 0;
+  /**
+   * The string to show instead of the real time signature, or the empty string if there is
+   * none, or if the string is not in the form 'n/n' or 'n/n+n/n'.
+   */
+  get displayString(): string {
+    return SmoTimeSignature.isValidDisplayString(this._displayString) ? this._displayString : '';
+  }
+  set displayString(value: string) {
+    this._displayString = typeof (value) === 'string' ? value : '';
+  }
   get beatDuration() {
     return this.times[this.index].beatDuration;
   }

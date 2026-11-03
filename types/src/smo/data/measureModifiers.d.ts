@@ -495,12 +495,25 @@ export declare class SmoTimeSignature extends SmoMeasureModifierBase {
     ticksFromTimeSignature(): number;
     static equal(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean;
     static equalIncludeAttributes(ts1: SmoTimeSignature, ts2: SmoTimeSignature): boolean;
+    /**
+     * Whether a string can be shown as the time signature in place of the real one.  It has the
+     * form 'n/n', or several of those joined by '+', such as '3/4' or '3/8+2/4'.
+     * @param value the string to check
+     */
+    static isValidDisplayString(value: string): boolean;
     static createFromPartial(value: Partial<TimeSignatureParameters>): SmoTimeSignature;
     times: TimeSignatureTime[];
     useSymbol: boolean;
     display: boolean;
-    displayString: string;
+    /** the string as it was set; use displayString, which checks it.  Not private, so the class can be wrapped by Vue refs. */
+    _displayString: string;
     index: number;
+    /**
+     * The string to show instead of the real time signature, or the empty string if there is
+     * none, or if the string is not in the form 'n/n' or 'n/n+n/n'.
+     */
+    get displayString(): string;
+    set displayString(value: string);
     get beatDuration(): number;
     get actualBeats(): number;
     get timeSignature(): string;

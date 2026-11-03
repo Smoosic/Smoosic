@@ -1,6 +1,12 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-2-2026
+Fix a crash in the Time Signature dialog.
+
+* The alternate display string updated the score on every keystroke, so a half-typed value such as `3/` was drawn and crashed the renderer.  The dialog now waits until the string is a valid time signature, or empty.
+* A display string must look like `3/4` or `3/8+2/4`.  `SmoTimeSignature.displayString` now reads as the empty string for anything else, so a bad value in a file can't crash the renderer either.
+
 ## 11-1-2026
 Autosave and Recovery.
 
