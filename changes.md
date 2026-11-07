@@ -1,6 +1,16 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-6-2026
+Create Part dialog fixes.
+
+* **Staff Location** now counts from 1 and goes up to one more than the number of staves in the score.  1 puts the new part first and the largest value puts it after the last staff, which is where it starts.  Before, the largest value could not be reached.
+* A new part is never put inside a part that has two staves.  If the location is between a part's two staves, the new part goes after it.
+* The dialog is titled **Create Part** and has **Name** and **Abbreviation** fields.  If you leave Name empty, the part is named for the instrument you chose, which is shown in the field as you change the instrument.
+* Parts made with the dialog keep their text groups (Preserve Text Groups is on).  The default for parts made any other way is unchanged.
+* A part with two staves is now created as one undo step, and its two staves are properly linked as one part.
+* Putting a staff above others used to leave slurs, hairpins, brackets, groups and instrument settings of the staves below it pointing at the wrong staves.  They now follow their staves.  For people using Smoosic as a library: `SmoScore.addStaff` shifts these when it inserts above existing staves, and `SmoOperation.addPart` and `SuiScoreViewOperations.createPart` create a part at a location.
+
 ## 11-2-2026
 Fix a crash in the Time Signature dialog.
 

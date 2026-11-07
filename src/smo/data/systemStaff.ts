@@ -447,6 +447,38 @@ export class SmoSystemStaff implements SmoObjectParams {
       mod.associatedStaff = to; // this.staffId will remap to 'to' value
     });
   }
+  /**
+   * A staff was inserted above this one, or removed.  Everything on this staff that refers to a staff
+   * number at or beyond `fromIndex` moves by `delta`: modifiers, text brackets, tab staves and
+   * instrument selectors.
+   * @param fromIndex the staff numbers that are this large or larger move
+   * @param delta how far they move
+   */
+  shiftStaffReferences(fromIndex: number, delta: number) {
+    const shift = (selector: SmoSelector) => {
+      if (selector.staff >= fromIndex) {
+        selector.staff += delta;
+      }
+    };
+    const shiftModifier = (mod: StaffModifierBase | SmoStaffTextBracket) => {
+      shift(mod.startSelector);
+      shift(mod.endSelector);
+      if (mod.associatedStaff >= fromIndex) {
+        mod.associatedStaff += delta;
+      }
+    };
+    this.modifiers.forEach(shiftModifier);
+    this.textBrackets.forEach(shiftModifier);
+    this.tabStaves.forEach((ts) => {
+      shift(ts.startSelector);
+      shift(ts.endSelector);
+    });
+    Object.keys(this.measureInstrumentMap).forEach((key) => {
+      const instrument = this.measureInstrumentMap[parseInt(key, 10)];
+      shift(instrument.startSelector);
+      shift(instrument.endSelector);
+    });
+  }
   updateMeasureFormatsForPart() {
     this.measures.forEach((measure, mix) => {
       if (this.partInfo.measureFormatting[mix]) {

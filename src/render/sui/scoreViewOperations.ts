@@ -22,7 +22,7 @@ import { UndoBuffer } from '../../smo/xform/undo';
 import {
   SmoOperation, createStaffModifierType, MakeTupletOperation
 } from '../../smo/xform/operations';
-import { BatchSelectionOperation } from '../../smo/xform/operations';
+import { BatchSelectionOperation, AddPartParams } from '../../smo/xform/operations';
 import { smoSerialize } from '../../common/serializationHelpers';
 import { FontInfo } from '../../common/vex';
 import { SmoMusic } from '../../smo/data/music';
@@ -2234,6 +2234,18 @@ export class SuiScoreViewOperations extends SuiScoreView {
         }
       }
     }
+    this.viewAll();
+    return this.renderer.updatePromise();
+  }
+  /**
+   * Create a part, with one or two staves, at the requested place in the score.  It is one undo step.
+   * See {@link SmoOperation.addPart}.
+   * @param params where the part goes, its instrument, name and abbreviation
+   */
+  async createPart(params: AddPartParams): Promise<void> {
+    this._undoScore('Create part');
+    // The new staves go in the full score, which may not be what is displayed.
+    SmoOperation.addPart(this.storeScore, params);
     this.viewAll();
     return this.renderer.updatePromise();
   }

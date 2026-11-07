@@ -1416,6 +1416,11 @@ export class SmoScore {
     }
     parameters.measures = measures;
     const staff = new SmoSystemStaff(parameters);
+    // Staves at or below the new one move down, so anything that refers to them by number moves too.
+    // Done before the new staff is added, so its own selectors are left alone.
+    if (parameters.staffId < this.staves.length) {
+      this.shiftStaffReferences(parameters.staffId, 1);
+    }
     this.staves.push(staff);
     let newPos = parameters.staffId;
     let curPos = this.staves.length - 1;
@@ -1428,6 +1433,48 @@ export class SmoScore {
     this.activeStaff = this.staves.length - 1;
     this.numberStaves();
     return staff;
+  }
+  /**
+   * Where a new part goes, given the position the user asked for.  The position counts from 1, and
+   * one more than the number of staves means after the last staff.  A part with more than one staff
+   * is never split: if the position is inside one, the new part goes after it.
+   * @param location the requested position, counting from 1
+   * @returns the index at which to insert the first staff of the new part, 0 to the number of staves
+   */
+  resolveNewPartIndex(location: number): number {
+    const staffCount = this.staves.length;
+    const requested = typeof (location) === 'number' && Number.isFinite(location) ? Math.round(location) : staffCount + 1;
+    const index = Math.min(Math.max(requested, 1), staffCount + 1) - 1;
+    if (index < staffCount && this.staves[index].partInfo.stavesBefore > 0) {
+      const part = this.staves[index].partInfo;
+      return Math.min(index + part.stavesAfter + 1, staffCount);
+    }
+    return index;
+  }
+  /**
+   * A staff was inserted at `fromIndex`, or removed.  Staff numbers at or beyond `fromIndex` move by
+   * `delta` in everything that refers to a staff: staff modifiers and instruments, system groups, and
+   * text attached to notes.
+   * @param fromIndex the staff numbers that are this large or larger move
+   * @param delta how far they move
+   */
+  shiftStaffReferences(fromIndex: number, delta: number) {
+    this.staves.forEach((staff) => {
+      staff.shiftStaffReferences(fromIndex, delta);
+    });
+    this.systemGroups.forEach((grp) => {
+      if (grp.startSelector.staff >= fromIndex) {
+        grp.startSelector.staff += delta;
+      }
+      if (grp.endSelector.staff >= fromIndex) {
+        grp.endSelector.staff += delta;
+      }
+    });
+    this.textGroups.forEach((tg) => {
+      if (tg.selector && tg.selector.staff >= fromIndex) {
+        tg.selector.staff += delta;
+      }
+    });
   }
   updateCompoundTimeSignature() {
     if (this.staves.length <= 0 || this.staves[0].measures.length <= 0) {

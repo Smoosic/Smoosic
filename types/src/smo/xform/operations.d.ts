@@ -24,17 +24,49 @@ export type createStaffModifierType<T> = (fromSelection: SmoSelection, toSelecti
  * take the score, a selection or selection array, and the parameters of the operation.
  * @category SmoTransform
  */
+/**
+ * What is needed to create a part: where it goes, its instrument, and what it is called.
+ * @category SmoOperation
+ */
+export interface AddPartParams {
+    /** where the new part goes, counting from 1; N + 1 is after the last of N staves */
+    location: number;
+    /** the sound, clef, staff lines and transposition of the (first) staff */
+    instrument: SmoInstrument;
+    /** add a second staff to the part, with the opposite clef */
+    twoStaves: boolean;
+    /** the name as typed.  If it is blank, instrumentLabel is the name */
+    name: string;
+    /** the display name of the instrument, e.g. 'Bb Trumpet' */
+    instrumentLabel: string;
+    /** the abbreviation as typed; blank for none */
+    abbreviation: string;
+}
 export declare class SmoOperation {
     static setMeasureFormat(score: SmoScore, selection: SmoSelection, value: SmoMeasureFormat): void;
     static addKeySignature(score: SmoScore, selection: SmoSelection, keySignature: string): void;
     static addConnectorDown(score: SmoScore, selections: SmoSelection[], parameters: SmoSystemGroup): void;
     static setActiveVoice(score: SmoScore, voiceIx: number): void;
     /**
-     * Move a single stave up or down one.  If last down, move to first.
-     * If first up, move to last
+     * The staves that make up the part containing the given staff.  A multi-staff part is
+     * kept together.
+     * @returns the index of the first staff of the part, and the number of staves in it
+     */
+    static getPartBlock(score: SmoScore, staffIndex: number): {
+        start: number;
+        length: number;
+    };
+    /**
+     * Swap the part starting at `start` with the part just before it, keeping the staves
+     * of each part together and in order.
+     */
+    private static swapPartWithPrevious;
+    /**
+     * Move a part up or down one.  A part with 2 staves moves as a unit, so a single-staff part
+     * that it passes moves by 2.  If last down, move to first.  If first up, move to last
      * @param score
      * @param selection
-     * @param index
+     * @param index direction to move, -1 for up and 1 for down
      */
     static moveStaffUpDown(score: SmoScore, selection: SmoSelection, index: number): void;
     static depopulateVoice(selection: SmoSelection, voiceIx: number): void;
@@ -64,6 +96,13 @@ export declare class SmoOperation {
     static unmakeTuplet(selection: SmoSelection): void;
     static dotDuration(selection: SmoSelection): void;
     static undotDuration(selection: SmoSelection): void;
+    /**
+     * Transpose the whole score by a number of half steps.  The destination key of each measure is
+     * computed from its current key, and each pitch is spelled so that its distance from the new key
+     * matches its distance from the old key (e.g. e natural in Eb becomes g# in G).
+     * @param score
+     * @param offset half steps, may be negative
+     */
     static transposeScore(score: SmoScore, offset: number): void;
     static updateTabNote(selections: SmoSelection[], tabNote: SmoTabNote): void;
     static removeTabNote(selections: SmoSelection[]): void;
@@ -117,6 +156,16 @@ export declare class SmoOperation {
     static getDefaultSlurDirection(score: SmoScore, fromSelector: SmoSelector, toSelector: SmoSelector): SmoSlurParams;
     static createSlur(score: SmoScore, fromSelection: SmoSelection, toSelection: SmoSelection): SmoSlur;
     static addStaff(score: SmoScore, parameters: SmoSystemStaffParams): SmoSystemStaff;
+    /**
+     * Create a part with one or two staves.  The part goes at the requested location, but never
+     * inside an existing part with more than one staff.  Staves below it move down, and anything
+     * that refers to them moves too.  The new part keeps its text groups (preserveTextGroups), which
+     * is not the default for a part.
+     * @param score the full score
+     * @param params where to put the part and what it is called
+     * @returns the index of the first new staff
+     */
+    static addPart(score: SmoScore, params: AddPartParams): number;
     static removeStaff(score: SmoScore, index: number): void;
     static transposeChords(smoNote: SmoNote, offset: number, key: string): void;
     /**
@@ -125,5 +174,15 @@ export declare class SmoOperation {
      * @param selections
      */
     static changeInstrument(instrument: SmoInstrument, score: SmoScore, selections: SmoSelection[]): void;
+    /**
+     * Group runs of empty measures into multimeasure rests, for parts that show them.  A landmark splits a run:
+     * a start landmark (rehearsal mark, key, time or tempo change, Segno, Coda, instrument change, repeat
+     * or double barline at the start of the measure) ends the rest before its measure and that measure
+     * starts the next rest; an end landmark (D.S., D.C., To Coda, Fine, repeat or double barline at the end of
+     * the measure) ends the rest after its measure.  Measures under a volta ending are never grouped.
+     * The result is recorded in each measure's svg record: the first measure of a rest has its length, end
+     * barline and end symbol, the others are hidden; every other measure is reset.
+     * @param score the score being displayed
+     */
     static computeMultipartRest(score: SmoScore): void;
 }

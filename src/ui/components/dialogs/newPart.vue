@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SelectOption } from '../../common';
+import { instrumentChoices, instrumentLabelFor } from '../../dialogs/createPartHelpers';
 import { IsClef } from '../../../smo/data/common';
 import { SmoInstrument, SmoInstrumentNumParamType, SmoInstrumentStringParamType } from '../../../smo/data/staffModifiers';
 import selectComp from './select.vue';
@@ -14,6 +14,8 @@ interface Props {
   getInstrument: () => SmoInstrument,
   addStaveCb: () => Promise<void>,
   setStaffId: (staffId: number) => void,
+  setName: (value: string) => void,
+  setAbbreviation: (value: string) => void,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>
 };
@@ -24,70 +26,6 @@ const { domId, getInstrument } = { ...props };
 const updateInsertLocation = async (loc: number) => {
   props.setStaffId(loc);
 }
-const instrumentChoices: SelectOption[] = [{
-  value: 'piano',
-  label: 'Grand Piano'
-}, {
-  value: 'electricPiano',
-  label: 'Electric Piano'
-}, {
-  value: 'accordion',
-  label: 'Accordion'
-}, {
-  value: 'piano',
-  label: 'Grand Piano'
-}, {
-  value: 'bass',
-  label: 'Bass (bowed)'
-}, {
-  value: 'jazzBass',
-  label: 'Bass (plucked)'
-}, {
-  value: 'eGuitar',
-  label: 'Electric Guitar'
-}, {
-  value: 'cello',
-  label: 'Cello'
-}, {
-  value: 'violin',
-  label: 'Violin'
-}, {
-  value: 'trumpet',
-  label: 'Bb Trumpet'
-}, {
-  value: 'horn',
-  label: 'F Horn'
-}, {
-  value: 'trombone',
-  label: 'Trombone'
-}, {
-  value: 'tuba',
-  label: 'Tuba'
-}, {
-  value: 'clarinet',
-  label: 'Bb Clarinet'
-}, {
-  value: 'flute',
-  label: 'Flute'
-}, {
-  value: 'altoSax',
-  label: 'Eb Alto Sax'
-}, {
-  value: 'tenorSax',
-  label: 'Bb Tenor Sax'
-}, {
-  value: 'bariSax',
-  label: 'Eb Bari Sax'
-}, {
-  value: 'pad',
-  label: 'Synth Pad'
-}, {
-  value: 'percussion',
-  label: 'Percussion'
-}, {
-  value: 'none',
-  label: 'None'
-}];
 const clefOptions = [{
   value: 'treble',
   label: 'Treble'
@@ -117,8 +55,20 @@ const usePercussionSymbols = ref(instrument.usePercussionNoteheads ?? false);
 watch(usePercussionSymbols, (newVal) => {
   instrument.usePercussionNoteheads = newVal;
 });
+// The instrument is not reactive, so keep the chosen one here for the Name placeholder.
+const currentInstrument: Ref<string> = ref(instrument.instrument);
+const namePlaceholder = computed(() => instrumentLabelFor(currentInstrument.value));
+const partName: Ref<string> = ref('');
+const partAbbreviation: Ref<string> = ref('');
+watch(partName, (newVal) => {
+  props.setName(newVal);
+});
+watch(partAbbreviation, (newVal) => {
+  props.setAbbreviation(newVal);
+});
 const updateInstrumentCb = async (value: string) => {
   instrument.instrument = value;
+  currentInstrument.value = value;
   if (typeof (SmoInstrument.instrumentKeyOffset[value]) === 'number') {
     instrument.keyOffset = SmoInstrument.instrumentKeyOffset[value];
   }
@@ -162,9 +112,23 @@ const getId = (str: string) => {
             :changeCb="(value: boolean) => { usePercussionSymbols = value }" />
         </div>
       </div>
+      <div class="row mb-2 ms-2 align-items-center">
+        <div class="col col-3 text-start"><label :for="getId('part-name')">Name</label></div>
+        <div class="col col-9">
+          <input type="text" class="form-control" :id="getId('part-name')" v-model="partName"
+            :placeholder="namePlaceholder" />
+        </div>
+      </div>
+      <div class="row mb-2 ms-2 align-items-center">
+        <div class="col col-3 text-start"><label :for="getId('part-abbreviation')">Abbreviation</label></div>
+        <div class="col col-9">
+          <input type="text" class="form-control" :id="getId('part-abbreviation')" v-model="partAbbreviation" />
+        </div>
+      </div>
+      <!-- counted from 1; one more than the number of staves is after the last staff -->
       <div class="group">
-          <numberInputApp :domId="getId('staffId')" :initialValue="props.staffLength - 1" :precision="0"
-             :maxValue="props.staffLength" :minValue="1" label="Staff Location"
+          <numberInputApp :domId="getId('staffId')" :initialValue="props.staffLength + 1" :precision="0"
+             :maxValue="props.staffLength + 1" :minValue="1" label="Staff Location"
             :changeCb="updateInsertLocation"></numberInputApp>
       </div>
       <div class="group">

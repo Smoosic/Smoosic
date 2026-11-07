@@ -9,7 +9,7 @@ import { replaceVueRoot, modalContainerId } from '../common';
 import { reactive, watch, ref } from 'vue';
 import instrumentPropertiesApp from '../components/dialogs/instrumentProperties.vue';
 import newPartApp from '../components/dialogs/newPart.vue';
-import { SmoSystemStaff, SmoSystemStaffParams } from '../../smo/data/systemStaff';
+import { clampPartLocation, instrumentLabelFor } from './createPartHelpers';
 
 export const SuiInstrumentDialogVue = (parameters: SuiDialogParams) => {
   const selection = parameters.view.tracker.selections[0];
@@ -56,57 +56,64 @@ export const SuiInstrumentDialogVue = (parameters: SuiDialogParams) => {
 }
 
 
+/**
+ * Create Part.  Asks for the new part's instrument, name, abbreviation and where it goes in the score,
+ * and creates it in one undo step.  The place is counted from 1; one more than the number of staves
+ * is after the last staff.  A part with two staves is never split by the new part.
+ * @category SuiDialog
+ */
 export const SuiCreatePartVue = (parameters: SuiDialogParams) => {
   const selection = parameters.view.tracker.selections[0];
   const instrument = new SmoInstrument(parameters.view.score.getStaffInstrument(selection.selector));
+  const staffCount = parameters.view.storeScore.staves.length;
   let addStave = false;
-  const staffLocation = ref(parameters.view.storeScore.staves.length - 1);
+  let partName = '';
+  let partAbbreviation = '';
+  // counting from 1, starting after the last staff
+  let staffLocation = staffCount + 1;
   const addStaveCb = () => {
     addStave = !addStave;
   }
-  const setStaffId = (staffId: number) => {
-    if (staffId < parameters.view.storeScore.staves.length && staffId >= 0) {
-      staffLocation.value = staffId;
-    }
+  const setStaffId = (location: number) => {
+    staffLocation = clampPartLocation(location, staffCount);
+  }
+  const setName = (value: string) => {
+    partName = value;
+  }
+  const setAbbreviation = (value: string) => {
+    partAbbreviation = value;
   }
   const commitCb = async () => {
-    const staffParams: SmoSystemStaffParams = SmoSystemStaff.defaults;
-    staffParams.staffId = parameters.view.storeScore.staves.length;
-    staffParams.measureInstrumentMap[0] = instrument;
-    staffParams.staffId = staffLocation.value;
-    await parameters.view.addStaff(staffParams);
-    if (addStave) {
-      const staffParams2: SmoSystemStaffParams = SmoSystemStaff.defaults;
-      staffParams2.staffId = staffParams.staffId + 1;
-      const instParams: SmoInstrumentParams = SmoInstrument.defaults;
-      instParams.instrument = instrument.instrument;
-      instParams.clef = instrument.clef === 'treble' ? 'bass' : 'treble';
-      const i2 = new SmoInstrument(instParams);
-      staffParams2.measureInstrumentMap[0] = i2;
-      await parameters.view.addStaff(staffParams2);
-      const partInfo = parameters.view.score.staves[staffParams.staffId].partInfo;
-      partInfo.stavesAfter = 1;
-    }
+    await parameters.view.createPart({
+      location: staffLocation,
+      instrument,
+      twoStaves: addStave,
+      name: partName,
+      instrumentLabel: instrumentLabelFor(instrument.instrument),
+      abbreviation: partAbbreviation
+    });
   }
-  const cancelCb = async () => {    
+  const cancelCb = async () => {
   }
 
   const getInstrument = () => instrument;
   const appParams = {
     domId: replaceVueRoot(modalContainerId),
-    label: 'Instrument Properties',
-    staffLength: parameters.view.storeScore.staves.length,
+    label: 'Create Part',
+    staffLength: staffCount,
     getInstrument,
     addStaveCb,
-    setStaffId
+    setStaffId,
+    setName,
+    setAbbreviation
   }
   const rootId = replaceVueRoot(modalContainerId);
   InstallDialog({
       app: newPartApp,
       appParams,
-      root: rootId,    
+      root: rootId,
       dialogParams: parameters,
-      commitCb, 
+      commitCb,
       cancelCb
     });
 }

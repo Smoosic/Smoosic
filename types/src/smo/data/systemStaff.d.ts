@@ -162,6 +162,14 @@ export declare class SmoSystemStaff implements SmoObjectParams {
      * 'from' in the staff slot is 'to'
      */
     mapStaffFromTo(from: number, to: number): void;
+    /**
+     * A staff was inserted above this one, or removed.  Everything on this staff that refers to a staff
+     * number at or beyond `fromIndex` moves by `delta`: modifiers, text brackets, tab staves and
+     * instrument selectors.
+     * @param fromIndex the staff numbers that are this large or larger move
+     * @param delta how far they move
+     */
+    shiftStaffReferences(fromIndex: number, delta: number): void;
     updateMeasureFormatsForPart(): void;
     /**
      * Get the active instrument at the given measure

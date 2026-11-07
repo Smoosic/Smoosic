@@ -11,7 +11,7 @@ import { SmoDynamicText, SmoArticulation, SmoOrnament, SmoLyric, SmoArpeggioType
 import { SmoTempo, SmoVolta, SmoRehearsalMark, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
-import { BatchSelectionOperation } from '../../smo/xform/operations';
+import { BatchSelectionOperation, AddPartParams } from '../../smo/xform/operations';
 import { FontInfo } from '../../common/vex';
 import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
@@ -572,6 +572,12 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @returns
      */
     addStaff(instrument: SmoSystemStaffParams): Promise<void>;
+    /**
+     * Create a part, with one or two staves, at the requested place in the score.  It is one undo step.
+     * See {@link SmoOperation.addPart}.
+     * @param params where the part goes, its instrument, name and abbreviation
+     */
+    createPart(params: AddPartParams): Promise<void>;
     /**
      * Update part info assumes that the part is currently exposed - that
      * staff 0 is the first staff in the part prior to editing.

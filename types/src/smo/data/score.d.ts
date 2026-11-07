@@ -329,6 +329,38 @@ export declare class SmoScore {
      */
     isMultimeasureRest(measureIndex: number, start: boolean, forceRest: boolean): boolean;
     /**
+     * True for the repeat symbols that belong at the end of a measure: To Coda, D.C. or D.S. (al Coda or
+     * al Fine), and Fine.  Segno and Coda belong at the start.
+     * @param symbol one of SmoRepeatSymbol.symbols
+     */
+    static isEndRepeatSymbol(symbol: number): boolean;
+    /**
+     * True for the repeat symbols that belong at the start of a measure: Segno and Coda
+     * @param symbol one of SmoRepeatSymbol.symbols
+     */
+    static isStartRepeatSymbol(symbol: number): boolean;
+    /**
+     * A measure that can never be part of a multimeasure rest: one under a volta ending on any
+     * staff, a measure that repeats the previous measure (the measure-repeat sign), or (kept from before)
+     * the first measure of a part with more than one staff.
+     * @param measureIndex
+     */
+    isMultimeasureBlocked(measureIndex: number): boolean;
+    /**
+     * A landmark that belongs to the start of a measure.  A multimeasure rest ends before such a
+     * measure, which starts the next one: a rehearsal mark, Segno or Coda, a repeat or double barline at
+     * the start of the measure, an instrument change, or (compared with the previous measure) a key
+     * signature, time signature or displayed tempo change.
+     * @param measureIndex
+     */
+    isMultimeasureStartLandmark(measureIndex: number): boolean;
+    /**
+     * A landmark that belongs to the end of a measure.  A multimeasure rest ends after such a measure:
+     * To Coda, D.C. or D.S., Fine, or a repeat or double barline at the end of the measure.
+     * @param measureIndex
+     */
+    isMultimeasureEndLandmark(measureIndex: number): boolean;
+    /**
      * Restore measure formats stored when a score is serialized
      */
     updateMeasureFormats(): void;
@@ -398,6 +430,22 @@ export declare class SmoScore {
     setNonTransposing(): void;
     setNoteInstrumentProperties(): void;
     addStaff(parameters: SmoSystemStaffParams): SmoSystemStaff;
+    /**
+     * Where a new part goes, given the position the user asked for.  The position counts from 1, and
+     * one more than the number of staves means after the last staff.  A part with more than one staff
+     * is never split: if the position is inside one, the new part goes after it.
+     * @param location the requested position, counting from 1
+     * @returns the index at which to insert the first staff of the new part, 0 to the number of staves
+     */
+    resolveNewPartIndex(location: number): number;
+    /**
+     * A staff was inserted at `fromIndex`, or removed.  Staff numbers at or beyond `fromIndex` move by
+     * `delta` in everything that refers to a staff: staff modifiers and instruments, system groups, and
+     * text attached to notes.
+     * @param fromIndex the staff numbers that are this large or larger move
+     * @param delta how far they move
+     */
+    shiftStaffReferences(fromIndex: number, delta: number): void;
     updateCompoundTimeSignature(): void;
     /**
      * delete any system groups that apply to deleted staves

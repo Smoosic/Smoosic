@@ -17,6 +17,7 @@ import { SmoStaffHairpin, SmoSlur, SmoTie, StaffModifierBase, SmoTieParams, SmoI
   SmoSlurParams, SmoInstrumentMeasure, SmoStaffTextBracket, SmoStaffTextBracketParams,
   SmoTabStave } from '../data/staffModifiers';
 import { SmoSystemGroup } from '../data/scoreModifiers';
+import { SmoPartInfo } from '../data/partInfo';
 import { SmoTextGroup } from '../data/scoreText';
 import { SmoSelection, SmoSelector, ModifierTab } from './selections';
 import { SmoContractNoteActor, SmoStretchNoteActor, SmoMakeTupletActor, SmoUnmakeTupletActor, SmoStretchNoteParams, SmoContractNoteParams, SmoMakeTupletParams} from './tickDuration';
@@ -41,6 +42,25 @@ export type createStaffModifierType<T> = (fromSelection: SmoSelection, toSelecti
  * take the score, a selection or selection array, and the parameters of the operation.
  * @category SmoTransform
  */
+/**
+ * What is needed to create a part: where it goes, its instrument, and what it is called.
+ * @category SmoOperation
+ */
+export interface AddPartParams {
+  /** where the new part goes, counting from 1; N + 1 is after the last of N staves */
+  location: number;
+  /** the sound, clef, staff lines and transposition of the (first) staff */
+  instrument: SmoInstrument;
+  /** add a second staff to the part, with the opposite clef */
+  twoStaves: boolean;
+  /** the name as typed.  If it is blank, instrumentLabel is the name */
+  name: string;
+  /** the display name of the instrument, e.g. 'Bb Trumpet' */
+  instrumentLabel: string;
+  /** the abbreviation as typed; blank for none */
+  abbreviation: string;
+}
+
 export class SmoOperation {
   static setMeasureFormat(score: SmoScore, selection: SmoSelection, value: SmoMeasureFormat) {
     if (!score.formattingManager) {
@@ -82,24 +102,70 @@ export class SmoOperation {
     });
   }
   /**
-   * Move a single stave up or down one.  If last down, move to first.
-   * If first up, move to last
-   * @param score 
-   * @param selection 
-   * @param index 
+   * The staves that make up the part containing the given staff.  A multi-staff part is
+   * kept together.
+   * @returns the index of the first staff of the part, and the number of staves in it
+   */
+  static getPartBlock(score: SmoScore, staffIndex: number): { start: number, length: number } {
+    const count = score.staves.length;
+    const info = score.staves[staffIndex].partInfo;
+    const start = Math.max(0, staffIndex - info.stavesBefore);
+    const end = Math.min(count - 1, staffIndex + info.stavesAfter);
+    return { start, length: end - start + 1 };
+  }
+  /**
+   * Swap the part starting at `start` with the part just before it, keeping the staves
+   * of each part together and in order.
+   */
+  private static swapPartWithPrevious(score: SmoScore, start: number) {
+    const prev = SmoOperation.getPartBlock(score, start - 1);
+    const cur = SmoOperation.getPartBlock(score, start);
+    for (let k = 0; k < cur.length; ++k) {
+      // bubble each staff of the current part up past the previous part
+      for (let j = 0; j < prev.length; ++j) {
+        score.swapStaves(start + k - j, start + k - j - 1);
+      }
+    }
+  }
+  /**
+   * Move a part up or down one.  A part with 2 staves moves as a unit, so a single-staff part
+   * that it passes moves by 2.  If last down, move to first.  If first up, move to last
+   * @param score
+   * @param selection
+   * @param index direction to move, -1 for up and 1 for down
    */
   static moveStaffUpDown(score: SmoScore, selection: SmoSelection, index: number) {
-    const index1 = selection.selector.staff;
-    const index2 = selection.selector.staff + index;
-    if (index2 < score.staves.length && index2 >= 0) {
-      score.swapStaves(index1, index2);
-    } else if (index2 === score.staves.length) {
-      for (let i = 0; i < (score.staves.length - 1); ++i) {
-        score.swapStaves((score.staves.length - 1) - i, (score.staves.length - 1) - (i + 1));
+    const count = score.staves.length;
+    if (count < 2 || selection.selector.staff >= count) {
+      return;
+    }
+    const block = SmoOperation.getPartBlock(score, selection.selector.staff);
+    if (block.length >= count) {
+      return;
+    }
+    let start = block.start;
+    if (index < 0) {
+      if (start > 0) {
+        SmoOperation.swapPartWithPrevious(score, start);
+      } else {
+        // first part up: it becomes the last, by moving each part after it up past it
+        while (start + block.length < count) {
+          const next = SmoOperation.getPartBlock(score, start + block.length);
+          SmoOperation.swapPartWithPrevious(score, next.start);
+          start += next.length;
+        }
       }
-    } else if (index2 < 0) {
-      for (let i = 0; i < (score.staves.length - 1); ++i) {
-        score.swapStaves(i, i + 1);
+    } else if (index > 0) {
+      if (start + block.length < count) {
+        // moving down is the next part moving up
+        SmoOperation.swapPartWithPrevious(score, start + block.length);
+      } else {
+        // last part down: it becomes the first
+        while (start > 0) {
+          const prev = SmoOperation.getPartBlock(score, start - 1);
+          SmoOperation.swapPartWithPrevious(score, start);
+          start = prev.start;
+        }
       }
     }
   }
@@ -989,6 +1055,68 @@ export class SmoOperation {
   }
   static addStaff(score: SmoScore, parameters: SmoSystemStaffParams): SmoSystemStaff {
     return score.addStaff(parameters);
+  }
+  /**
+   * Create a part with one or two staves.  The part goes at the requested location, but never
+   * inside an existing part with more than one staff.  Staves below it move down, and anything
+   * that refers to them moves too.  The new part keeps its text groups (preserveTextGroups), which
+   * is not the default for a part.
+   * @param score the full score
+   * @param params where to put the part and what it is called
+   * @returns the index of the first new staff
+   */
+  static addPart(score: SmoScore, params: AddPartParams): number {
+    const index = score.resolveNewPartIndex(params.location);
+    const lastMeasure = score.staves[0].measures.length - 1;
+    const typedName = (params.name ?? '').trim();
+    const partName = typedName.length > 0 ? typedName : params.instrumentLabel;
+    const abbreviation = (params.abbreviation ?? '').trim();
+    const stavesInPart = params.twoStaves ? 2 : 1;
+    const newStaves: SmoSystemStaff[] = [];
+    for (let ix = 0; ix < stavesInPart; ++ix) {
+      const instrument = new SmoInstrument(params.instrument);
+      if (ix === 1) {
+        instrument.clef = params.instrument.clef === 'treble' ? 'bass' : 'treble';
+      }
+      // the selectors are shared with the instrument we copied, and with the other new staff
+      instrument.startSelector = JSON.parse(JSON.stringify(params.instrument.startSelector));
+      instrument.endSelector = JSON.parse(JSON.stringify(params.instrument.endSelector));
+      instrument.startSelector.measure = 0;
+      instrument.endSelector.measure = lastMeasure;
+      const partInfo = new SmoPartInfo(SmoPartInfo.defaults);
+      partInfo.partName = partName;
+      partInfo.partAbbreviation = abbreviation;
+      partInfo.preserveTextGroups = true;
+      partInfo.stavesBefore = ix;
+      partInfo.stavesAfter = stavesInPart - ix - 1;
+      const staffParams: SmoSystemStaffParams = SmoSystemStaff.defaults;
+      staffParams.staffId = index + ix;
+      staffParams.measureInstrumentMap[0] = instrument;
+      staffParams.partInfo = partInfo;
+      newStaves.push(score.addStaff(staffParams));
+    }
+    newStaves.forEach((staff) => {
+      staff.updateInstrumentOffsets();
+    });
+    score.setNoteInstrumentProperties();
+    // As for any added staff, group the new staves with the staff above them, so they are justified
+    // and bracketed together.  A group that already spans the new staff has grown to hold it.
+    for (let ix = 0; ix < stavesInPart; ++ix) {
+      const staffId = index + ix;
+      if (staffId > 0) {
+        const selection = SmoSelection.measureSelection(score, staffId - 1, 0);
+        const grp = selection ? score.getSystemGroupForStaff(selection) : undefined;
+        if (grp) {
+          grp.endSelector.staff = Math.max(grp.endSelector.staff, staffId);
+        } else {
+          const newGroup = new SmoSystemGroup(SmoSystemGroup.defaults);
+          newGroup.startSelector.staff = staffId - 1;
+          newGroup.endSelector.staff = staffId;
+          score.systemGroups.push(newGroup);
+        }
+      }
+    }
+    return index;
   }
   static removeStaff(score: SmoScore, index: number) {
     score.removeStaff(index);
