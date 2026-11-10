@@ -4,6 +4,7 @@ import { SmoMusic } from '../data/music';
 import { SmoNote } from '../data/note';
 import { SmoAttrs, getId } from '../data/common';
 import { SmoMeasure, ISmoBeamGroup } from '../data/measure';
+import { SmoBeamPreferences } from '../data/measureModifiers';
 import { TickMap } from './tickMap';
 import { smoSerialize } from '../../common/serializationHelpers';
 import {SmoTuplet, SmoTupletTree} from "../data/tuplet";
@@ -51,6 +52,30 @@ export class SmoBeamGroup implements ISmoBeamGroup {
  * @category SmoTransform
  */
 export class SmoBeamer {
+  /**
+   * The tick positions, from the start of the measure, at which a beam group must end, for a
+   * measure that has a beam grouping.  The grouping is repeated from its first number until the
+   * measure is full, and the last position is clamped to the end of the measure.
+   * @returns the positions, or an empty list if the measure has no grouping (use the default)
+   */
+  static groupBoundaries(measure: SmoMeasure): number[] {
+    const groups = measure.getBeamGroups();
+    if (groups.length === 0) {
+      return [];
+    }
+    const unit = SmoBeamPreferences.unitTicks(measure.timeSignature);
+    const measureTicks = SmoMusic.timeSignatureToTicks(measure.timeSignature.actualBeats,
+      measure.timeSignature.beatDuration);
+    const rv: number[] = [];
+    let pos = 0;
+    let ix = 0;
+    while (pos < measureTicks) {
+      pos += groups[ix % groups.length] * unit;
+      rv.push(Math.min(pos, measureTicks));
+      ix += 1;
+    }
+    return rv;
+  }
   static applyBeams(measure: SmoMeasure) {
     let i = 0;
     let j = 0;
@@ -70,8 +95,12 @@ export class SmoBeamer {
   skipNext: number;
   currentGroup: SmoNote[];
   secondaryBeamBreaks: number[];
+  /** where the beam groups end, if the measure has its own beam grouping, otherwise empty */
+  boundaries: number[];
+  boundaryIndex: number = 0;
   constructor(measure: SmoMeasure, voice: number) {
     this.measure = measure;
+    this.boundaries = SmoBeamer.groupBoundaries(measure);
     this._removeVoiceBeam(measure, voice);
     this.duration = 0;
     this.measureDuration = 0;
@@ -140,14 +169,53 @@ export class SmoBeamer {
     }
     return false;
   }
-  allEighth() {
-    for (var i = 0; i < this.currentGroup.length; ++i) {
+  /**
+   * True if the current group can keep growing until it fills half a measure of duple time.
+   * Every note must be stemmable (shorter than a quarter).  The group is either all
+   * eighths, or contains a dotted note, so that dotted-eighth/sixteenth and
+   * double-dotted-eighth/sixteenth figures beam together across the beat.
+   */
+  canBeamHalfMeasure() {
+    let allEighths = true;
+    let anyDotted = false;
+    for (let i = 0; i < this.currentGroup.length; ++i) {
       const cg = this.currentGroup[i];
-      if (cg.tickCount !== 2048) {
+      if (cg.stemTicks >= 4096) {
         return false;
       }
+      if (cg.tickCount !== 2048) {
+        allEighths = false;
+      }
+      if (cg.dots > 0) {
+        anyDotted = true;
+      }
     }
-    return true;
+    return allEighths || anyDotted;
+  }
+  /**
+   * Beam a note in a measure that has its own beam grouping.  A group ends at the first note
+   * that reaches a group boundary, instead of when the note beam length is used up.  A note marked
+   * 'continue' does not end the group.  Hand-placed 'end' states still end it.
+   */
+  _beamNoteInGroups(tickmap: TickMap, index: number, note: SmoNote) {
+    const end = this.measureDuration;
+    const start = end - tickmap.deltaMap[index];
+    while (this.boundaryIndex < this.boundaries.length && this.boundaries[this.boundaryIndex] <= start) {
+      this.boundaryIndex += 1;
+    }
+    this.currentGroup.push(note);
+    let complete = note.beamState === SmoNote.beamStates.end || index === tickmap.notes.length - 1;
+    if (!complete && this.boundaryIndex < this.boundaries.length
+      && end >= this.boundaries[this.boundaryIndex] && note.beamState !== SmoNote.beamStates.continue) {
+      complete = true;
+    }
+    while (this.boundaryIndex < this.boundaries.length && this.boundaries[this.boundaryIndex] <= end) {
+      this.boundaryIndex += 1;
+    }
+    if (complete) {
+      this._completeGroup(tickmap.voice);
+      this._advanceGroup();
+    }
   }
   beamNote(tickmap: TickMap, index: number, note: SmoNote) {
     this.beamBeats = note.beamBeats;
@@ -194,6 +262,11 @@ export class SmoBeamer {
       return;
     }
 
+    if (this.boundaries.length > 0) {
+      this._beamNoteInGroups(tickmap, index, note);
+      return;
+    }
+
     this.currentGroup.push(note);
 
     if (note.beamState === SmoNote.beamStates.end) {
@@ -209,7 +282,7 @@ export class SmoBeamer {
 
     if (this.measure.timeSignature.actualBeats % 4 === 0 || 
       this.measure.timeSignature.actualBeats === 2) {
-      if (this.duration < 8192 && this.allEighth()) {
+      if (this.duration < 8192 && this.canBeamHalfMeasure()) {
         return;
       } else if (this.duration === 8192) {
         this._completeGroup(tickmap.voice);

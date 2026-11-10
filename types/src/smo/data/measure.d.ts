@@ -70,6 +70,8 @@ export interface MeasureSvg {
     hideMultimeasure: boolean;
     multimeasureLength: number;
     multimeasureEndBarline: number;
+    /** the end symbol (D.S., D.C., To Coda, Fine) of the last measure of a multimeasure rest, drawn over the rest */
+    multimeasureEndSymbol: SmoRepeatSymbol | null;
     element: SVGSVGElement | null;
     tabStaveBox?: SvgBox;
     tabElement?: SVGSVGElement;
@@ -473,6 +475,26 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
     addRehearsalMark(parameters: SmoRehearsalMarkParams): void;
     removeRehearsalMark(): void;
     getRehearsalMark(): SmoMeasureModifierBase | undefined;
+    /**
+     * The text to display for this measure's rehearsal mark.  For a 'measureNumber' mark this is
+     * the number shown for the measure (displayMeasure is 0-indexed, so add 1, matching the
+     * measure numbers drawn by the score renderer), otherwise it is the mark's symbol.
+     * @returns undefined if there is no rehearsal mark
+     */
+    getRehearsalMarkText(): string | undefined;
+    /**
+     * The beam grouping for this measure: the longest beam group (in eighth notes, or sixteenth
+     * notes in x/16 time) for each group in turn.  Empty means the measure beams by the
+     * score-wide default beam length.
+     * @returns a copy of the grouping
+     */
+    getBeamGroups(): number[];
+    /**
+     * Set the beam grouping for this measure.  An empty list removes it.  Any beam states set on
+     * the notes are reset to automatic, so a grouping is not overridden by earlier hand-beaming.
+     * @param groups whole numbers from 1 to 4
+     */
+    setBeamGroups(groups: number[]): void;
     getModifiersByType(type: string): SmoMeasureModifierBase[];
     setTempo(params: SmoTempoParams): void;
     /**

@@ -115,8 +115,32 @@ export declare class SmoOperation {
     static removeDynamic(selection: SmoSelection, dynamic: SmoDynamicText): void;
     static unbeamSelections(noteSelection: SmoSelection): void;
     static beamSelections(score: SmoScore, selections: SmoSelection[]): void;
+    /**
+     * Set the beam grouping of the measures in the selections, or clear it with an empty list.
+     * Only the staves and measures in the selections change.
+     * @param score the score the selections belong to
+     * @param selections the notes or measures to change; every measure they touch is changed
+     * @param groups the longest beam group for each group in turn, whole numbers from 1 to 4
+     */
+    static setBeamGroups(score: SmoScore, selections: SmoSelection[], groups: number[]): void;
+    /**
+     * Set the beam grouping of every measure in every staff of the score, or clear it with
+     * an empty list.
+     */
+    static setAllBeamGroups(score: SmoScore, groups: number[]): void;
     static clearAllBeamGroups(score: SmoScore): void;
     static clearBeamGroups(score: SmoScore, selections: SmoSelection[]): void;
+    /**
+     * Put the selected notes back to automatic beaming: no hand-placed beam break or join, and the
+     * beam length for the meter from the score preferences.  In a measure with its own beam grouping,
+     * that grouping applies.
+     */
+    static autoBeamSelections(score: SmoScore, selections: SmoSelection[]): void;
+    /**
+     * Set the stem direction of the selected notes
+     * @param flagState one of {@link SmoNote.flagStates}: auto, up or down
+     */
+    static setStemDirection(selections: SmoSelection[], flagState: number): void;
     static toggleBeamDirection(selections: SmoSelection[]): void;
     static addEnding(score: SmoScore, parameters: SmoVolta): void;
     static removeEnding(score: SmoScore, ending: SmoVolta): void;

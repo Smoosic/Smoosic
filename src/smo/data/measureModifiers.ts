@@ -1019,6 +1019,66 @@ export class SmoTimeSignature extends SmoMeasureModifierBase {
     this.displayString = params.displayString;
   }
 }
+/**
+ * Constructor parameters for {@link SmoBeamPreferences}
+ * @category SmoObject
+ */
+export interface SmoBeamPreferencesParams {
+  /**
+   * The longest beam group, in eighth notes (sixteenth notes in x/16 time), for each beam group
+   * in the measure.  The list starts over from its first number when the measure has more groups.
+   */
+  groups: number[]
+}
+/**
+ * @category serialization
+ */
+export interface SmoBeamPreferencesParamsSer extends SmoBeamPreferencesParams {
+  ctor: string
+}
+/**
+ * Beam grouping for a single measure, for compound or irregular meters (e.g. 3 + 2 in 5/8).
+ * A measure with no beam preferences beams by the score-wide default beam length.
+ * There is at most one per measure, and it is never empty: an empty grouping is
+ * represented by the measure not having one.
+ * @category SmoObject
+ */
+export class SmoBeamPreferences extends SmoMeasureModifierBase implements SmoBeamPreferencesParams {
+  static readonly minGroup: number = 1;
+  static readonly maxGroup: number = 4;
+  /**
+   * True if every entry is a whole number from {@link minGroup} to {@link maxGroup}.  An empty
+   * list is valid, and means 'use the default'.
+   */
+  static isValidGroups(values: number[]): boolean {
+    if (!Array.isArray(values)) {
+      return false;
+    }
+    return values.every((value) => Number.isInteger(value)
+      && value >= SmoBeamPreferences.minGroup && value <= SmoBeamPreferences.maxGroup);
+  }
+  /**
+   * The number of ticks that each number in the grouping stands for: an eighth note, or a
+   * sixteenth note if the lower number of the time signature is 16 or more.
+   */
+  static unitTicks(timeSignature: SmoTimeSignature): number {
+    return timeSignature.beatDuration >= 16 ? 1024 : 2048;
+  }
+  static get defaults(): SmoBeamPreferencesParams {
+    return { groups: [] };
+  }
+  groups: number[] = [];
+  constructor(params: SmoBeamPreferencesParams) {
+    super('SmoBeamPreferences');
+    if (!SmoBeamPreferences.isValidGroups(params.groups)) {
+      throw new Error('beam groups must be whole numbers from 1 to 4');
+    }
+    this.groups = params.groups.slice();
+  }
+  serialize(): SmoBeamPreferencesParamsSer {
+    return { ctor: 'SmoBeamPreferences', groups: this.groups.slice() };
+  }
+}
 export const measureModifierDynamicCtorInit = () => {
   SmoDynamicCtor['SmoMeasureFormat'] = (params: SmoMeasureFormatParams) => new SmoMeasureFormat(params);
   SmoDynamicCtor['SmoBarline'] = (params: SmoBarlineParams) => new SmoBarline(params);
@@ -1028,4 +1088,5 @@ export const measureModifierDynamicCtorInit = () => {
   SmoDynamicCtor['SmoRehearsalMark'] = (params: SmoRehearsalMarkParams) => new SmoRehearsalMark(params);
   SmoDynamicCtor['SmoTempo'] = (params: SmoTempoParams) => new SmoTempo(params);
   SmoDynamicCtor['SmoTimeSignature'] = (params: TimeSignatureParameters) => new SmoTimeSignature(params);
+  SmoDynamicCtor['SmoBeamPreferences'] = (params: SmoBeamPreferencesParams) => new SmoBeamPreferences(params);
 }

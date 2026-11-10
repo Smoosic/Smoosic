@@ -1146,6 +1146,25 @@ export class SuiScoreViewOperations extends SuiScoreView {
     SmoOperation.clearAllBeamGroups(this.storeScore);
     await this.awaitRender();
   }
+  /**
+   * Set the beam grouping of measures, for compound or irregular meters such as 3 + 2 in 5/8.
+   * An empty grouping goes back to the default for the meter.  This replaces any hand-placed beams
+   * in those measures.
+   * @param groups the longest beam group for each group in turn, whole numbers from 1 to 4
+   * @param scope the measures of the selected notes, or every measure in the score
+   */
+  async setBeamGroups(groups: number[], scope: 'selections' | 'all'): Promise<void> {
+    if (scope === 'all') {
+      this._undoScore('beam groups');
+      SmoOperation.setAllBeamGroups(this.score, groups);
+      SmoOperation.setAllBeamGroups(this.storeScore, groups);
+      await this.awaitRender();
+      return;
+    }
+    await this.modifyCurrentSelections('beam groups', (score, selections) => {
+      SmoOperation.setBeamGroups(score, selections, groups);
+    });
+  }
   async clearSelectedBeams() {
     const selections = this.tracker.selections;
     const measures = SmoSelection.getMeasureList(selections);
@@ -1167,6 +1186,32 @@ export class SuiScoreViewOperations extends SuiScoreView {
       const altSel = this._getEquivalentSelection(selection);
       SmoOperation.unbeamSelections(altSel!);
     });
+    this._renderChangedMeasures(measureSelections);
+    await this.renderer.updatePromise();
+  }
+  /**
+   * Put the selected notes back to automatic beaming, removing any hand-placed beam breaks and joins
+   */
+  async autoBeamSelections(): Promise<void> {
+    const selections = this.tracker.selections;
+    const measureSelections = this.undoTrackerMeasureSelections('auto beam selections');
+    SmoOperation.autoBeamSelections(this.score, selections);
+    SmoOperation.autoBeamSelections(this.storeScore, this._getEquivalentSelections(selections));
+    this._renderChangedMeasures(measureSelections);
+    await this.renderer.updatePromise();
+  }
+  /**
+   * Set the stem direction of the selected notes
+   * @param flagState one of SmoNote.flagStates: auto, up or down
+   */
+  async setStemDirection(flagState: number): Promise<void> {
+    const selections = this.tracker.selections;
+    if (selections.length < 1) {
+      return;
+    }
+    const measureSelections = this.undoTrackerMeasureSelections('set stem direction');
+    SmoOperation.setStemDirection(selections, flagState);
+    SmoOperation.setStemDirection(this._getEquivalentSelections(selections), flagState);
     this._renderChangedMeasures(measureSelections);
     await this.renderer.updatePromise();
   }

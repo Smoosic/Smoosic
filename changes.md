@@ -1,6 +1,16 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-8-2026
+Beam groups for each measure, and dotted notes beam together.
+
+* The **Beams** menu has a new **Beam Groups** command.  Use **Add group** (+) to add a beam group for each part of the measure, and set each one from 1 to 4: for a measure of 5/8 add two groups and set them to 3 and 2.  Each number is the longest beam group, in eighth notes (sixteenth notes in x/16 time).  The first number is used for the first beam group, the second for the second group, and so on.  If the measure has more groups than numbers the list starts over, so `3` in 12/8 gives four groups of three and `3, 2` in 10/8 gives 3 + 2 + 3 + 2.  Leave it empty to use the default for the meter.
+* Choose where it applies: **Selected measures** or **Whole score**.  Applying a grouping replaces any hand-placed beams in those measures.  Beam Selections in a measure with a grouping keeps the beam you make across the group boundaries, so you can beam the last three notes of a 5/8 measure grouped 3 + 2 and get 2 + 3.
+* The **Beams** menu is reorganized.  **Quick Beam** is a submenu with **Beam Selections**, **Unbeam Selections** and a new **Autobeam Selections**, which removes any hand-placed beam breaks and joins from the selected notes so they beam automatically (by the measure's beam groups, if it has them).  **Stem Direction** is a submenu with **Stems Up**, **Stems Down** and **Stems Auto**, replacing the single choice that stepped through the three.  The keys are unchanged, so Shift-B still steps through up, down and auto.
+* Measures with no grouping beam exactly as before, and scores saved before this open unchanged.  The score-wide default beam length in the preferences is still used for those measures.
+* In duple time, groups of notes that include a dotted note, such as dotted eighth and sixteenth, or double-dotted eighth and thirty-second, now beam together across the beat, as far as half a measure.  Runs of plain sixteenths still beam by the beat.
+* For people using Smoosic as a library: the grouping is a measure modifier, `SmoBeamPreferences` (a list `groups`), set with `SmoMeasure.setBeamGroups()` and read with `getBeamGroups()`.  `SmoOperation.setBeamGroups` and `setAllBeamGroups` set it for selections or for the whole score, and `SuiScoreViewOperations.setBeamGroups` does so as one undo step.  The new modifier is in `tools/smoosic-schema.json`; the separate SmoSchema repository needs it too.
+
 ## 11-6-2026
 Create Part dialog fixes.
 

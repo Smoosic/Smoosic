@@ -523,4 +523,46 @@ export declare class SmoTimeSignature extends SmoMeasureModifierBase {
     serialize(): TimeSignatureParametersSer;
     constructor(params: TimeSignatureParameters);
 }
+/**
+ * Constructor parameters for {@link SmoBeamPreferences}
+ * @category SmoObject
+ */
+export interface SmoBeamPreferencesParams {
+    /**
+     * The longest beam group, in eighth notes (sixteenth notes in x/16 time), for each beam group
+     * in the measure.  The list starts over from its first number when the measure has more groups.
+     */
+    groups: number[];
+}
+/**
+ * @category serialization
+ */
+export interface SmoBeamPreferencesParamsSer extends SmoBeamPreferencesParams {
+    ctor: string;
+}
+/**
+ * Beam grouping for a single measure, for compound or irregular meters (e.g. 3 + 2 in 5/8).
+ * A measure with no beam preferences beams by the score-wide default beam length.
+ * There is at most one per measure, and it is never empty: an empty grouping is
+ * represented by the measure not having one.
+ * @category SmoObject
+ */
+export declare class SmoBeamPreferences extends SmoMeasureModifierBase implements SmoBeamPreferencesParams {
+    static readonly minGroup: number;
+    static readonly maxGroup: number;
+    /**
+     * True if every entry is a whole number from {@link minGroup} to {@link maxGroup}.  An empty
+     * list is valid, and means 'use the default'.
+     */
+    static isValidGroups(values: number[]): boolean;
+    /**
+     * The number of ticks that each number in the grouping stands for: an eighth note, or a
+     * sixteenth note if the lower number of the time signature is 16 or more.
+     */
+    static unitTicks(timeSignature: SmoTimeSignature): number;
+    static get defaults(): SmoBeamPreferencesParams;
+    groups: number[];
+    constructor(params: SmoBeamPreferencesParams);
+    serialize(): SmoBeamPreferencesParamsSer;
+}
 export declare const measureModifierDynamicCtorInit: () => void;

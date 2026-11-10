@@ -710,6 +710,14 @@ export class SmoOperation {
           note.beamState = SmoNote.beamStates.auto;
         }
       });
+      // In a measure with its own beam grouping, every note of a hand beam except the last is marked
+      // 'continue' so that a group boundary does not break the beam after it.  Otherwise the beam
+      // is as it always was.
+      if (selections[0].measure.getBeamGroups().length > 0) {
+        for (let i = 0; i < beamGroup.length - 1; ++i) {
+          beamGroup[i].beamState = SmoNote.beamStates.continue;
+        }
+      }
       const sn = beamGroup[beamGroup.length - 1];
       sn.beamState = SmoNote.beamStates.end;
       // Make sure the last note of the previous beam is the end of this beam group.
@@ -722,6 +730,29 @@ export class SmoOperation {
         }
       }
     }
+  }
+  /**
+   * Set the beam grouping of the measures in the selections, or clear it with an empty list.
+   * Only the staves and measures in the selections change.
+   * @param score the score the selections belong to
+   * @param selections the notes or measures to change; every measure they touch is changed
+   * @param groups the longest beam group for each group in turn, whole numbers from 1 to 4
+   */
+  static setBeamGroups(score: SmoScore, selections: SmoSelection[], groups: number[]) {
+    selections.forEach((selection) => {
+      selection.measure.setBeamGroups(groups);
+    });
+  }
+  /**
+   * Set the beam grouping of every measure in every staff of the score, or clear it with
+   * an empty list.
+   */
+  static setAllBeamGroups(score: SmoScore, groups: number[]) {
+    score.staves.forEach((staff) => {
+      staff.measures.forEach((measure) => {
+        measure.setBeamGroups(groups);
+      });
+    });
   }
   static clearAllBeamGroups(score: SmoScore) {    
     score.staves.forEach((ss) => {
@@ -743,6 +774,34 @@ export class SmoOperation {
         const note = ss.note;
         note.beamBeats = triple ? score.preferences.defaultTripleDuration : score.preferences.defaultDupleDuration;
         note.beamState = SmoNote.beamStates.end;
+      }
+    });
+  }
+
+  /**
+   * Put the selected notes back to automatic beaming: no hand-placed beam break or join, and the
+   * beam length for the meter from the score preferences.  In a measure with its own beam grouping,
+   * that grouping applies.
+   */
+  static autoBeamSelections(score: SmoScore, selections: SmoSelection[]) {
+    selections.forEach((selection) => {
+      const note = selection.note;
+      if (note) {
+        const triple = selection.measure.timeSignature.actualBeats % 3 === 0;
+        note.beamBeats = triple ? score.preferences.defaultTripleDuration : score.preferences.defaultDupleDuration;
+        note.beamState = SmoNote.beamStates.auto;
+        note.endBeam = false;
+      }
+    });
+  }
+  /**
+   * Set the stem direction of the selected notes
+   * @param flagState one of {@link SmoNote.flagStates}: auto, up or down
+   */
+  static setStemDirection(selections: SmoSelection[], flagState: number) {
+    selections.forEach((selection) => {
+      if (selection.note) {
+        selection.note.flagState = flagState;
       }
     });
   }

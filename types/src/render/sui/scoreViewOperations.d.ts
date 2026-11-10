@@ -274,12 +274,29 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      */
     makeRest(): Promise<void>;
     clearAllBeams(): Promise<void>;
+    /**
+     * Set the beam grouping of measures, for compound or irregular meters such as 3 + 2 in 5/8.
+     * An empty grouping goes back to the default for the meter.  This replaces any hand-placed beams
+     * in those measures.
+     * @param groups the longest beam group for each group in turn, whole numbers from 1 to 4
+     * @param scope the measures of the selected notes, or every measure in the score
+     */
+    setBeamGroups(groups: number[], scope: 'selections' | 'all'): Promise<void>;
     clearSelectedBeams(): Promise<void>;
     /**
      * toggle the 'end beam' flag for selected notes
      * @returns
      */
     unbeamSelections(): Promise<void>;
+    /**
+     * Put the selected notes back to automatic beaming, removing any hand-placed beam breaks and joins
+     */
+    autoBeamSelections(): Promise<void>;
+    /**
+     * Set the stem direction of the selected notes
+     * @param flagState one of SmoNote.flagStates: auto, up or down
+     */
+    setStemDirection(flagState: number): Promise<void>;
     toggleCue(): Promise<void>;
     /**
     * up or down

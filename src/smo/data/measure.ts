@@ -13,7 +13,7 @@ import { smoSerialize } from '../../common/serializationHelpers';
 import { SmoMusic } from './music';
 import {
   SmoBarline, SmoMeasureModifierBase, SmoRepeatSymbol, SmoTempo, SmoMeasureFormat,
-  SmoVolta, SmoRehearsalMarkParams, SmoRehearsalMark, SmoTempoParams, SmoTimeSignature,
+  SmoVolta, SmoRehearsalMarkParams, SmoRehearsalMark, SmoTempoParams, SmoTimeSignature, SmoBeamPreferences,
   TimeSignatureParametersSer, SmoMeasureFormatParamsSer, SmoTempoParamsSer
 } from './measureModifiers';
 import { SmoNote, NoteType, SmoNoteParamsSer } from './note';
@@ -1553,6 +1553,35 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
       }
     }
     return rm.symbol;
+  }
+  /**
+   * The beam grouping for this measure: the longest beam group (in eighth notes, or sixteenth
+   * notes in x/16 time) for each group in turn.  Empty means the measure beams by the
+   * score-wide default beam length.
+   * @returns a copy of the grouping
+   */
+  getBeamGroups(): number[] {
+    const prefs = this.modifiers.find((mm) => mm.attrs.type === 'SmoBeamPreferences') as SmoBeamPreferences | undefined;
+    return prefs ? prefs.groups.slice() : [];
+  }
+  /**
+   * Set the beam grouping for this measure.  An empty list removes it.  Any beam states set on
+   * the notes are reset to automatic, so a grouping is not overridden by earlier hand-beaming.
+   * @param groups whole numbers from 1 to 4
+   */
+  setBeamGroups(groups: number[]) {
+    if (!SmoBeamPreferences.isValidGroups(groups)) {
+      throw new Error('beam groups must be whole numbers from 1 to 4');
+    }
+    this._removeSingletonModifier('SmoBeamPreferences');
+    if (groups.length > 0) {
+      this.modifiers.push(new SmoBeamPreferences({ groups }));
+    }
+    this.voices.forEach((voice) => {
+      voice.notes.forEach((note) => {
+        note.beamState = SmoNote.beamStates.auto;
+      });
+    });
   }
   getModifiersByType(type: string) {
     return this.modifiers.filter((mm) => type === mm.attrs.type);
