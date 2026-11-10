@@ -1,6 +1,16 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-9-2026
+Fill Measures.
+
+* The **Measure** menu has a new **Fill Measures** submenu that replaces the selected measures with rests.  **This removes all the notes and voices in those measures**, and the slurs, ties, hairpins and text that were attached to them.  The measure's time signature, key, clef, tempo, barlines, endings and other settings are kept.  It is one undo step.
+* **Whole Rest** uses the largest rest that fits: a whole rest in 4/4, a dotted half rest in 3/4 and 6/8, a double-dotted half rest in 7/8.  When no single rest fits, it adds the next largest until the measure is full, so 5/8 is a half rest and an eighth rest.
+* **Beats** uses a rest for each beat: quarter rests in 4/4, 2/4 and 3/4, and dotted quarter rests in 6/8, 9/8 and 12/8.  In meters like 5/8 and 7/8 the last rest is the largest that fits what is left.
+* **Eighth Rests** uses eighth rests, and a smaller rest at the end if less than an eighth is left (5/16), so a measure is never left short.
+* A pickup measure keeps its length, and each selected measure is filled for its own time signature.
+* For people using Smoosic as a library: `SmoOperation.fillMeasures` and `SuiScoreViewOperations.fillMeasures` do the fill, and `fillRestDurations` in `smo/xform/measureFill` works out the rests.
+
 ## 11-8-2026
 Beam groups for each measure, and dotted notes beam together.
 

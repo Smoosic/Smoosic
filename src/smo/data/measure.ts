@@ -1555,6 +1555,31 @@ export class SmoMeasure implements SmoMeasureParams, TickMappable {
     return rm.symbol;
   }
   /**
+   * Replace everything in the measure with rests.  All voices are removed and replaced by one voice that
+   * holds the rests.  Tuplets and beam groups go with the notes.  The measure's own settings (time signature,
+   * clef, key, tempo, barlines and other modifiers, formatting) are not changed.
+   * @param durations the length in ticks of each rest, in order
+   * @param beamBeats the beam length to give the rests, so notes entered over them beam as the meter does
+   */
+  fillWithRests(durations: number[], beamBeats: number) {
+    const pitch = SmoMeasure.defaultPitchForClef[this.clef];
+    const notes: SmoNote[] = durations.map((duration) => {
+      const params = SmoNote.defaults;
+      params.pitches = [JSON.parse(JSON.stringify(pitch))];
+      params.noteType = 'r';
+      params.clef = this.clef;
+      params.ticks.numerator = duration;
+      params.stemTicks = duration;
+      params.beamBeats = beamBeats;
+      return new SmoNote(params);
+    });
+    this.voices = [{ notes }];
+    this.tupletTrees = [];
+    this.beamGroups = [];
+    this.activeVoice = 0;
+    this.setKeySignature(this.keySignature);
+  }
+  /**
    * The beam grouping for this measure: the longest beam group (in eighth notes, or sixteenth
    * notes in x/16 time) for each group in turn.  Empty means the measure beams by the
    * score-wide default beam length.

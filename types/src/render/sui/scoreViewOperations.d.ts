@@ -12,6 +12,7 @@ import { SmoTempo, SmoVolta, SmoRehearsalMark, SmoMeasureFormat, SmoTimeSignatur
 import { UndoBuffer } from '../../smo/xform/undo';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
 import { BatchSelectionOperation, AddPartParams } from '../../smo/xform/operations';
+import { MeasureFillType } from '../../smo/xform/measureFill';
 import { FontInfo } from '../../common/vex';
 import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
@@ -282,6 +283,12 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @param scope the measures of the selected notes, or every measure in the score
      */
     setBeamGroups(groups: number[], scope: 'selections' | 'all'): Promise<void>;
+    /**
+     * Fill the selected measures with rests.  This removes all the notes and voices in them, and anything
+     * attached to those notes, such as slurs and text.  It is one undo step.
+     * @param fill which rests: the largest that fit, a rest for each beat, or eighth rests
+     */
+    fillMeasures(fill: MeasureFillType): Promise<void>;
     clearSelectedBeams(): Promise<void>;
     /**
      * toggle the 'end beam' flag for selected notes

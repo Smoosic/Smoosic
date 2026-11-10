@@ -8,6 +8,7 @@ import { SmoStaffHairpin, SmoSlur, SmoTie, StaffModifierBase, SmoInstrument, Smo
 import { SmoSystemGroup } from '../data/scoreModifiers';
 import { SmoTextGroup } from '../data/scoreText';
 import { SmoSelection, SmoSelector, ModifierTab } from './selections';
+import { MeasureFillType } from './measureFill';
 /**
  * supported operations for  {@link SmoOperation.batchSelectionOperation} to change a note's duration
  */
@@ -128,6 +129,16 @@ export declare class SmoOperation {
      * an empty list.
      */
     static setAllBeamGroups(score: SmoScore, groups: number[]): void;
+    /**
+     * Fill the measures in the selections with rests, removing all the notes and voices in them.  See
+     * {@link fillRestDurations} for which rests.  Everything attached to the removed notes goes with them:
+     * staff modifiers that start or end in the measure (slurs, ties, hairpins) and text attached to its notes.
+     * Only the staves and measures in the selections change.
+     * @param score the score the selections belong to
+     * @param selections the notes or measures; every measure they touch is filled
+     * @param fill which rests
+     */
+    static fillMeasures(score: SmoScore, selections: SmoSelection[], fill: MeasureFillType): void;
     static clearAllBeamGroups(score: SmoScore): void;
     static clearBeamGroups(score: SmoScore, selections: SmoSelection[]): void;
     /**

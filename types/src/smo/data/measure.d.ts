@@ -483,6 +483,14 @@ export declare class SmoMeasure implements SmoMeasureParams, TickMappable {
      */
     getRehearsalMarkText(): string | undefined;
     /**
+     * Replace everything in the measure with rests.  All voices are removed and replaced by one voice that
+     * holds the rests.  Tuplets and beam groups go with the notes.  The measure's own settings (time signature,
+     * clef, key, tempo, barlines and other modifiers, formatting) are not changed.
+     * @param durations the length in ticks of each rest, in order
+     * @param beamBeats the beam length to give the rests, so notes entered over them beam as the meter does
+     */
+    fillWithRests(durations: number[], beamBeats: number): void;
+    /**
      * The beam grouping for this measure: the longest beam group (in eighth notes, or sixteenth
      * notes in x/16 time) for each group in turn.  Empty means the measure beams by the
      * score-wide default beam length.

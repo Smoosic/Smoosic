@@ -207,6 +207,12 @@ export declare class SmoSystemStaff implements SmoObjectParams {
     getTabStavesForMeasureRow(measures: SmoMeasure[]): SmoTabStave[];
     addStaffModifier(modifier: StaffModifierBase): void;
     removeStaffModifier(modifier: StaffModifierBase): void;
+    /**
+     * Remove the staff modifiers (slurs, ties, hairpins, brackets and so on) that start or end in a measure.
+     * Used when the notes of the measure are removed.  Modifiers that only pass over the measure are kept.
+     * @param measureIndex the index of the measure
+     */
+    removeModifiersInMeasure(measureIndex: number): void;
     getVoltaMap(startIndex: number, endIndex: number): SmoVolta[];
     getVoltasForMeasure(ix: number): SmoVolta[];
     getModifiersAt(selector: SmoSelector): StaffModifierBase[];

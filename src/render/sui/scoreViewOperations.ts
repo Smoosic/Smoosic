@@ -23,6 +23,7 @@ import {
   SmoOperation, createStaffModifierType, MakeTupletOperation
 } from '../../smo/xform/operations';
 import { BatchSelectionOperation, AddPartParams } from '../../smo/xform/operations';
+import { MeasureFillType } from '../../smo/xform/measureFill';
 import { smoSerialize } from '../../common/serializationHelpers';
 import { FontInfo } from '../../common/vex';
 import { SmoMusic } from '../../smo/data/music';
@@ -1164,6 +1165,26 @@ export class SuiScoreViewOperations extends SuiScoreView {
     await this.modifyCurrentSelections('beam groups', (score, selections) => {
       SmoOperation.setBeamGroups(score, selections, groups);
     });
+  }
+  /**
+   * Fill the selected measures with rests.  This removes all the notes and voices in them, and anything
+   * attached to those notes, such as slurs and text.  It is one undo step.
+   * @param fill which rests: the largest that fit, a rest for each beat, or eighth rests
+   */
+  async fillMeasures(fill: MeasureFillType): Promise<void> {
+    const selections = this.tracker.selections;
+    if (selections.length < 1) {
+      return;
+    }
+    const measureSelections = SmoSelection.getMeasureList(selections);
+    this._undoScore('fill measures');
+    SmoOperation.fillMeasures(this.score, selections, fill);
+    SmoOperation.fillMeasures(this.storeScore, this._getEquivalentSelections(selections), fill);
+    // The displayed score's staves can be numbered differently from the stored score's.  The stored
+    // score is the one that is right about which text was attached to which staff.
+    this.score.synchronizeTextGroups(this.storeScore.textGroups);
+    this._renderChangedMeasures(measureSelections);
+    await this.renderer.updatePromise();
   }
   async clearSelectedBeams() {
     const selections = this.tracker.selections;

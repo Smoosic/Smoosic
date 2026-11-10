@@ -458,6 +458,13 @@ export declare class SmoScore {
     addTextGroup(textGroup: SmoTextGroup): void;
     getTextGroups(): SmoTextGroup[];
     scaleTextGroups(scale: number): void;
+    /**
+     * Remove the text that is attached to the notes of a measure, from the score and from the part
+     * information of the staff.  Used when the notes of the measure are removed.
+     * @param staffIndex the staff of the measure
+     * @param measureIndex the index of the measure
+     */
+    removeTextAttachedToMeasure(staffIndex: number, measureIndex: number): void;
     removeTextGroup(textGroup: SmoTextGroup): void;
     setLyricAdjustWidth(adjustNoteWidth: boolean): void;
     setChordAdjustWidth(adjustNoteWidth: boolean): void;

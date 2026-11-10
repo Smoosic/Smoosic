@@ -1581,6 +1581,23 @@ export class SmoScore {
     });
   }
 
+  /**
+   * Remove the text that is attached to the notes of a measure, from the score and from the part
+   * information of the staff.  Used when the notes of the measure are removed.
+   * @param staffIndex the staff of the measure
+   * @param measureIndex the index of the measure
+   */
+  removeTextAttachedToMeasure(staffIndex: number, measureIndex: number) {
+    const attachedHere = (tg: SmoTextGroup) => tg.attachToSelector && tg.selector
+      && tg.selector.staff === staffIndex && tg.selector.measure === measureIndex;
+    this.textGroups = this.textGroups.filter((tg) => !attachedHere(tg));
+    const staff = this.staves[staffIndex];
+    if (staff) {
+      // Part text is kept relative to the part, so the staff is not compared
+      staff.partInfo.textGroups = staff.partInfo.textGroups.filter((tg) =>
+        !(tg.attachToSelector && tg.selector && tg.selector.measure === measureIndex));
+    }
+  }
   removeTextGroup(textGroup: SmoTextGroup) {
     this.updateTextGroup(textGroup, false);
   }

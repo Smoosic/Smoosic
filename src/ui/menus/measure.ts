@@ -4,6 +4,7 @@ import { SuiEndingsDialogVue } from '../dialogs/endings';
 import { SuiInsertMeasuresVue } from '../dialogs/addMeasure';
 import { SuiMeasureFormatDialogVue } from '../dialogs/measureFormat';
 import { SmoMeasureFormat } from '../../smo/data/measureModifiers';
+import { MeasureFillType } from '../../smo/xform/measureFill';
 declare var $: any;
 /**
  * @category SuiMenu
@@ -147,8 +148,46 @@ const resetFormattingMenuOption: SuiConfiguredMenuOption = {
   }
 }
 /**
+ * True if measures are selected
+ */
+const hasSelectedMeasures = (menu: SuiMenuBase): boolean => menu.tracker.getSelectedMeasures().length > 0;
+/**
+ * One choice of the Fill Measures submenu.  Each one replaces everything in the selected measures with rests.
+ * @category SuiMenu
+ */
+const fillChoice = (fill: MeasureFillType, text: string, value: string): SuiConfiguredMenuOption => ({
+  handler: async (menu: SuiMenuBase) => {
+    await menu.view.fillMeasures(fill);
+  },
+  display: hasSelectedMeasures,
+  menuChoice: {
+    icon: '',
+    text,
+    value
+  }
+});
+/**
+ * Fill the selected measures with rests: the largest rest that fits, a rest for each beat, or eighth rests.
+ * This removes the notes and voices in the measures.
+ * @category SuiMenu
+ */
+const fillMeasuresMenuOption: SuiConfiguredMenuOption = {
+  handler: async () => { }, // unreachable -- subMenu takes precedence over handler
+  display: hasSelectedMeasures,
+  subMenu: [
+    fillChoice('wholeRest', 'Whole Rest', 'fillWholeRest'),
+    fillChoice('beats', 'Beats', 'fillBeats'),
+    fillChoice('eighthRests', 'Eighth Rests', 'fillEighthRests')
+  ],
+  menuChoice: {
+    icon: '',
+    text: 'Fill Measures',
+    value: 'fillMeasuresMenuOption'
+  }
+}
+/**
  * @category SuiMenu
  */
 const SuiMeasureMenuConfig: SuiConfiguredMenuOption[] = [
   addMeasureMenuOption, formatMeasureMenuOption, endingsMeasureMenuOption, deleteSelectedMenuOption, 
-  resetSystemBreaksMenuOption, resetFormattingMenuOption];
+  resetSystemBreaksMenuOption, resetFormattingMenuOption, fillMeasuresMenuOption];

@@ -22,6 +22,7 @@ import { SmoTextGroup } from '../data/scoreText';
 import { SmoSelection, SmoSelector, ModifierTab } from './selections';
 import { SmoContractNoteActor, SmoStretchNoteActor, SmoMakeTupletActor, SmoUnmakeTupletActor, SmoStretchNoteParams, SmoContractNoteParams, SmoMakeTupletParams} from './tickDuration';
 import { SmoBeamer } from './beamers';
+import { fillRestDurations, MeasureFillType } from './measureFill';
 import { SmoTupletTree } from '../data/tuplet';
 /**
  * supported operations for  {@link SmoOperation.batchSelectionOperation} to change a note's duration
@@ -752,6 +753,36 @@ export class SmoOperation {
       staff.measures.forEach((measure) => {
         measure.setBeamGroups(groups);
       });
+    });
+  }
+  /**
+   * Fill the measures in the selections with rests, removing all the notes and voices in them.  See
+   * {@link fillRestDurations} for which rests.  Everything attached to the removed notes goes with them:
+   * staff modifiers that start or end in the measure (slurs, ties, hairpins) and text attached to its notes.
+   * Only the staves and measures in the selections change.
+   * @param score the score the selections belong to
+   * @param selections the notes or measures; every measure they touch is filled
+   * @param fill which rests
+   */
+  static fillMeasures(score: SmoScore, selections: SmoSelection[], fill: MeasureFillType) {
+    const done: Record<string, boolean> = {};
+    selections.forEach((selection) => {
+      const staffIndex = selection.selector.staff;
+      const measure = selection.measure;
+      const measureIndex = measure.measureNumber.measureIndex;
+      const key = `${staffIndex}-${measureIndex}`;
+      if (done[key]) {
+        return;
+      }
+      done[key] = true;
+      // A pickup measure is filled to the length it has
+      const total = measure.isPickup() ? measure.getTicksFromVoice(0) : undefined;
+      const durations = fillRestDurations(measure.timeSignature, fill, total);
+      const triple = measure.timeSignature.actualBeats % 3 === 0;
+      const beamBeats = triple ? score.preferences.defaultTripleDuration : score.preferences.defaultDupleDuration;
+      selection.staff.removeModifiersInMeasure(measureIndex);
+      score.removeTextAttachedToMeasure(staffIndex, measureIndex);
+      measure.fillWithRests(durations, beamBeats);
     });
   }
   static clearAllBeamGroups(score: SmoScore) {    

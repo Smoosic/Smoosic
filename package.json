@@ -61,6 +61,7 @@
     "test:beam-dotted": "ts-node -P tests/tsconfig.json tests/beamDotted.ts",
     "test:beam-groups": "ts-node -P tests/tsconfig.json tests/beamGroups.ts",
     "test:quick-beam": "ts-node -P tests/tsconfig.json tests/quickBeam.ts",
+    "test:measure-fill": "ts-node -P tests/tsconfig.json tests/measureFill.ts",
     "test:time-signature-display": "ts-node -P tests/tsconfig.json tests/timeSignatureDisplay.ts",
     "test:autosave": "ts-node -P tests/tsconfig.json tests/autosave.ts",
     "test:paste-special": "ts-node -P tests/tsconfig.json tests/pasteSpecial.ts",

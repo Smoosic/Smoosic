@@ -715,6 +715,17 @@ export class SmoSystemStaff implements SmoObjectParams {
     this.textBrackets = tbs;
     this.modifiers = mods;
   }
+  /**
+   * Remove the staff modifiers (slurs, ties, hairpins, brackets and so on) that start or end in a measure.
+   * Used when the notes of the measure are removed.  Modifiers that only pass over the measure are kept.
+   * @param measureIndex the index of the measure
+   */
+  removeModifiersInMeasure(measureIndex: number) {
+    const outside = (mod: StaffModifierBase) =>
+      mod.startSelector.measure !== measureIndex && mod.endSelector.measure !== measureIndex;
+    this.modifiers = this.modifiers.filter(outside);
+    this.textBrackets = this.textBrackets.filter(outside);
+  }
   // ### getVoltaMap
   getVoltaMap(startIndex: number, endIndex: number) {
     const rv: SmoVolta[] = [];
