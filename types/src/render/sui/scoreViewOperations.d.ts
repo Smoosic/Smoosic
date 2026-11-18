@@ -11,7 +11,7 @@ import { SmoDynamicText, SmoArticulation, SmoOrnament, SmoLyric, SmoArpeggioType
 import { SmoTempo, SmoVolta, SmoRehearsalMark, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { UndoBuffer } from '../../smo/xform/undo';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
-import { BatchSelectionOperation, AddPartParams } from '../../smo/xform/operations';
+import { BatchSelectionOperation, AddPartParams, DeleteAttributeKind } from '../../smo/xform/operations';
 import { MeasureFillType } from '../../smo/xform/measureFill';
 import { FontInfo } from '../../common/vex';
 import { PasteAttributeOptions } from '../../smo/xform/copypaste';
@@ -404,6 +404,14 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      * @param options the kinds to paste, and whether they replace or are added to the destination's markings
      */
     pasteAttributes(options: PasteAttributeOptions): Promise<void>;
+    /**
+     * Remove the chosen kinds of marking (dynamics, lyrics, annotations, chords, articulations, ornaments,
+     * grace notes, arpeggios, microtones) from the selected notes.  The notes themselves are not changed.
+     * It is one undo step.  Nothing happens, and no undo step is made, if no kind is chosen or the selected
+     * notes have none of them.
+     * @param kinds the kinds of marking to remove
+     */
+    deleteNoteAttributes(kinds: DeleteAttributeKind[]): Promise<void>;
     /**
      * specify a note head other than the default for the duration
      * @param head

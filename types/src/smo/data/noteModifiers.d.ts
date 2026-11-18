@@ -540,6 +540,15 @@ export declare class SmoDynamicText extends SmoNoteModifierBase {
     static get defaults(): SmoDynamicTextParams;
     static get persistArray(): string[];
     static get parameterArray(): string[];
+    /** the smallest font size a dynamic marking can be given */
+    static readonly minFontSize: number;
+    /** the largest font size a dynamic marking can be given */
+    static readonly maxFontSize: number;
+    /**
+     * True if the value can be used as the font size of a dynamic marking: a whole number from
+     * {@link minFontSize} to {@link maxFontSize}.
+     */
+    static isValidFontSize(value: number): boolean;
     text: string;
     yOffsetLine: number;
     yOffsetPixels: number;

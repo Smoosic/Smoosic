@@ -43,7 +43,29 @@ export interface AddPartParams {
     /** the abbreviation as typed; blank for none */
     abbreviation: string;
 }
+/**
+ * The kinds of marking attached to notes that Delete Special can remove on their own
+ * @category SmoTransform
+ */
+export type DeleteAttributeKind = 'dynamics' | 'lyrics' | 'annotations' | 'chords' | 'articulations' | 'ornaments' | 'graceNotes' | 'arpeggios' | 'microtones';
 export declare class SmoOperation {
+    /** All the kinds Delete Special can remove, in the order of its dialog */
+    static readonly deleteAttributeKinds: DeleteAttributeKind[];
+    /**
+     * How many markings of the given kinds are on the notes of the selections.  Reads only.  Selections with
+     * no note are skipped, and kinds that are not known are ignored.
+     * @param selections the selected notes
+     * @param kinds the kinds of marking to count
+     */
+    static countNoteAttributes(selections: SmoSelection[], kinds: DeleteAttributeKind[]): number;
+    /**
+     * Remove every marking of the given kinds from the notes of the selections.  Pitches, durations, ties and
+     * the kinds not listed are not changed.  Kinds that are not known are ignored.
+     * @param selections the selected notes
+     * @param kinds the kinds of marking to remove
+     */
+    static deleteNoteAttributes(selections: SmoSelection[], kinds: DeleteAttributeKind[]): void;
+    private static deleteHandlersFor;
     static setMeasureFormat(score: SmoScore, selection: SmoSelection, value: SmoMeasureFormat): void;
     static addKeySignature(score: SmoScore, selection: SmoSelection, keySignature: string): void;
     static addConnectorDown(score: SmoScore, selections: SmoSelection[], parameters: SmoSystemGroup): void;

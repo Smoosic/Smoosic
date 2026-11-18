@@ -12,8 +12,9 @@ interface Props {
   yOffsetLine: number,
   yOffsetPixels: number,
   xOffset: number,
+  fontSize: number,
   text: string,
-  updateNumberCb: (param: 'yOffsetLine' | 'yOffsetPixels' | 'xOffset', value: number) => void,
+  updateNumberCb: (param: 'yOffsetLine' | 'yOffsetPixels' | 'xOffset' | 'fontSize', value: number) => Promise<void>,
   updateTextCb: (value: string) => void,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>,
@@ -59,6 +60,14 @@ const dynamicOptions: SelectOption[] = [
           label="X Offset"
           :minValue="-1000" :maxValue="1000"
           :changeCb="(value: number) => updateNumberCb('xOffset', value)" :inline="true" />
+      </div>
+    </div>
+    <div class="group">
+      <div class="grow-row">
+        <numberInputApp :domId="getId('font-size')" :initialValue="fontSize" :precision="0"
+          label="Font Size"
+          :minValue="SmoDynamicText.minFontSize" :maxValue="SmoDynamicText.maxFontSize"
+          :changeCb="(value: number) => updateNumberCb('fontSize', value)" :inline="true" />
       </div>
     </div>
   </dialogContainer>

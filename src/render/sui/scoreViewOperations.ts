@@ -22,7 +22,7 @@ import { UndoBuffer } from '../../smo/xform/undo';
 import {
   SmoOperation, createStaffModifierType, MakeTupletOperation
 } from '../../smo/xform/operations';
-import { BatchSelectionOperation, AddPartParams } from '../../smo/xform/operations';
+import { BatchSelectionOperation, AddPartParams, DeleteAttributeKind } from '../../smo/xform/operations';
 import { MeasureFillType } from '../../smo/xform/measureFill';
 import { smoSerialize } from '../../common/serializationHelpers';
 import { FontInfo } from '../../common/vex';
@@ -1635,6 +1635,21 @@ export class SuiScoreViewOperations extends SuiScoreView {
     this.storePaste.pasteAttributes(altTarget, options);
     this.replaceMeasureView([extent.firstMeasure, extent.lastMeasure]);
     await this.renderer.updatePromise();
+  }
+  /**
+   * Remove the chosen kinds of marking (dynamics, lyrics, annotations, chords, articulations, ornaments,
+   * grace notes, arpeggios, microtones) from the selected notes.  The notes themselves are not changed.
+   * It is one undo step.  Nothing happens, and no undo step is made, if no kind is chosen or the selected
+   * notes have none of them.
+   * @param kinds the kinds of marking to remove
+   */
+  async deleteNoteAttributes(kinds: DeleteAttributeKind[]): Promise<void> {
+    if (kinds.length < 1 || SmoOperation.countNoteAttributes(this.tracker.selections, kinds) < 1) {
+      return;
+    }
+    await this.modifyCurrentSelections('delete special', (score, selections) => {
+      SmoOperation.deleteNoteAttributes(selections, kinds);
+    });
   }
   /**
    * specify a note head other than the default for the duration

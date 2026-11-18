@@ -7,7 +7,7 @@ import { SmoScore } from '../data/score';
 import { SmoMeasureParams, SmoMeasure, SmoVoice } from '../data/measure';
 import { SmoSystemStaff, SmoSystemStaffParams } from '../data/systemStaff';
 import { SmoArticulation, SmoGraceNote, SmoLyric, SmoMicrotone, SmoOrnament,
-  SmoDynamicText, 
+  SmoDynamicText, SmoNoteModifierBase,
   SmoTabNote} from '../data/noteModifiers';
 import {
   SmoRehearsalMark, SmoMeasureText, SmoVolta, SmoMeasureFormat, SmoTempo, SmoBarline,
@@ -62,7 +62,101 @@ export interface AddPartParams {
   abbreviation: string;
 }
 
+/**
+ * The kinds of marking attached to notes that Delete Special can remove on their own
+ * @category SmoTransform
+ */
+export type DeleteAttributeKind = 'dynamics' | 'lyrics' | 'annotations' | 'chords' | 'articulations'
+  | 'ornaments' | 'graceNotes' | 'arpeggios' | 'microtones';
+/** How the markings of one kind are counted on a note and cleared from it */
+interface DeleteAttributeHandler {
+  count: (note: SmoNote) => number,
+  clear: (note: SmoNote) => void
+}
+const isLyricOfParser = (mod: SmoNoteModifierBase, parser: number) =>
+  mod.attrs.type === 'SmoLyric' && (mod as SmoLyric).parser === parser;
+/** Lyrics, annotations and chords are all SmoLyric, told apart only by parser */
+const lyricHandler = (parser: number): DeleteAttributeHandler => ({
+  count: (note) => note.textModifiers.filter((mod) => isLyricOfParser(mod, parser)).length,
+  clear: (note) => {
+    note.textModifiers = note.textModifiers.filter((mod) => !isLyricOfParser(mod, parser));
+  }
+});
+const deleteAttributeHandlers: Record<DeleteAttributeKind, DeleteAttributeHandler> = {
+  dynamics: {
+    count: (note) => note.textModifiers.filter((mod) => mod.attrs.type === 'SmoDynamicText').length,
+    clear: (note) => {
+      note.textModifiers = note.textModifiers.filter((mod) => mod.attrs.type !== 'SmoDynamicText');
+    }
+  },
+  lyrics: lyricHandler(SmoLyric.parsers.lyric),
+  annotations: lyricHandler(SmoLyric.parsers.annotation),
+  chords: lyricHandler(SmoLyric.parsers.chord),
+  articulations: {
+    count: (note) => note.articulations.length,
+    clear: (note) => { note.articulations = []; }
+  },
+  ornaments: {
+    count: (note) => note.ornaments.length,
+    clear: (note) => { note.ornaments = []; }
+  },
+  graceNotes: {
+    count: (note) => note.graceNotes.length,
+    clear: (note) => { note.graceNotes = []; }
+  },
+  arpeggios: {
+    count: (note) => note.arpeggio ? 1 : 0,
+    clear: (note) => { note.arpeggio = undefined; }
+  },
+  microtones: {
+    count: (note) => note.tones.length,
+    clear: (note) => { note.tones = []; }
+  }
+};
+
 export class SmoOperation {
+  /** All the kinds Delete Special can remove, in the order of its dialog */
+  static readonly deleteAttributeKinds: DeleteAttributeKind[] = ['dynamics', 'lyrics', 'annotations', 'chords',
+    'articulations', 'ornaments', 'graceNotes', 'arpeggios', 'microtones'];
+  /**
+   * How many markings of the given kinds are on the notes of the selections.  Reads only.  Selections with
+   * no note are skipped, and kinds that are not known are ignored.
+   * @param selections the selected notes
+   * @param kinds the kinds of marking to count
+   */
+  static countNoteAttributes(selections: SmoSelection[], kinds: DeleteAttributeKind[]): number {
+    const handlers = SmoOperation.deleteHandlersFor(kinds);
+    let count = 0;
+    selections.forEach((selection) => {
+      const note = selection.note;
+      if (note) {
+        handlers.forEach((handler) => {
+          count += handler.count(note);
+        });
+      }
+    });
+    return count;
+  }
+  /**
+   * Remove every marking of the given kinds from the notes of the selections.  Pitches, durations, ties and
+   * the kinds not listed are not changed.  Kinds that are not known are ignored.
+   * @param selections the selected notes
+   * @param kinds the kinds of marking to remove
+   */
+  static deleteNoteAttributes(selections: SmoSelection[], kinds: DeleteAttributeKind[]) {
+    const handlers = SmoOperation.deleteHandlersFor(kinds);
+    selections.forEach((selection) => {
+      const note = selection.note;
+      if (note) {
+        handlers.forEach((handler) => handler.clear(note));
+      }
+    });
+  }
+  private static deleteHandlersFor(kinds: DeleteAttributeKind[]): DeleteAttributeHandler[] {
+    return kinds.filter((kind) => Object.prototype.hasOwnProperty.call(deleteAttributeHandlers, kind))
+      .map((kind) => deleteAttributeHandlers[kind]);
+  }
+
   static setMeasureFormat(score: SmoScore, selection: SmoSelection, value: SmoMeasureFormat) {
     if (!score.formattingManager) {
       return;

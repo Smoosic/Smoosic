@@ -1210,6 +1210,18 @@ export class SmoDynamicText extends SmoNoteModifierBase {
     rv.push('selector');
     return rv;
   }
+  /** the smallest font size a dynamic marking can be given */
+  static readonly minFontSize: number = 1;
+  /** the largest font size a dynamic marking can be given */
+  static readonly maxFontSize: number = 99;
+  /**
+   * True if the value can be used as the font size of a dynamic marking: a whole number from
+   * {@link minFontSize} to {@link maxFontSize}.
+   */
+  static isValidFontSize(value: number): boolean {
+    return typeof (value) === 'number' && Number.isInteger(value)
+      && value >= SmoDynamicText.minFontSize && value <= SmoDynamicText.maxFontSize;
+  }
   text: string = '';
   yOffsetLine: number = 11;
   yOffsetPixels: number = 0;

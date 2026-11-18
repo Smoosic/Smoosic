@@ -35,6 +35,7 @@ import { SuiTransposeScoreDialogVue} from '../ui/dialogs/transposeScore';
 import { SuiMeasureFormatDialogVue } from '../ui/dialogs/measureFormat';
 import { SuiInsertMeasuresVue } from '../ui/dialogs/addMeasure';
 import { SuiPasteSpecialDialog } from '../ui/dialogs/pasteSpecial';
+import { SuiDeleteSpecialDialog } from '../ui/dialogs/deleteSpecial';
 import { SuiInstrumentDialogVue } from '../ui/dialogs/instrument';
 import { SuiTimeSignatureDialogVue } from '../ui/dialogs/timeSignature';
 import { SuiTempoDialog } from '../ui/dialogs/tempo';
@@ -47,7 +48,6 @@ import { SuiTextBracketDialog } from '../ui/dialogs/textBracket';
 import { SuiScoreFontDialogVue } from '../ui/dialogs/fonts';
 import { SuiGlobalLayoutDialogVue } from '../ui/dialogs/globalLayout';
 import { SuiScoreViewDialogVue } from '../ui/dialogs/scoreView';import { SuiLibraryDialog } from '../ui/dialogs/library';
-import { SuiDynamicModifierDialog } from '../ui/dialogs/dynamics';
 import { SuiSlurAttributesDialog } from '../ui/dialogs/slur';
 import { SuiPedalMarkingDialog } from '../ui/dialogs/pedalMarking';
 import { SuiTieAttributesDialog } from '../ui/dialogs/tie';
@@ -228,6 +228,7 @@ export * from '../ui/configuration';
 export * from '../ui/dialogs/adapter';
 export * from '../ui/dialogs/addMeasure';
 export * from '../ui/dialogs/pasteSpecial';
+export * from '../ui/dialogs/deleteSpecial';
 export * from '../ui/dialogs/articulation';
 export * from '../ui/dialogs/audioSettings';
 export * from '../ui/dialogs/clefChange';
@@ -248,7 +249,6 @@ export * from '../ui/dialogs/components/toggle';
 export * from '../ui/dialogs/components/tree';
 export * from '../ui/dialogs/dialog';
 export * from '../ui/dialogs/durations';
-export * from '../ui/dialogs/dynamics';
 export * from '../ui/dialogs/endings';
 export * from '../ui/dialogs/factory';
 export * from '../ui/dialogs/fileDialogs';
@@ -336,7 +336,7 @@ export const Smo = {
   SuiScoreViewDialogVue, SuiGlobalLayoutDialogVue, SuiScoreIdentificationDialogVue, 
   GlobalLayoutNumberAttributesArray,
   SuiTransposeScoreDialogVue,
-  SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue, SuiPasteSpecialDialog,
+  SuiScoreFontDialogVue, SuiPageLayoutDialogVue, SuiMeasureFormatDialogVue, SuiInsertMeasuresVue, SuiPasteSpecialDialog, SuiDeleteSpecialDialog,
   SuiTimeSignatureDialogVue, 
   SuiSlurAttributesDialog, SuiPedalMarkingDialog, SuiTieAttributesDialog, SuiVoltaAttributeDialog,
   SuiHairpinAttributesDialog, SuiStaffGroupDialogVue,
@@ -357,7 +357,7 @@ export const Smo = {
   SuiToggleComposite, SuiButtonComposite, SuiRockerComposite, SuiTextInputComposite,
   SuiFontComponent,  
   SuiTextInputComponent, SuiReadOnlyTextComponent,
-  SuiDynamicModifierDialog, CheckboxDropdownComponent, TieMappingComponent, StaffAddRemoveComponent,
+  CheckboxDropdownComponent, TieMappingComponent, StaffAddRemoveComponent,
   StaffCheckComponent, TextCheckComponent, SuiClefChangeDialog,
   SuiPitchArrayComponent, SuiPitchArrayComponentTab, SuiPitchComponent,
 

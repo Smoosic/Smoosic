@@ -62,6 +62,8 @@
     "test:beam-groups": "ts-node -P tests/tsconfig.json tests/beamGroups.ts",
     "test:quick-beam": "ts-node -P tests/tsconfig.json tests/quickBeam.ts",
     "test:measure-fill": "ts-node -P tests/tsconfig.json tests/measureFill.ts",
+    "test:dynamics-font-size": "ts-node -P tests/tsconfig.json tests/dynamicsFontSize.ts",
+    "test:delete-special": "ts-node -P tests/tsconfig.json tests/deleteSpecial.ts",
     "test:time-signature-display": "ts-node -P tests/tsconfig.json tests/timeSignatureDisplay.ts",
     "test:autosave": "ts-node -P tests/tsconfig.json tests/autosave.ts",
     "test:paste-special": "ts-node -P tests/tsconfig.json tests/pasteSpecial.ts",

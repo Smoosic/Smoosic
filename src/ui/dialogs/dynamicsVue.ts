@@ -1,15 +1,16 @@
 // [Smoosic](https://github.com/AaronDavidNewman/Smoosic)
 // Copyright (c) Aaron David Newman 2026.
 import { SuiDialogParams, InstallDialog } from './dialog';
-import { SuiDynamicDialogAdapter } from './dynamics';
 import { getModifierDialogPosition } from './adapter';
+import { SmoDynamicText } from '../../smo/data/noteModifiers';
+import { SmoSelection } from '../../smo/xform/selections';
 import dynamicsComp from '../components/dialogs/dynamics.vue';
 import { replaceVueRoot, modalContainerId } from '../common';
 
 /**
- * Vue-based replacement for SuiDynamicModifierDialog (src/ui/dialogs/dynamics.ts),
- * following the SuiTimeSignatureDialogVue creation-function pattern.
- * SuiDynamicDialogAdapter is reused unchanged; only the presentation layer is new.
+ * Vue-based dialog for the dynamic marking (p, mf, ff...) of the selected notes, following the
+ * SuiTimeSignatureDialogVue creation-function pattern.  The dialog's state is kept in local variables and
+ * each edit is applied to the score as it is made, so there is no separate adapter object.
  * `parameters.modifier` is always an already score-attached SmoDynamicText by the time
  * this runs — the menu handler in src/ui/menus/text.ts creates and adds a default
  * marking to every selected note before opening the dialog when none exists yet.
@@ -17,33 +18,59 @@ import { replaceVueRoot, modalContainerId } from '../common';
 export const SuiDynamicModifierDialogVue = (parameters: SuiDialogParams) => {
   const rootId = replaceVueRoot(modalContainerId);
   const view = parameters.view;
+  const modifier = parameters.modifier as SmoDynamicText;
+  // All the edits made in this dialog are one undo step, and Cancel undoes them.
   view.groupUndo(true);
-  const adapter = new SuiDynamicDialogAdapter(view, parameters.modifier);
+  view.undoTrackerMeasureSelections('Dynamics');
+  // Edit the notes of a selected marking, if a marking itself is selected on the score, otherwise the
+  // selected notes.
+  let selections: SmoSelection[] = [];
+  if (view.tracker.modifierSelections.length) {
+    view.tracker.modifierSelections.forEach((ms) => {
+      if (ms.selection) {
+        selections.push(ms.selection);
+      }
+    });
+  } else {
+    selections = view.tracker.selections;
+  }
 
-  const updateNumberCb = (param: 'yOffsetLine' | 'yOffsetPixels' | 'xOffset', value: number) => {
-    adapter[param] = value;
+  /** put the marking, as it is now, on every note being edited */
+  const syncModifiers = () => {
+    selections.forEach((selection) => {
+      view.addDynamic(selection, modifier);
+    });
+  };
+  const updateNumberCb = async (param: 'yOffsetLine' | 'yOffsetPixels' | 'xOffset' | 'fontSize', value: number) => {
+    // A size that cannot be used is ignored; the marking keeps its last good size
+    if (param === 'fontSize' && !SmoDynamicText.isValidFontSize(value)) {
+      return;
+    }
+    modifier[param] = value;
+    syncModifiers();
   };
   const updateTextCb = (value: string) => {
-    adapter.text = value;
+    modifier.text = value;
+    syncModifiers();
   };
   const commitCb = async () => {
-    await adapter.commit();
   };
   const cancelCb = async () => {
-    await adapter.cancel();
+    await view.undo();
   };
   const removeCb = async () => {
-    await adapter.remove();
+    await view.removeDynamic(modifier);
   };
 
   const appParams = {
     domId: rootId,
     label: 'Dynamics Properties',
     initialPosition: getModifierDialogPosition(view, parameters.modifier),
-    yOffsetLine: adapter.yOffsetLine,
-    yOffsetPixels: adapter.yOffsetPixels,
-    xOffset: adapter.xOffset,
-    text: adapter.text,
+    yOffsetLine: modifier.yOffsetLine,
+    yOffsetPixels: modifier.yOffsetPixels,
+    xOffset: modifier.xOffset,
+    fontSize: modifier.fontSize,
+    text: modifier.text,
     updateNumberCb,
     updateTextCb
   };

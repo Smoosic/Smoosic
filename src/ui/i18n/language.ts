@@ -125,7 +125,6 @@ export class SmoTranslator {
     return [
       // file dialogs
       'SuiChordChangeDialog',
-      'SuiDynamicModifierDialog',
       'SuiGlobalLayoutDialog',
       'SuiHairpinAttributesDialog',
       'SuiInsertMeasures',

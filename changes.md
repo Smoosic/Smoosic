@@ -1,6 +1,20 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-16-2026
+Delete Special.
+
+* The **Edit** menu has a new **Delete Special...** command, next to Paste Special.  It opens a dialog with a checkbox for each kind of marking you can remove from the selected notes: **Dynamics, Lyrics, Annotations, Chords, Articulations, Ornaments, Grace Notes, Arpeggios and Microtones**.  Nothing is ticked at first.  Tick the kinds you want and confirm, and they are removed from every selected note.  The notes' pitches and rhythms are not changed, and neither are the kinds you did not tick.
+* Lyrics, annotations and chord symbols are separate choices: removing one never removes another.  **Lyrics** removes every verse.  **Microtones** removes the microtones but keeps the pitches.
+* It is one undo step.  If nothing is ticked, or the selected notes have none of the ticked kinds, nothing happens and no undo step is made.
+* For people using Smoosic as a library: `SmoOperation.deleteNoteAttributes`, `SmoOperation.countNoteAttributes` and `SmoOperation.deleteAttributeKinds` work on selections, `SuiScoreViewOperations.deleteNoteAttributes` does it on the current selection as one undo step, and `SuiDeleteSpecialDialog` is the dialog.
+
+## 11-15-2026
+Dynamics dialog: font size, and the old dialog is removed.
+
+* The **Dynamics** dialog has a new **Font Size** field, from 1 to 99.  The marking is redrawn as you change it, on every selected note.  Cancel puts the size back, like the other fields.  Scores saved before this open with the same size as before (30).
+* For people using Smoosic as a library: the old `SuiDynamicModifierDialog` and `SuiDynamicDialogAdapter` classes are removed.  The dialog people use is `SuiDynamicModifierDialogVue`, and `SuiModifierDialogFactory` still opens it for a `SmoDynamicText`.  `SmoDynamicText` has `minFontSize`, `maxFontSize` and `isValidFontSize()`.
+
 ## 11-9-2026
 Fill Measures.
 

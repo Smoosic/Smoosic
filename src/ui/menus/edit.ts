@@ -1,6 +1,7 @@
 import { SuiMenuBase, SuiMenuParams, SuiConfiguredMenuOption, SuiConfiguredMenu } from './menu';
 import { PasteBuffer } from '../../smo/xform/copypaste';
 import { SuiPasteSpecialDialog } from '../dialogs/pasteSpecial';
+import { SuiDeleteSpecialDialog } from '../dialogs/deleteSpecial';
 
 declare var $: any;
 /**
@@ -64,6 +65,32 @@ const pasteSpecialMenuOption: SuiConfiguredMenuOption = {
     icon: '',
     text: 'Paste Special...',
     value: 'pasteSpecialAction'
+  }
+}
+
+/**
+ * Delete only some of the things attached to the selected notes (dynamics, lyrics, annotations, chords,
+ * articulations, ornaments, grace notes, arpeggios, microtones).  There is always a selection, so it
+ * is always offered.
+ * @category SuiMenu
+ */
+const deleteSpecialMenuOption: SuiConfiguredMenuOption = {
+  handler: async (menu: SuiMenuBase) => {
+    SuiDeleteSpecialDialog({
+      view: menu.view,
+      completeNotifier: menu.completeNotifier,
+      startPromise: menu.closePromise,
+      eventSource: menu.eventSource,
+      tracker: menu.tracker,
+      ctor: 'SuiDeleteSpecialDialog',
+      id: 'deleteSpecial',
+      modifier: null
+    });
+  }, display: (menu: SuiMenuBase) => true,
+  menuChoice: {
+    icon: '',
+    text: 'Delete Special...',
+    value: 'deleteSpecialAction'
   }
 }
 
@@ -185,5 +212,5 @@ const undoMenuOption: SuiConfiguredMenuOption = {
  * @category SuiMenu
  */
 const SuiEditMenuOptions: SuiConfiguredMenuOption[] = [
-  copyMenuOption, pasteMenuOption, pasteSpecialMenuOption, copyVoicesMenuOption, pasteVoiceMenuOption, selectVoiceMenuOption, undoMenuOption
+  copyMenuOption, pasteMenuOption, pasteSpecialMenuOption, deleteSpecialMenuOption, copyVoicesMenuOption, pasteVoiceMenuOption, selectVoiceMenuOption, undoMenuOption
 ];
