@@ -260,13 +260,13 @@ export class SuiRenderState implements SuiRendererBase {
           if (!this.renderer.viewportChanged) {
             this.preserveScroll();
           }
-          this.render();
+          await this.render();
         }
       } else {
         this.idleLayoutTimer = Date.now();
         this.undoStatus = this.undoBuffer.opCount;
         if (this.replaceQ.length > 0) {
-          this.render();
+          await this.render();
         }
       }
       if (this.debug.testThrow) {
@@ -295,7 +295,7 @@ export class SuiRenderState implements SuiRendererBase {
   }
   pollRedraw() {
     setTimeout(async () => {
-      this.pollRedrawTask();
+      await this.pollRedrawTask();
     }, 1);
   }
 
@@ -461,7 +461,7 @@ export class SuiRenderState implements SuiRendererBase {
       if (this.renderer.backgroundRender) {
         return;
       }        
-      this.renderer.layout();
+      await this.renderer.layout();
       this.renderer.drawPageLines();
       this.setPassState(SuiRenderState.passStates.clean, 'rs: complete render');
     }

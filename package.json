@@ -49,6 +49,7 @@
     "test:staff-line-geometry": "ts-node -P tests/tsconfig.json tests/staffLineGeometry.ts",
     "test:multimeasure-rest": "ts-node -P tests/tsconfig.json tests/multimeasureRest.ts",
     "test:select-voice": "ts-node -P tests/tsconfig.json tests/selectVoice.ts",
+    "test:time-range-select": "ts-node -P tests/tsconfig.json tests/timeRangeSelect.ts",
     "test:voice-copy-paste": "ts-node -P tests/tsconfig.json tests/voiceCopyPaste.ts",
     "test:promise-helpers": "ts-node -P tests/tsconfig.json tests/promiseHelpersUsage.ts",
     "test:score-change-state": "ts-node -P tests/tsconfig.json tests/scoreChangeState.ts",

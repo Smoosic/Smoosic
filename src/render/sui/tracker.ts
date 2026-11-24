@@ -631,31 +631,26 @@ export class SuiTracker extends SuiMapper implements TrackerKeyHandler {
     const staffMin = Math.min(s1o.selector.staff, s2o.selector.staff);
     const staffMax = Math.max(s1o.selector.staff, s2o.selector.staff);
     this.selections = [];
+    let fallback: SmoSelection | null = null;
     for (let i = staffMin; i <= staffMax; ++i) {
-      const s1 = JSON.parse(JSON.stringify(s1o.selector));
-      s1.staff = i;
-      const s2 = JSON.parse(JSON.stringify(s2o.selector));
-      s2.staff = i;
-      const s1s = SmoSelection.selectionFromSelector(this.score!, s1);
-      const s2s = SmoSelection.selectionFromSelector(this.score!, s2);
-      if (s1s && s2s) {
-        const min = SmoSelector.gt(s1s.selector, s2s.selector) ? s2s : s1s;
-        const max = SmoSelector.lt(min.selector, s2s.selector) ? s2s : s1s;
-        const selections = SmoSelection.innerSelections(score, min.selector, max.selector);
-        // Get the actual selections from our map, since the client bounding boxes are already computed
-        selections.forEach((sel) => {
-          const key = SmoSelector.getNoteKey(sel.selector);
-          sel.measure.setActiveVoice(sel.selector.voice);
-          // Skip measures that are not rendered because they are part of a multi-rest
-          if (this.measureNoteMap && this.measureNoteMap[key]) {
-            this.selections.push(this.measureNoteMap[key]);
-          }
-        });
-
-        if (this.selections.length === 0) {
-          this.selections = [min];
-        }        
+      // The staves can have different numbers of notes, so the range is found by elapsed time in each staff,
+      // not by the note index of the selected notes.
+      const selections = SmoSelection.timeRangeSelections(score, i, s1o.selector, s2o.selector);
+      if (fallback === null && selections.length > 0) {
+        fallback = selections[0];
       }
+      // Get the actual selections from our map, since the client bounding boxes are already computed
+      selections.forEach((sel) => {
+        const key = SmoSelector.getNoteKey(sel.selector);
+        sel.measure.setActiveVoice(sel.selector.voice);
+        // Skip measures that are not rendered because they are part of a multi-rest
+        if (this.measureNoteMap && this.measureNoteMap[key]) {
+          this.selections.push(this.measureNoteMap[key]);
+        }
+      });
+    }
+    if (this.selections.length === 0 && fallback) {
+      this.selections = [fallback];
     }
     this._createLocalModifiersList();
     this.highlightQueue.selectionCount = this.selections.length;

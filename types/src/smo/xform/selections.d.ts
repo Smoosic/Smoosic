@@ -137,6 +137,20 @@ export declare class SmoSelection {
      * @returns
      */
     static innerSelections(score: SmoScore, startSelector: SmoSelector, endSelector: SmoSelector): SmoSelection[];
+    /**
+     * Select the notes of one staff that sound between two notes, which may be in any staff.  The notes are
+     * found by elapsed time within each measure, not by their index in the measure, so a staff with a
+     * different number of notes (or a different rhythm) than the staff of the selectors is selected correctly.
+     * A note is included if it sounds at any time from the start of the earlier note to the end of the later note.
+     * Measures are matched by index.  The voice of the earlier selector is used, or the first voice if the
+     * measure has no such voice.
+     * @param score
+     * @param staffIndex the staff to select from
+     * @param s1 one end of the range
+     * @param s2 the other end of the range
+     * @returns the notes in the staff, in order.  Empty if the selectors are not in the score.
+     */
+    static timeRangeSelections(score: SmoScore, staffIndex: number, s1: SmoSelector, s2: SmoSelector): SmoSelection[];
     static nextNoteSelectionFromSelector(score: SmoScore, selector: SmoSelector): SmoSelection | null;
     static lastNoteSelectionFromSelector(score: SmoScore, selector: SmoSelector): SmoSelection | null;
     static lastNoteSelection(score: SmoScore, staffIndex: number, measureIndex: number, voiceIndex: number, tickIndex: number): SmoSelection | null;

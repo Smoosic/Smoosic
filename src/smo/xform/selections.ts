@@ -509,6 +509,72 @@ export class SmoSelection {
     }
     return rv;
   }
+  /**
+   * Select the notes of one staff that sound between two notes, which may be in any staff.  The notes are
+   * found by elapsed time within each measure, not by their index in the measure, so a staff with a
+   * different number of notes (or a different rhythm) than the staff of the selectors is selected correctly.
+   * A note is included if it sounds at any time from the start of the earlier note to the end of the later note.
+   * Measures are matched by index.  The voice of the earlier selector is used, or the first voice if the
+   * measure has no such voice.
+   * @param score
+   * @param staffIndex the staff to select from
+   * @param s1 one end of the range
+   * @param s2 the other end of the range
+   * @returns the notes in the staff, in order.  Empty if the selectors are not in the score.
+   */
+  static timeRangeSelections(score: SmoScore, staffIndex: number, s1: SmoSelector, s2: SmoSelector): SmoSelection[] {
+    const rv: SmoSelection[] = [];
+    const staff = score.staves[staffIndex];
+    if (!staff) {
+      return rv;
+    }
+    // ticks from the start of the measure to the start of the note, in its voice
+    const offsetOf = (selector: SmoSelector): number | null => {
+      const measure = score.staves[selector.staff]?.measures[selector.measure];
+      const voice = measure?.voices[selector.voice];
+      if (!voice || voice.notes.length <= selector.tick) {
+        return null;
+      }
+      let offset = 0;
+      for (let i = 0; i < selector.tick; ++i) {
+        offset += voice.notes[i].tickCount;
+      }
+      return offset;
+    };
+    const o1 = offsetOf(s1);
+    const o2 = offsetOf(s2);
+    if (o1 === null || o2 === null) {
+      return rv;
+    }
+    const lastNote = score.staves[s2.staff].measures[s2.measure].voices[s2.voice].notes[s2.tick];
+    const firstNote = score.staves[s1.staff].measures[s1.measure].voices[s1.voice].notes[s1.tick];
+    // order by measure, then time
+    const first = (s1.measure < s2.measure || (s1.measure === s2.measure && o1 <= o2)) ?
+      { measure: s1.measure, voice: s1.voice, start: o1 } : { measure: s2.measure, voice: s2.voice, start: o2 };
+    const last = (s1.measure < s2.measure || (s1.measure === s2.measure && o1 <= o2)) ?
+      { measure: s2.measure, end: o2 + lastNote.tickCount } : { measure: s1.measure, end: o1 + firstNote.tickCount };
+    for (let m = first.measure; m <= last.measure && m < staff.measures.length; ++m) {
+      const measure = staff.measures[m];
+      const voiceIx = first.voice < measure.voices.length ? first.voice : 0;
+      const notes = measure.voices[voiceIx].notes;
+      let offset = 0;
+      for (let t = 0; t < notes.length; ++t) {
+        const noteStart = offset;
+        const noteEnd = offset + notes[t].tickCount;
+        offset = noteEnd;
+        // Notes that end before the range starts, or start after it ends, are outside of it.
+        const beforeStart = m === first.measure && noteEnd <= first.start;
+        const afterEnd = m === last.measure && noteStart >= last.end;
+        if (!beforeStart && !afterEnd) {
+          const sel = SmoSelection.noteSelection(score, staffIndex, m, voiceIx, t);
+          if (sel) {
+            rv.push(sel);
+          }
+        }
+      }
+    }
+    return rv;
+  }
   static nextNoteSelectionFromSelector(score: SmoScore, selector: SmoSelector): SmoSelection | null {
     return SmoSelection.nextNoteSelection(score, selector.staff, selector.measure, selector.voice, selector.tick);
   }
