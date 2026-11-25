@@ -55,6 +55,7 @@ export * from './src/smo/mxml/xmlToSmo';
 export * from './src/smo/xform/beamers';
 export * from './src/smo/xform/copypaste';
 export * from './src/smo/xform/operations';
+export * from './src/smo/xform/rebar';
 export * from './src/smo/xform/selections';
 export * from './src/smo/xform/tickDuration';
 export * from './src/smo/xform/tickMap';

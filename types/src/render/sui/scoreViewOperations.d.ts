@@ -10,6 +10,7 @@ import { SmoTextGroup } from '../../smo/data/scoreText';
 import { SmoDynamicText, SmoArticulation, SmoOrnament, SmoLyric, SmoArpeggioType, SmoClefChange, SmoTabNote } from '../../smo/data/noteModifiers';
 import { SmoTempo, SmoVolta, SmoRehearsalMark, SmoMeasureFormat, SmoTimeSignature } from '../../smo/data/measureModifiers';
 import { UndoBuffer } from '../../smo/xform/undo';
+import { TimeSignatureApplyTo } from '../../smo/xform/rebar';
 import { createStaffModifierType, MakeTupletOperation } from '../../smo/xform/operations';
 import { BatchSelectionOperation, AddPartParams, DeleteAttributeKind } from '../../smo/xform/operations';
 import { MeasureFillType } from '../../smo/xform/measureFill';
@@ -18,6 +19,16 @@ import { PasteAttributeOptions } from '../../smo/xform/copypaste';
 import { SmoSelection, SmoSelector } from '../../smo/xform/selections';
 import { StaffModifierBase, SmoInstrument, SmoInstrumentParams, SmoStaffTextBracket, SmoTabStave } from '../../smo/data/staffModifiers';
 import { AutosaveEntry } from './autosave';
+/**
+ * How {@link SuiScoreViewOperations.setTimeSignature} chooses the measures and treats their music
+ * @category SuiRender
+ */
+export interface SetTimeSignatureOptions {
+    /** which measures to change.  Default is the selected measures */
+    applyTo?: TimeSignatureApplyTo;
+    /** re-bar the music into the new time signature, adding measures if needed.  Otherwise the music that fits is kept. */
+    preserveMusic?: boolean;
+}
 /**
  * MVVM-like operations on the displayed score.
  *
@@ -163,10 +174,16 @@ export declare class SuiScoreViewOperations extends SuiScoreView {
      */
     changeInstrument(instrument: SmoInstrument, selections: SmoSelection[]): Promise<void>;
     /**
-     * Set the time signature for a selection
+     * Set the time signature, in every staff.  With no options, it is set on the selected measures and the music
+     * that fits in the new length is kept.  With options, the measures are chosen by `applyTo`, and with
+     * `preserveMusic` the music of those measures is re-barred into the new time signature, adding measures if
+     * the new one holds less time, so that no music is lost.  Nothing happens, and no undo step is made, if the
+     * measures already have this time signature.  It is one undo step.
      * @param timeSignature actual time signature
+     * @param options which measures, and whether to preserve the music
      */
-    setTimeSignature(timeSignature: SmoTimeSignature): Promise<void>;
+    setTimeSignature(timeSignature: SmoTimeSignature, options?: SetTimeSignatureOptions): Promise<void>;
+    private _setTimeSignatureInRange;
     /**
      * Move selected staff up or down in the score.
      * @param index direction to move

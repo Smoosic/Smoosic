@@ -1,6 +1,16 @@
 <sub>[Github site](https://github.com/smoosic) | [change notes](https://smoosic.github.io//Smoosic/changes.html) | [application](https://smoosic.github.io//Smoosic/release/html/smoosic.html)<sub> 
 
 
+## 11-24-2026
+Preserve music when changing the time signature.
+
+* The **Time Signature** dialog no longer changes the score while it is open.  Editing the time signature, the display options, **Apply To** or the new **Preserve music** box only collects your choices; they are applied together when you click **OK**, as one undo step.  Cancel leaves the score untouched.  Clicking OK when the measures already have that time signature does nothing.
+* **Preserve music** is ticked by default.  The music in the measures you chose is laid out again in the new time signature, with the same notes in the same order, and measures are added after them if the new time signature holds less time.  Two measures of 4/4 changed to 3/4 become three measures of 3/4, with a rest at the end of the last one.  Measures are never removed: if fewer are needed, the spare ones are filled with rests.  This works the same in every staff, so the staves stay lined up.
+* A note that crosses a new bar line is split into tied notes, and a rest is split into rests.  Anything attached to the note (dynamics, lyrics, chords, articulations and so on) stays on the first part.  A tuplet is kept whole: if it does not fit in what is left of a measure, the rest of the measure is filled with rests and the tuplet starts the next one.  Slurs, ties and hairpins stay on the same notes.  Hand-placed beaming in the changed measures is reset to automatic.  The measures after the ones you changed keep their own time signature and music.
+* A time signature with several parts, such as 3/4+2/4, alternates between them from measure to measure, and the music fills each measure to its own length.
+* **Untick Preserve music** for the old behavior: the new time signature is applied to the measures in place, the music that fits is kept, and the rest is dropped.  Changing only the display options, or choosing a time signature with the same length (2/2 for 4/4), never moves any music.
+* For people using Smoosic as a library: `SmoOperation.rebarMeasures` (and `rebarMeasures` in `smo/xform/rebar`) re-bars a range of measures, `SmoOperation.timeSignatureChanges` and `timeSignatureKeepsLength` read what a change would do, `timeSignatureRange` finds the measures for Apply To, and `SuiScoreViewOperations.setTimeSignature` takes an optional second argument `{ applyTo, preserveMusic }`.  Called with one argument it works as before.  `SmoScore.addMeasure` takes an optional second argument, the measure the new one copies its settings from.
+
 ## 11-16-2026
 Delete Special.
 

@@ -9,6 +9,7 @@ import { SmoSystemGroup } from '../data/scoreModifiers';
 import { SmoTextGroup } from '../data/scoreText';
 import { SmoSelection, SmoSelector, ModifierTab } from './selections';
 import { MeasureFillType } from './measureFill';
+import { RebarResult } from './rebar';
 /**
  * supported operations for  {@link SmoOperation.batchSelectionOperation} to change a note's duration
  */
@@ -97,6 +98,29 @@ export declare class SmoOperation {
     static swapVoice(selections: SmoSelection[], voice1: number, voice2: number): void;
     static setTabStave(score: SmoScore, tabStave: SmoTabStave): void;
     static removeTabStave(score: SmoScore, tabStaves: SmoTabStave[]): void;
+    /**
+     * Re-bar the music of measures firstMeasure to lastMeasure (all staves) into a new time signature, adding
+     * measures if the new one holds less time.  See {@link rebarMeasures}.  Unlike {@link setTimeSignature}, no
+     * music is lost.
+     * @param score the score to change
+     * @param firstMeasure the first measure of the range
+     * @param lastMeasure the last measure of the range
+     * @param timeSignature the new time signature
+     */
+    static rebarMeasures(score: SmoScore, firstMeasure: number, lastMeasure: number, timeSignature: SmoTimeSignature): RebarResult;
+    /**
+     * Would setting this time signature on measures firstMeasure to lastMeasure change anything?  True if any
+     * of those measures, in any staff, has a time signature that is not equal to this one, display options included.
+     * Reads only.
+     */
+    static timeSignatureChanges(score: SmoScore, firstMeasure: number, lastMeasure: number, timeSignature: SmoTimeSignature): boolean;
+    /**
+     * Is every measure in the range, in every staff, already as long as the new time signature would make it?
+     * (2/2 for 4/4, or only a display option changed).  If so the music does not need to move.  The measure
+     * k places after the first has part k of a time signature that has several parts.  Reads only.
+     */
+    static timeSignatureKeepsLength(score: SmoScore, firstMeasure: number, lastMeasure: number, timeSignature: SmoTimeSignature): boolean;
+    private static rangeMeasures;
     static setTimeSignature(score: SmoScore, selections: SmoSelection[], timeSignature: SmoTimeSignature): void;
     static batchSelectionOperation(score: SmoScore, selections: SmoSelection[], operation: BatchSelectionOperation): void;
     static doubleDuration(selection: SmoSelection): boolean;

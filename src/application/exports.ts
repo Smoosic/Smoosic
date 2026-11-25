@@ -217,6 +217,7 @@ export * from '../smo/mxml/xmlToSmo';
 export * from '../smo/xform/beamers';
 export * from '../smo/xform/copypaste';
 export * from '../smo/xform/operations';
+export * from '../smo/xform/rebar';
 export * from '../smo/xform/selections';
 export * from '../smo/xform/tickDuration';
 export * from '../smo/xform/tickMap';

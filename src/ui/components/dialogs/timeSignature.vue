@@ -15,16 +15,22 @@ interface Props {
   timeSignature: Ref<SmoTimeSignature>,
   updateTimeSignatureCb: (mf: SmoTimeSignature) => Promise<void>,
   updateApplyTo: (value: string) => Promise<void>,
+  updatePreserve: (value: boolean) => Promise<void>,
   commitCb: () => Promise<void>,
   cancelCb: () => Promise<void>
 }
 const props = defineProps<Props>();
 const { domId, label, commitCb, cancelCb, } = { ...props };
 
+// None of the fields change the score.  The dialog applies them all when OK is clicked.
 const timeSignature = props.timeSignature;
-watch(timeSignature, () => {
-  console.log('changed!');
-})
+const preserveMusic: Ref<boolean> = ref(true);
+watch(preserveMusic, async (newValue: boolean, oldValue: boolean) => {
+  if (newValue === oldValue) {
+    return;
+  }
+  await props.updatePreserve(newValue);
+});
 const isCompound: Ref<boolean> = ref(false);
 isCompound.value = timeSignature.value.times.length > 1;
 watch(isCompound, async (newValue, oldValue) => {
@@ -134,6 +140,10 @@ const getId = (str: string) => {
       <div class="tgl-row">
         <toggle :domId="getId('display-compound')" :label="'Compound Time Signature'" :initialValue="isCompound"
           :changeCb="(value: boolean) => { isCompound = value }" />
+      </div>
+      <div class="tgl-row">
+        <toggle :domId="getId('preserve-music')" :label="'Preserve music'" :initialValue="preserveMusic"
+          :changeCb="(value: boolean) => { preserveMusic = value }" />
       </div>
     </div>
     <div class="row justify-content-center">

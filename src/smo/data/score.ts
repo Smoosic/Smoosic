@@ -1173,13 +1173,18 @@ export class SmoScore {
    * @param staffIndex 
    * @returns 
    */
-  getPrototypeMeasure(measureIndex: number, staffIndex: number) {
+  getPrototypeMeasure(measureIndex: number, staffIndex: number, prototypeIndex?: number) {
     const staff = this.staves[staffIndex];
     let protomeasure: SmoMeasureParams = {} as SmoMeasureParams;
 
     // Since this staff may already have instrument settings, use the
     // immediately preceeding or post-ceding measure if it exists.
-    if (measureIndex < staff.measures.length) {
+    if (typeof (prototypeIndex) === 'number' && prototypeIndex >= 0 && prototypeIndex < staff.measures.length) {
+      // the caller says which measure the new one should copy
+      protomeasure = staff.measures[prototypeIndex];
+      const instrument = staff.getStaffInstrument(prototypeIndex);
+      protomeasure.lines = instrument.lines;
+    } else if (measureIndex < staff.measures.length) {
       protomeasure = staff.measures[measureIndex];
       const instrument = staff.getStaffInstrument(measureIndex);
       protomeasure.lines = instrument.lines;
@@ -1196,13 +1201,15 @@ export class SmoScore {
   /**
    * Give a measure prototype, create a new measure and add it to each staff, with the
    * correct settings for current time signature/clef.
-   * @param measureIndex 
+   * @param measureIndex
+   * @param prototypeIndex the measure the new one copies its settings from.  By default, the measure
+   * that is at measureIndex now (or the last measure, if there is none).
    */
-  addMeasure(measureIndex: number) {
+  addMeasure(measureIndex: number, prototypeIndex?: number) {
     let i = 0;
     for (i = 0; i < this.staves.length; ++i) {
       const staff = this.staves[i];
-      const nmeasure = this.getPrototypeMeasure(measureIndex, i);
+      const nmeasure = this.getPrototypeMeasure(measureIndex, i, prototypeIndex);
       if (nmeasure.voices.length <= nmeasure.getActiveVoice()) {
         nmeasure.setActiveVoice(0);
       }

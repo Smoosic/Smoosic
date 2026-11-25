@@ -23,6 +23,7 @@ import { SmoSelection, SmoSelector, ModifierTab } from './selections';
 import { SmoContractNoteActor, SmoStretchNoteActor, SmoMakeTupletActor, SmoUnmakeTupletActor, SmoStretchNoteParams, SmoContractNoteParams, SmoMakeTupletParams} from './tickDuration';
 import { SmoBeamer } from './beamers';
 import { fillRestDurations, MeasureFillType } from './measureFill';
+import { rebarMeasures, RebarResult } from './rebar';
 import { SmoTupletTree } from '../data/tuplet';
 /**
  * supported operations for  {@link SmoOperation.batchSelectionOperation} to change a note's duration
@@ -299,6 +300,54 @@ export class SmoOperation {
     if (tabStaves.length > 0) {
       score.staves[tabStaves[0].startSelector.staff].removeTabStaves(tabStaves);
     }
+  }
+  /**
+   * Re-bar the music of measures firstMeasure to lastMeasure (all staves) into a new time signature, adding
+   * measures if the new one holds less time.  See {@link rebarMeasures}.  Unlike {@link setTimeSignature}, no
+   * music is lost.
+   * @param score the score to change
+   * @param firstMeasure the first measure of the range
+   * @param lastMeasure the last measure of the range
+   * @param timeSignature the new time signature
+   */
+  static rebarMeasures(score: SmoScore, firstMeasure: number, lastMeasure: number, timeSignature: SmoTimeSignature): RebarResult {
+    return rebarMeasures(score, firstMeasure, lastMeasure, timeSignature);
+  }
+  /**
+   * Would setting this time signature on measures firstMeasure to lastMeasure change anything?  True if any
+   * of those measures, in any staff, has a time signature that is not equal to this one, display options included.
+   * Reads only.
+   */
+  static timeSignatureChanges(score: SmoScore, firstMeasure: number, lastMeasure: number, timeSignature: SmoTimeSignature): boolean {
+    return SmoOperation.rangeMeasures(score, firstMeasure, lastMeasure).some((measure) =>
+      !SmoTimeSignature.equalIncludeAttributes(measure.timeSignature, timeSignature));
+  }
+  /**
+   * Is every measure in the range, in every staff, already as long as the new time signature would make it?
+   * (2/2 for 4/4, or only a display option changed).  If so the music does not need to move.  The measure
+   * k places after the first has part k of a time signature that has several parts.  Reads only.
+   */
+  static timeSignatureKeepsLength(score: SmoScore, firstMeasure: number, lastMeasure: number, timeSignature: SmoTimeSignature): boolean {
+    const measures = SmoOperation.rangeMeasures(score, firstMeasure, lastMeasure);
+    if (measures.length < 1) {
+      return true;
+    }
+    const perStaff = lastMeasure - firstMeasure + 1;
+    return measures.every((measure, ix) => {
+      const k = ix % perStaff;
+      const part = timeSignature.times[k % timeSignature.times.length];
+      const oldTicks = SmoMusic.timeSignatureToTicks(measure.timeSignature.actualBeats, measure.timeSignature.beatDuration);
+      return oldTicks === SmoMusic.timeSignatureToTicks(part.actualBeats, part.beatDuration);
+    });
+  }
+  private static rangeMeasures(score: SmoScore, firstMeasure: number, lastMeasure: number): SmoMeasure[] {
+    const rv: SmoMeasure[] = [];
+    score.staves.forEach((staff) => {
+      for (let m = Math.max(firstMeasure, 0); m <= lastMeasure && m < staff.measures.length; ++m) {
+        rv.push(staff.measures[m]);
+      }
+    });
+    return rv;
   }
   static setTimeSignature(score: SmoScore, selections: SmoSelection[], timeSignature: SmoTimeSignature) {
     const selectors: SmoSelector[] = [];

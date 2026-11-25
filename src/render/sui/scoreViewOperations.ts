@@ -24,6 +24,7 @@ import {
 } from '../../smo/xform/operations';
 import { BatchSelectionOperation, AddPartParams, DeleteAttributeKind } from '../../smo/xform/operations';
 import { MeasureFillType } from '../../smo/xform/measureFill';
+import { TimeSignatureApplyTo, timeSignatureRange } from '../../smo/xform/rebar';
 import { smoSerialize } from '../../common/serializationHelpers';
 import { FontInfo } from '../../common/vex';
 import { SmoMusic } from '../../smo/data/music';
@@ -46,8 +47,19 @@ declare var SmoConfig: SmoRenderConfiguration;
 
 
 /**
+ * How {@link SuiScoreViewOperations.setTimeSignature} chooses the measures and treats their music
+ * @category SuiRender
+ */
+export interface SetTimeSignatureOptions {
+  /** which measures to change.  Default is the selected measures */
+  applyTo?: TimeSignatureApplyTo,
+  /** re-bar the music into the new time signature, adding measures if needed.  Otherwise the music that fits is kept. */
+  preserveMusic?: boolean
+}
+
+/**
  * MVVM-like operations on the displayed score.
- * 
+ *
  * All operations that can be performed on a 'live' score go through this
  * module.  It maps the score view to the actual score and makes sure the
  * model and view stay in sync.  
@@ -580,10 +592,18 @@ export class SuiScoreViewOperations extends SuiScoreView {
     await this.renderer.updatePromise();
   }
   /**
-   * Set the time signature for a selection
+   * Set the time signature, in every staff.  With no options, it is set on the selected measures and the music
+   * that fits in the new length is kept.  With options, the measures are chosen by `applyTo`, and with
+   * `preserveMusic` the music of those measures is re-barred into the new time signature, adding measures if
+   * the new one holds less time, so that no music is lost.  Nothing happens, and no undo step is made, if the
+   * measures already have this time signature.  It is one undo step.
    * @param timeSignature actual time signature
+   * @param options which measures, and whether to preserve the music
    */
-  async setTimeSignature(timeSignature: SmoTimeSignature): Promise<void> {
+  async setTimeSignature(timeSignature: SmoTimeSignature, options?: SetTimeSignatureOptions): Promise<void> {
+    if (options) {
+      return this._setTimeSignatureInRange(timeSignature, options);
+    }
     this._undoScore('Set time signature');
     const selections = this.tracker.selections;
     const altSelections = this._getEquivalentSelections(selections);
@@ -591,6 +611,41 @@ export class SuiScoreViewOperations extends SuiScoreView {
     SmoOperation.setTimeSignature(this.storeScore, altSelections, timeSignature);
     this._renderChangedMeasures(SmoSelection.getMeasureList(this.tracker.selections));
     return this.renderer.updatePromise();
+  }
+  private async _setTimeSignatureInRange(timeSignature: SmoTimeSignature, options: SetTimeSignatureOptions): Promise<void> {
+    const selected = this.tracker.selections.map((sel) => sel.selector.measure);
+    const range = timeSignatureRange(options.applyTo ?? 'Selected', selected, this.score.staves[0].measures.length);
+    if (!range) {
+      return;
+    }
+    const { firstMeasure, lastMeasure } = range;
+    if (!SmoOperation.timeSignatureChanges(this.score, firstMeasure, lastMeasure, timeSignature)) {
+      return;
+    }
+    const staffIndex = this.tracker.selections.length > 0 ? this.tracker.selections[0].selector.staff : 0;
+    this._undoScore('Set time signature');
+    if (options.preserveMusic === true && !SmoOperation.timeSignatureKeepsLength(this.score, firstMeasure, lastMeasure, timeSignature)) {
+      // The measure count can change, so redraw everything
+      SmoOperation.rebarMeasures(this.score, firstMeasure, lastMeasure, timeSignature);
+      SmoOperation.rebarMeasures(this.storeScore, firstMeasure, lastMeasure, timeSignature);
+      this.renderer.rerenderAll();
+      await this.renderer.updatePromise();
+      this.tracker.replaceSelection({ staff: staffIndex, measure: firstMeasure, voice: 0, tick: 0, pitches: [] }, true);
+      return;
+    }
+    // Keep what fits: the music is not moved, so only the changed measures are redrawn.  This is also what
+    // happens if only a display option changed, or the new time signature is as long as the old.
+    const selections: SmoSelection[] = [];
+    for (let m = firstMeasure; m <= lastMeasure; ++m) {
+      const selection = SmoSelection.measureSelection(this.score, staffIndex, m);
+      if (selection) {
+        selections.push(selection);
+      }
+    }
+    SmoOperation.setTimeSignature(this.score, selections, timeSignature);
+    SmoOperation.setTimeSignature(this.storeScore, this._getEquivalentSelections(selections), timeSignature);
+    this._renderChangedMeasures(selections);
+    await this.renderer.updatePromise();
   }
   /**
    * Move selected staff up or down in the score.

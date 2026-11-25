@@ -384,15 +384,18 @@ export declare class SmoScore {
      * of key, time signature etc.
      * @param measureIndex
      * @param staffIndex
+     * @param prototypeIndex
      * @returns
      */
-    getPrototypeMeasure(measureIndex: number, staffIndex: number): SmoMeasure;
+    getPrototypeMeasure(measureIndex: number, staffIndex: number, prototypeIndex?: number): SmoMeasure;
     /**
      * Give a measure prototype, create a new measure and add it to each staff, with the
      * correct settings for current time signature/clef.
      * @param measureIndex
+     * @param prototypeIndex the measure the new one copies its settings from.  By default, the measure
+     * that is at measureIndex now (or the last measure, if there is none).
      */
-    addMeasure(measureIndex: number): void;
+    addMeasure(measureIndex: number, prototypeIndex?: number): void;
     /**
      * Replace the measure at the given location.  Probably due to an undo operation or paste.
      * @param selector
